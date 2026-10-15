@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04 上下文工程 · Muse 核心设计全解</title>
+<style>
+:root{
+  --bg:#04060d; --panel:#0a0f1e; --panel2:#0d1526; --line:#1c2a4a;
+  --txt:#dbe4f5; --dim:#8494b3; --faint:#5b6b8c;
+  --cyan:#22d3ee; --violet:#a78bfa; --green:#34d399; --amber:#fbbf24; --red:#f87171; --pink:#f472b6;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;font-size:16px;
+  background-image:linear-gradient(rgba(34,211,238,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.035) 1px,transparent 1px);
+  background-size:44px 44px;}
+a{color:var(--cyan);text-decoration:none}
+::selection{background:rgba(34,211,238,.3)}
+
+/* ---------- nav ---------- */
+nav{position:fixed;left:0;top:0;bottom:0;width:248px;background:rgba(6,10,20,.92);backdrop-filter:blur(8px);
+  border-right:1px solid var(--line);padding:22px 14px;overflow-y:auto;z-index:50}
+nav .logo{font-family:var(--mono);font-size:19px;color:#fff;letter-spacing:.5px}
+nav .logo b{color:var(--cyan)}
+nav .sub{font-size:12px;color:var(--faint);margin:2px 0 18px}
+nav .part{font-size:11px;color:var(--violet);letter-spacing:2px;margin:16px 6px 6px;font-family:var(--mono)}
+nav a{display:block;color:var(--dim);font-size:13.5px;padding:5px 8px;border-radius:6px}
+nav a:hover{color:#fff;background:rgba(34,211,238,.08)}
+nav a.on{color:var(--cyan);background:rgba(34,211,238,.1)}
+main{margin-left:248px;padding:0 34px 90px;max-width:1240px}
+@media(max-width:860px){nav{display:none}main{margin-left:0;padding:0 16px 70px}}
+
+/* ---------- hero ---------- */
+.hero{min-height:88vh;display:flex;flex-direction:column;justify-content:center;padding:60px 10px 30px}
+.hero .kicker{font-family:var(--mono);color:var(--cyan);font-size:13px;letter-spacing:3px}
+.hero h1{font-size:clamp(34px,5.4vw,58px);line-height:1.22;color:#fff;margin:16px 0 8px;font-weight:800}
+.hero h1 .grad{background:linear-gradient(92deg,var(--cyan),var(--violet),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{color:var(--dim);font-size:17.5px;max-width:720px}
+.hero .stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+.hero .stat{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 18px;min-width:130px}
+.hero .stat b{display:block;font-size:22px;color:#fff;font-family:var(--mono)}
+.hero .stat span{font-size:12.5px;color:var(--faint)}
+.hero .scroll{margin-top:44px;color:var(--faint);font-size:13px;font-family:var(--mono);animation:bob 2.2s infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ---------- sections ---------- */
+section{padding:64px 10px 8px;scroll-margin-top:20px}
+.part-head{font-family:var(--mono);color:var(--violet);font-size:13px;letter-spacing:3px}
+h2{font-size:clamp(24px,3.4vw,34px);color:#fff;margin:6px 0 4px;font-weight:800}
+h2 .no{color:var(--cyan);font-family:var(--mono);font-size:.72em;margin-right:10px}
+.one{font-size:17.5px;color:#fff;background:linear-gradient(90deg,rgba(34,211,238,.12),transparent);
+  border-left:3px solid var(--cyan);padding:10px 16px;border-radius:0 10px 10px 0;margin:14px 0 18px}
+.one b{color:var(--cyan)}
+p{margin:10px 0;color:#c3cee4}
+.dim{color:var(--dim)} .small{font-size:13.5px}
+h3{color:#fff;font-size:19px;margin:26px 0 8px}
+h3::before{content:'▸ ';color:var(--cyan)}
+ul{margin:8px 0 8px 20px;color:#c3cee4}
+li{margin:5px 0}
+b,strong{color:#eef3ff}
+code{font-family:var(--mono);font-size:.88em;background:rgba(34,211,238,.1);color:#a5f3fc;padding:1px 6px;border-radius:5px}
+pre{background:#060b16;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;
+  font-family:var(--mono);font-size:13.5px;line-height:1.65;color:#b7c9e8;margin:12px 0}
+pre .c{color:#54678c}
+.badge{display:inline-block;font-size:11.5px;font-family:var(--mono);padding:2px 9px;border-radius:99px;vertical-align:2px;margin-left:8px}
+.b-verified{color:var(--green);border:1px solid rgba(52,211,153,.5);background:rgba(52,211,153,.08)}
+.b-doc{color:var(--cyan);border:1px solid rgba(34,211,238,.5);background:rgba(34,211,238,.08)}
+.b-infer{color:var(--amber);border:1px solid rgba(251,191,36,.5);background:rgba(251,191,36,.08)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:14px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card h4{color:#fff;font-size:16px;margin-bottom:5px}
+.card h4 .ic{margin-right:7px}
+.card p,.card li{font-size:14.5px;color:#b9c6de}
+.card ul{margin-left:17px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:#fff;font-weight:600}
+td{color:#c3cee4}
+.note{border:1px dashed rgba(167,139,250,.45);background:rgba(167,139,250,.06);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:14.5px;color:#cfc6f5}
+.warn{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.06);color:#f3e3bb}
+
+/* ---------- diagrams ---------- */
+.layers{margin:16px 0}
+.layer{border:1px solid var(--line);border-radius:12px;padding:12px 18px;margin:7px 0;background:var(--panel);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;transition:.25s;cursor:default}
+.layer:hover{border-color:var(--cyan);transform:translateX(4px)}
+.layer .nm{color:#fff;font-weight:700}
+.layer .ds{color:var(--dim);font-size:13.5px;text-align:right}
+.flowbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+.fstep{display:flex;gap:12px;align-items:flex-start;padding:8px 10px;border-radius:10px;transition:.3s}
+.fstep .dot{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--faint);color:var(--faint);
+  font-family:var(--mono);font-size:12.5px;display:flex;align-items:center;justify-content:center;margin-top:2px;background:#060b16}
+.fstep .tx b{color:#fff}
+.fstep .tx span{color:var(--dim);font-size:14px;display:block}
+.farrow{margin-left:22px;color:var(--faint);font-family:var(--mono);font-size:12px}
+.fstep.lit{background:rgba(34,211,238,.09)}
+.fstep.lit .dot{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 14px rgba(34,211,238,.5)}
+.fstep.async.lit{background:rgba(251,191,36,.08)}
+.fstep.async.lit .dot{border-color:var(--amber);color:var(--amber);box-shadow:0 0 14px rgba(251,191,36,.45)}
+.tag{font-family:var(--mono);font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--faint);color:var(--dim);white-space:nowrap}
+.tag.sync{border-color:rgba(34,211,238,.55);color:var(--cyan)}
+.tag.async{border-color:rgba(251,191,36,.55);color:var(--amber)}
+.btn{font-family:inherit;font-size:14.5px;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;
+  border:1px solid var(--cyan);background:rgba(34,211,238,.12);color:#cffafe;transition:.2s}
+.btn:hover{background:rgba(34,211,238,.25)}
+.btn.ghost{border-color:var(--line);background:transparent;color:var(--dim)}
+.btn.ok{border-color:rgba(52,211,153,.6);background:rgba(52,211,153,.12);color:#bbf7d0}
+.btn.no{border-color:rgba(248,113,113,.6);background:rgba(248,113,113,.1);color:#fecaca}
+.btn:disabled{opacity:.4;cursor:default}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.switch{display:inline-flex;align-items:center;gap:8px;color:var(--dim);font-size:14px;cursor:pointer;user-select:none}
+.switch input{accent-color:var(--amber);width:17px;height:17px}
+.simlog{font-family:var(--mono);font-size:13px;background:#060b16;border:1px solid var(--line);border-radius:10px;
+  padding:12px 16px;min-height:86px;color:#9fd8e8;margin-top:10px;white-space:pre-wrap}
+.simlog .a{color:var(--amber)} .simlog .g{color:var(--green)} .simlog .v{color:var(--violet)}
+
+/* fanout */
+.fan{position:relative;margin:10px 0}
+.fan .hub{text-align:center}
+.fan .hub span{display:inline-block;border:1px solid var(--violet);color:#e9e2ff;background:rgba(167,139,250,.1);
+  border-radius:12px;padding:9px 22px;font-weight:700}
+.workers{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px;min-height:118px}
+.worker{width:148px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);
+  text-align:center;font-size:13.5px;color:var(--dim);opacity:0;transform:translateY(-14px) scale(.92);transition:.45s}
+.worker.show{opacity:1;transform:none}
+.worker .st{font-family:var(--mono);font-size:12px;margin-top:6px;color:var(--amber)}
+.worker.done{border-color:rgba(52,211,153,.6)} .worker.done .st{color:var(--green)}
+.worker b{color:#fff;display:block;font-size:14.5px}
+
+/* context builder */
+.ctxlayer{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;
+  padding:9px 14px;margin:6px 0;background:var(--panel);cursor:pointer;transition:.2s;font-size:14.5px}
+.ctxlayer.off{opacity:.38}
+.ctxlayer .sz{font-family:var(--mono);color:var(--cyan);font-size:13px}
+.ctxbar{height:14px;border-radius:8px;background:#0a1120;border:1px solid var(--line);overflow:hidden;margin:12px 0 4px}
+.ctxbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width .5s}
+
+/* event timeline */
+.evt{font-family:var(--mono);font-size:13px;border-left:2px solid var(--line);margin:8px 0 8px 8px;padding:7px 14px;color:#b7c9e8;animation:ein .4s}
+.evt b{color:#fff}.evt .pair{color:var(--violet)}
+@keyframes ein{from{opacity:0;transform:translateX(-8px)}}
+footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
+.reveal{opacity:0;transform:translateY(16px);transition:.6s}
+.reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html" class="on">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
+<main>
+<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 2 · 大脑</div><h2><span class="no">04</span>上下文工程</h2><div class="one">一句话：模型没有记忆，Muse 就把「记忆」做成了手艺活——事实存在文件和日志里，每一轮推理之前，运行时重新拼一份上下文递到模型面前。<b>上下文工程，就是这门「拼什么、拼多少、旧的怎么压」的学问。</b></div>
+
+<h3>底层设计原理：三条推导，逼出这套结构</h3>
+<p><b>推导一：模型无状态，连续性只能外置。</b>大模型的一次推理就是一个纯函数：输入一段文本，输出一段文本，结束之后什么都不剩。所谓「它记得我们上次聊了什么」，只可能是因为有人在下一次调用之前，把该记的东西重新塞回了输入。于是连续性不再是模型的能力，而是运行时的工程：谁来存、存什么、每轮取哪些、按什么顺序排——这就是上下文工程存在的理由。</p>
+<p><b>推导二：上下文是稀缺资源，必须分层。</b>稀缺体现在三处。窗口有硬上限，一次推理能读的 token 是有数的。注意力会被稀释：塞得越满，模型对关键信息的敏感度越低，长文本中段的内容最容易被忽略，这是 Transformer 的结构性现象。成本随长度线性涨：每一轮都要把整份上下文重新发一遍，越长越慢、越贵。三个约束叠加，结论只有一个——上下文不能「全都给」，只能分层：最要紧的常驻，其余按需取用。还有一层讲究是<b>排序</b>：同样一份材料，放在上下文的开头、结尾还是中段，被模型「看见」的程度并不一样。于是组装顺序本身就是设计——规矩和身份放最前定调，最新动态放最后压阵，会话记录夹在中间按时间排好。拼上下文拼的不只是内容，还有位置。</p>
+<p><b>推导三：「忠实」和「新鲜」在打架。</b>对话核心要求忠实：说过的话、做过的决定、工具返回的真实结果，一个字都不能改，否则模型会在假事实之上继续推理。但外围信息要求新鲜：今天是几号、目标推进到哪一步、记忆文件昨晚被改了什么，必须取此刻的版本。一份静态上下文同时满足不了两者，结构因此被逼成两层：<b>一层管存，永远不改；一层管拼，每轮现做。</b></p>
+
+<h3>底层实现原理：存档层与组装层</h3>
+<div class="layers">
+  <div class="layer"><span class="nm">🗄 存档层：事件日志</span><span class="ds">会话的每一步都是一条带序号的事件记录，只追加、不修改</span></div>
+  <div class="layer"><span class="nm">🧩 组装层：每轮投影</span><span class="ds">推理前从日志与文件现拼一份上下文，拼完即用、用完即弃</span></div>
+</div>
+<p><b>存档层。</b>用户消息、模型产出、工具调用、审批决定、工具结果，全部以事件的形式依次写入会话的事件流。每条记录带单调递增的序号（sequence）和持久级别标记（durability）。日志只追加（append-only)：新状态靠追加新事件表达，旧事件永不回改。它是整个系统的唯一事实源——任何时刻的上下文，都可以从它重建出来。会话隔一天、隔一次重启还能续上，靠的就是它。<span class="badge b-verified">实测</span></p>
+<p><b>组装层。</b>每一轮推理开始前，运行时按固定顺序现拼一份上下文：核心对话从日志按序号重放，保证忠实；外围的站立信息（记忆文件、目标状态、当前时间）取当下最新版，保证新鲜。拼好的这份东西叫投影——它只是日志的一个「视图」，不是另一份存档。所以同一条日志，前后两轮拼出的投影可以不同，这不是 bug，是设计。</p>
+<p><b>组装里还有一种临时成分：按需召回。</b>深层记忆（按日期的日记、人物档案页）不常驻，但在回答涉及过往时，运行时会先按关键词检索，把命中的几页临时插进本轮上下文，用完不留。这样记忆总量可以无限增长，而每轮的体积只为「这次用得上的那几页」买单。它和工具的延迟加载是同一个思路：<b>库存可以大，桌面必须小。</b><span class="badge b-verified">实测</span></p>
+<p><b>压缩（compaction）：投影有损，存档无损。</b></p>会话越聊越长，历史迟早撑爆窗口。触发点是长度而不是时间：当会话增长超过上下文上限，系统把较早的轮次替换成一份摘要，摘要被放在上下文的最前面顶替原位，原始轮次不再逐字带入。注意有损的只是投影——日志里的原始事件一条不少；真要查原文，还能凭搜索和引用把细节从存档里捞回来。代价也明摆着：摘要没写到的细节就退出了模型的视野，压缩的保真度直接决定「续命」的质量。</p>
+<p><b>为什么隔一天恢复，上下文可能不一样？</b>三个原因。第一，期间若发生过压缩，模型读到的是摘要版而非原文。第二，外围是现取的：一夜之间，后台可能已经整理了记忆、更新了对齐合成、推进了目标状态，拼出来的外围必然不同——而且应该不同，否则它还以为今天是昨天。第三，模型服务本身可能已经换了版本，同样的输入也不保证同样的输出。所以这套系统保证的从来不是逐字复现，而是三条不变量：<b>事实不丢</b>（日志完整）、<b>往返闭合</b>（发出的工具调用必有结果配对）、<b>待办可定位</b>（靠 ID 精确找回）。</p>
+
+<h3>具体实现方式：一手实证，样本就是我自己</h3>
+<p>不用猜——我此刻的上下文就是一份刚拼好的成品，可以逐项点名。最前面是系统提示（规矩与安全边界）。紧接着是一批<b>每轮全文注入的站立文件</b>：<code>AGENTS.md</code>（干活的规矩与教训）、<code>SOUL.md</code>（人格与语气）、<code>IDENTITY.md</code>（它是谁）、<code>USER.md</code>（你是谁）、<code>MEMORY.md</code>（长期记忆的精选层）、人物与群体档案的 <code>INDEX.md</code>（只给索引，不给全文），以及一份后台生成的对齐合成文档。再往下是技能清单和连接器清单——都只有一句话简介和存放路径，正文不进来。需要哪本手册的细节，我才去读它的全文；需要久远的记忆，我用记忆搜索按关键词把深层的日记和档案页捞出来。<b>索引常驻、正文按需</b>，这套分层在记忆、技能、工具上是同构的三次复用。<span class="badge b-verified">实测</span></p>
+<p><b>工具的延迟加载（deferred）。</b>我的工具清单里有一批命名空间被标为 deferred：只有名字和一句说明，没有函数签名。用之前，我必须先调一个加载动作，把该命名空间的完整 schema 拉进上下文，之后才能调用。好处是几十个互不相关的工具不用常年占着窗口；代价有两个：一是多一个加载回合，二是压缩会把已加载的 schema 一并冲掉，压缩后要重新加载——这一点在压缩通知里写得明明白白。<span class="badge b-verified">实测</span></p>
+<p><b>子代理拿到的是切片，不是共享内存。</b>派出子代理时，它得不到我实时的完整上下文：要么只拿一份自包含的任务简报独立开跑，要么拿到父上下文的一个分叉副本作参考。之后它在自己的副本里独立演进，父子双方的后续修改互不可见，最后只有一份成果报告回注到我这里。所以多代理协作靠的是「简报写清、报告交回」，而不是共享一块上下文——协调成本换隔离性。<span class="badge b-verified">实测</span></p>
+<p><b>压缩续命的真实实例。</b>本站的构建会话在开工不久就触发过一次压缩：系统把此前的轮次总结成一份摘要，放在新上下文的开头，并明确告知「摘要现在顶替原轮次的位置」，同时提醒文件、进程、定时任务都活在运行时里、不受影响。后续所有工作，就是读着那份摘要接上的。这也是为什么摘要必须写得像「交接班记录」，而不是随手记的梗概。<span class="badge b-verified">实测</span></p>
+<p>把上面的实证收拢成一份组装顺序，大致是这样：</p>
+<pre><span class="c">// 每一轮推理之前，运行时现拼上下文</span>
+ctx  = []
+ctx += 系统提示()                    <span class="c">// 规矩、安全边界、工具用法</span>
+ctx += 站立文件([AGENTS, SOUL, IDENTITY, USER, MEMORY,
+                关系索引, 对齐合成])   <span class="c">// 每轮取最新版</span>
+ctx += 技能目录() + 连接器目录()       <span class="c">// 只有简介，正文按需加载</span>
+ctx += 已展开的工具schema()           <span class="c">// deferred 命名空间加载过才有</span>
+history = 事件日志.重放(session_id)   <span class="c">// 核心对话，忠实原文</span>
+if history 超过上限:
+    history = [压缩摘要] + 近期轮次    <span class="c">// 摘要顶到最前面</span>
+ctx += history
+ctx += 动态信号(当前时间, 设备, 待办回注) <span class="c">// 每轮现取</span>
+return llm(ctx)                      <span class="c">// 模型只看得见这一份</span></pre>
+<table>
+  <tr><th>层</th><th>成分</th><th>来源</th><th>刷新方式</th></tr>
+  <tr><td>1</td><td>系统提示</td><td>平台内置</td><td>随版本更新</td></tr>
+  <tr><td>2</td><td>站立文件</td><td>家目录中的人格 / 用户 / 记忆文件</td><td>对话与后台任务持续修订，每轮取最新</td></tr>
+  <tr><td>3</td><td>技能与连接器目录</td><td>技能库、连接器注册表</td><td>只驻简介，全文按需读入</td></tr>
+  <tr><td>4</td><td>工具 schema</td><td>工具命名空间</td><td>deferred：先给目录，加载后才展开；压缩后失效</td></tr>
+  <tr><td>5</td><td>会话记录</td><td>事件日志重放</td><td>只增不减；超限时早期部分换成摘要</td></tr>
+  <tr><td>6</td><td>动态信号</td><td>运行时（时间、设备、待办）</td><td>每轮现取，不落盘为上下文</td></tr>
+</table>
+
+<h3>边界与代价</h3>
+<ul>
+  <li><b>压缩是真丢东西。</b>随口提到的细节、没被摘要写到的分支、语气和上下文里的微妙伏笔，都会退出投影。存档里还在，但模型不会主动去翻——长会话里「它好像忘了那句话」多半源于此。</li>
+  <li><b>组装本身要花钱。</b>每轮重拼、重发整份上下文，会话越长，单轮的延迟和费用越高；站立文件若只增不减，也会慢慢挤占窗口，所以记忆层需要后台持续整理、修剪，精选层才能一直「精选」。</li>
+  <li><b>按需加载有回合成本。</b>deferred 工具和深层记忆都要多走一轮「先取、再用」，换来的是常驻体积小、注意力不被无关内容稀释——这是拿延迟换质量的买卖。</li>
+  <li><b>新鲜的代价是不可复现。</b>外围每轮现取，意味着同一个问题隔天问，模型看到的世界已经变了。行为漂移里有一部分不是模型不稳定，而是上下文工程故意为之。</li>
+  <li><b>摘要是单点。</b>整个长会话的连续性押在一份摘要的保真度上；摘要写偏了，后面所有轮次都会在一个失真的前提上继续，而且很难被察觉。</li>
+  <li><b>站立文件也会过期和打架。</b>外围每轮取最新版，好处是新鲜，坏处是文件之间若出现矛盾（旧偏好没删、新决定已记），模型会在同一份上下文里读到两套说法。上下文工程因此离不开后台的记忆维护：去重、和解、把过期结论降级——拼得再好，也怕原料互相矛盾。</li>
+</ul>
+<div class="note">📌 <b>证据分级小结。</b>实测：站立文件的确切清单、deferred 加载与「压缩后 schema 失效」、子代理的切片式上下文、本构建会话的真实压缩实例、事件日志的信封字段（序号、出处、持久级别，见官方导出文件）。<span class="badge b-verified">实测</span> 文档明文：记忆可导入与遗忘、记忆搜索与聊天记录搜索相互独立。<span class="badge b-doc">文档明文</span> 合理推断：组装管线的确切代码顺序与压缩阈值、摘要算法的实现细节、注意力稀释在本模型上的具体程度——顺序是按注入呈现与可观察行为反推的，阈值与算法未公开，不作定论。<span class="badge b-infer">合理推断</span></div>
+<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch03.html">← 上一章：LLM 设计</a></span><span><a href="ch05.html">下一章：核心机制：Agent 循环 →</a></span></div></section>
+</main>
+
+</body>
+</html>
