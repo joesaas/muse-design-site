@@ -144,67 +144,61 @@ td{color:#c3cee4}
 footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
+
+/* ===== chapter reading layout v2 ===== */
+.chpage main{max-width:920px}
+.chpage section{padding-top:42px;counter-reset:sec}
+.chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
+.chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
+.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+  padding:28px 32px 20px;margin:28px 0}
+.chpage .chunk:has(> h3){counter-increment:sec}
+.chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
+.chpage .chunk h3::before{content:counter(sec,decimal-leading-zero);flex:none;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
+  border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
+.chpage .chunk p b{color:#eef3ff}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
+.chpage .chunk pre{margin:18px 0}
+.chpage .chunk table{margin:18px 0}
+.chpage .chunk .note{margin:18px 0}
+.chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
+.chpage .chunk .layer{font-size:15px}
+@media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
 </style>
 </head>
-<body>
+<body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html" class="on">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
 <main>
-<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 4 · 信任</div><h2><span class="no">13</span>数据与隐私</h2><div class="one">一句话：数据与隐私治理管的是三件事——<b>你的数据被谁看、拿去做什么、你能怎么收回</b>。Muse 的答案不是「全都锁死」，而是分成两条轨道，再把控制权连同它的边界一起交给你。</div>
-
-<h3>一、先讲困境：越懂你，越要碰你的数据</h3>
-<p>个人 Agent 的价值来自「懂你」。要懂你，它就得读你的对话、文件、记忆，还要连上你的邮箱、日历、健康数据这些外部服务。读得越多越有用，出事时的伤害也越大。</p>
-<p>它知道你的东西从哪来，文档列得很清楚：以前的对话、保存的记忆、工作区里的产物和文件、你连接的 Meta 账号和第三方服务、还有配对的设备（比如手机）。五路来源，每一路都是一个潜在的暴露面。</p>
-<p>这是一个结构性矛盾，不是态度问题。不让它看，它退化成一个普通聊天机器人；放开让它看，就必须回答三个问题：谁能看、能看到哪一层、看完拿去干什么。</p>
-<p>还有一条常被忽略的限定：它访问你的信息、把信息发给外部服务，只能是为了完成你交办的那件事。目的限定不是装饰——没有这条，「为了帮你」可以被无限放大成任何用途。</p>
-<p>所以这套设计的出发点不是「零接触」，而是<b>接触有账、用途有界、收回有门</b>。后面的所有机制，都是在给这三句话兜底。</p>
-
-<h3>二、为什么是双轨，而不是一刀切最严</h3>
-<p>最容易想到的方案是全员按最严标准来：谁也看不见内容。但它的代价很实在——平台做不了安全审查，出了滥用没人拦得住；系统出了 bug，没法靠日志定位；产品也没法靠真实使用改进。</p>
-<p>反过来，全员按最松标准来，代价是信任：用户不敢把真东西交给它，Agent 永远只能处理无关痛痒的事，等于半残。</p>
-<p>双轨的做法，是把选择做成一档开关。<b>标准 VM</b> 走默认路线，换便利和可治理；<b>机密 VM</b> 给高敏感用户一条硬边界，连平台方都看不见内容。用户按自己的风险定价来选，而不是被一个标准绑住所有人。<span class="badge b-infer">合理推断</span></p>
-
-<h3>三、一条切分线：运维必须可见，内容必须不可见</h3>
-<p>任何在线系统想活下去，都必须知道自己健不健康：请求成没成、慢不慢、错在哪一环。这些是<b>运维信号</b>，本身不含内容。</p>
-<p>内容是另一回事：你说了什么、文件里有什么、从内容能推导出的话题和判断，都属于内容侧。</p>
-<p>机密轨道的关键，就是把这条线做进数据层，而不是停留在政策表态上：运维信号照常回传，内容一概不出。靠什么兜底？下面实现部分会讲——是硬件隔离和客户自持的密钥，不是「请相信我们」。</p>
-
-<h3>四、控制权为什么连边界一起交付</h3>
-<p>只给开关、不说边界，等于给虚假的安全感。比如用户点了「忘掉这件事」，以为全网删净了，其实别的地方还有记录。这种落差一旦被发现，砸掉的是整个信任。</p>
-<p>所以这套控制面有个特点：<b>每个控制动作，都附带它的效力范围</b>。能删到哪一层、删不到哪一层，明说在前面。宁可丑话说在前头，也不给一个「按了等于没按」的安慰按钮。这一条在第四部分会看到具体例子。</p>
-
-<h3>五、标准 VM：数据怎么流</h3>
-<ul>
+<section class="reveal in"><div class="part-head">PART 4 · 信任</div><h2><span class="no">13</span>数据与隐私</h2><div class="one">一句话：数据与隐私治理管的是三件事——<b>你的数据被谁看、拿去做什么、你能怎么收回</b>。Muse 的答案不是「全都锁死」，而是分成两条轨道，再把控制权连同它的边界一起交给你。</div>
+<div class="chunk"><h3>一、先讲困境：越懂你，越要碰你的数据</h3><p>个人 Agent 的价值来自「懂你」。要懂你，它就得读你的对话、文件、记忆，还要连上你的邮箱、日历、健康数据这些外部服务。读得越多越有用，出事时的伤害也越大。</p><p>它知道你的东西从哪来，文档列得很清楚：以前的对话、保存的记忆、工作区里的产物和文件、你连接的 Meta 账号和第三方服务、还有配对的设备（比如手机）。五路来源，每一路都是一个潜在的暴露面。</p><p>这是一个结构性矛盾，不是态度问题。不让它看，它退化成一个普通聊天机器人；放开让它看，就必须回答三个问题：谁能看、能看到哪一层、看完拿去干什么。</p><p>还有一条常被忽略的限定：它访问你的信息、把信息发给外部服务，只能是为了完成你交办的那件事。目的限定不是装饰——没有这条，「为了帮你」可以被无限放大成任何用途。</p><p>所以这套设计的出发点不是「零接触」，而是<b>接触有账、用途有界、收回有门</b>。后面的所有机制，都是在给这三句话兜底。</p></div>
+<div class="chunk"><h3>二、为什么是双轨，而不是一刀切最严</h3><p>最容易想到的方案是全员按最严标准来：谁也看不见内容。但它的代价很实在——平台做不了安全审查，出了滥用没人拦得住；系统出了 bug，没法靠日志定位；产品也没法靠真实使用改进。</p><p>反过来，全员按最松标准来，代价是信任：用户不敢把真东西交给它，Agent 永远只能处理无关痛痒的事，等于半残。</p><p>双轨的做法，是把选择做成一档开关。<b>标准 VM</b> 走默认路线，换便利和可治理；<b>机密 VM</b> 给高敏感用户一条硬边界，连平台方都看不见内容。用户按自己的风险定价来选，而不是被一个标准绑住所有人。<span class="badge b-infer">合理推断</span></p></div>
+<div class="chunk"><h3>三、一条切分线：运维必须可见，内容必须不可见</h3><p>任何在线系统想活下去，都必须知道自己健不健康：请求成没成、慢不慢、错在哪一环。这些是<b>运维信号</b>，本身不含内容。</p><p>内容是另一回事：你说了什么、文件里有什么、从内容能推导出的话题和判断，都属于内容侧。</p><p>机密轨道的关键，就是把这条线做进数据层，而不是停留在政策表态上：运维信号照常回传，内容一概不出。靠什么兜底？下面实现部分会讲——是硬件隔离和客户自持的密钥，不是「请相信我们」。</p></div>
+<div class="chunk"><h3>四、控制权为什么连边界一起交付</h3><p>只给开关、不说边界，等于给虚假的安全感。比如用户点了「忘掉这件事」，以为全网删净了，其实别的地方还有记录。这种落差一旦被发现，砸掉的是整个信任。</p><p>所以这套控制面有个特点：<b>每个控制动作，都附带它的效力范围</b>。能删到哪一层、删不到哪一层，明说在前面。宁可丑话说在前头，也不给一个「按了等于没按」的安慰按钮。这一条在第四部分会看到具体例子。</p></div>
+<div class="chunk"><h3>五、标准 VM：数据怎么流</h3><ul>
 <li><b>记录与审查</b>：在标准 VM 上，你的交互和 Agent 的动作可能被 Meta 记录并审查。文档写明的用途有四类：安全、安保、调试、产品改进。<span class="badge b-doc">文档明文</span></li>
 <li><b>不是端到端加密</b>：标准 VM 上的对话不做端到端加密。文档直说，不藏着掖着。</li>
 <li><b>用于 AI 训练</b>：标准 VM 上的对话会用于 Meta 的 AI 发展。退出开关在 Settings &gt; Data Controls（设置 → 数据控制）里，账号级的这个选择也可以从一台标准电脑上更改。</li>
 <li><b>注意效力的边界</b>：退出训练管的是「用于训练」这一件事。它不等于「不记录、不审查」。两个开关是两回事，别混为一谈。</li>
-</ul>
-
-<h3>六、机密 VM：硬边界怎么搭起来</h3>
-<ul>
+</ul></div>
+<div class="chunk"><h3>六、机密 VM：硬边界怎么搭起来</h3><ul>
 <li><b>计算侧</b>：VM 本身，以及它依赖的内部处理服务，都跑在硬件可信执行环境（TEE）里。<span class="badge b-doc">文档明文</span></li>
 <li><b>存储侧</b>：用户数据和状态的全部持久存储，用客户自持并管理的密钥加密。密钥不在平台手里，密文给出去也解不开。</li>
 <li><b>内容侧</b>：Meta 接触不到你的提示词、回复、文件，也接触不到由这些内容推导出的信息。连「话题标签」「安全违规标签」这类衍生信息，都在保护范围内。</li>
 <li><b>为什么连退出训练的开关都没有</b>：因为机密轨道的交互根本不用于训练，没有可退的东西，开关自然缺席。账号级的训练选择，仍然可以从一台标准电脑上改，轨道按 VM 分，不锁死账号。</li>
-</ul>
-
-<h3>七、元数据通道：还回传什么</h3>
-<p>机密不等于失联。平台仍然需要知道服务活着没有，所以有一条单独的元数据通道：</p>
-<pre>回传的：  服务健康状态
+</ul></div>
+<div class="chunk"><h3>七、元数据通道：还回传什么</h3><p>机密不等于失联。平台仍然需要知道服务活着没有，所以有一条单独的元数据通道：</p><pre>回传的：  服务健康状态
           请求时延
           成功 / 失败代码
           可能包含账号与 VM 标识
 不回传的：提示词、回复、文件本体
-          任何由内容推导出的信息   <span class="c">// 话题、标签、判断都不行</span></pre>
-<p>所以元数据<b>不必然匿名</b>：它能定位到「哪台 VM 出了问题」，但看不到「里面在聊什么」。这是运维的最低需求，也是隐私的明确上限——线画在这里，双方都清楚。</p>
-<p>为什么不把标识也去掉、做成彻底匿名？因为标识一去，故障就没法定位到具体实例，用户报障时平台只能两眼一抹黑。这是拿「可维修性」换「匿名性」的权衡点，文档选择把代价明说，而不是假装元数据天然无害。<span class="badge b-infer">合理推断</span></p>
-
-<h3>八、广告隔离：承诺的原文口径</h3>
-<p>文档的表述是：Muse 不把你的对话、以及虚拟机里的数据，共享给 Meta 的广告系统。哪怕你的账号中心里还连着其他 Meta 产品，这条同样成立。<span class="badge b-doc">文档明文</span></p>
-<p>注意这条承诺的射程：它管的是「共享给广告系统」这一件事。它不自动延伸到别的用途，更不替其他 Meta 产品背书——别的产品怎么处理数据，看它们自己的政策。把话说准，承诺才算数。</p>
-
-<h3>九、两轨对照</h3>
-<table>
+          任何由内容推导出的信息   <span class="c">// 话题、标签、判断都不行</span></pre><p>所以元数据<b>不必然匿名</b>：它能定位到「哪台 VM 出了问题」，但看不到「里面在聊什么」。这是运维的最低需求，也是隐私的明确上限——线画在这里，双方都清楚。</p><p>为什么不把标识也去掉、做成彻底匿名？因为标识一去，故障就没法定位到具体实例，用户报障时平台只能两眼一抹黑。这是拿「可维修性」换「匿名性」的权衡点，文档选择把代价明说，而不是假装元数据天然无害。<span class="badge b-infer">合理推断</span></p></div>
+<div class="chunk"><h3>八、广告隔离：承诺的原文口径</h3><p>文档的表述是：Muse 不把你的对话、以及虚拟机里的数据，共享给 Meta 的广告系统。哪怕你的账号中心里还连着其他 Meta 产品，这条同样成立。<span class="badge b-doc">文档明文</span></p><p>注意这条承诺的射程：它管的是「共享给广告系统」这一件事。它不自动延伸到别的用途，更不替其他 Meta 产品背书——别的产品怎么处理数据，看它们自己的政策。把话说准，承诺才算数。</p></div>
+<div class="chunk"><h3>九、两轨对照</h3><table>
 <tr><th>维度</th><th>标准 VM</th><th>机密 VM</th></tr>
 <tr><td>内容谁能看到</td><td>Meta 可能记录并审查（安全、安保、调试、改进）</td><td>Meta 接触不到内容及其衍生信息</td></tr>
 <tr><td>内容在哪处理</td><td>普通环境，对话非端到端加密</td><td>硬件可信执行环境（TEE）内</td></tr>
@@ -212,45 +206,31 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 <tr><td>持久存储</td><td>文档未特别说明密钥安排</td><td>客户自持并管理的密钥加密</td></tr>
 <tr><td>运营元数据</td><td>交互与动作本身即可能被记录</td><td>仅健康、时延、成败码，可能含账号与 VM 标识，不含内容</td></tr>
 <tr><td>适合谁</td><td>默认轨道，图便利和可治理</td><td>对内容保密有硬要求的用户</td></tr>
-</table>
-
-<h3>十、用户控制面清单</h3>
-<div class="grid">
+</table></div>
+<div class="chunk"><h3>十、用户控制面清单</h3><div class="grid">
 <div class="card"><h4>在聊天里直接吩咐</h4><p>记住、更新、忘掉某件事，不用进设置，张口就行。</p></div>
 <div class="card"><h4>导出</h4><p>Settings &gt; Data Controls 可以导出并下载你的信息，拿走你自己的副本。</p></div>
 <div class="card"><h4>删除单项</h4><p>消息、侧聊天、文件，都可以删，也可以直接让 Agent 删。</p></div>
 <div class="card"><h4>健康数据擦除</h4><p>每次擦除都要一次新鲜批准。注意：手机上还在的数据，下次同步可能再回来——擦掉的是 Muse 这一侧的副本。</p></div>
 <div class="card"><h4>Reset 一键全删</h4><p>Settings &gt; Data Controls → Reset，永久删除聊天历史、文件和正在进行的任务。这是核按钮，按了不可逆。</p></div>
 <div class="card"><h4>连接管理</h4><p>连哪些账号、每个给什么权限，由你定。在设置或 Meta 账号中心管账号，在 Muse 设置里管每个已连应用能做什么。</p></div>
-</div>
-<p>另外，语音输入只有一条规矩：<b>必须由用户主动发起</b>。没有环境监听，没有后台偷听，Agent 自己开不了麦克风。<span class="badge b-doc">文档明文</span></p>
-<p>还有两个小但具体的点：存储快满时系统会给出提示，删文件可以腾出空间——控制权也包括「知道自己还剩多少地方」；你在哪个渠道找到它，都是同一个它、同一套记忆和同一套已连接服务，换渠道不会凭空多出一份数据，也不会少一份保护。</p>
-
-<h3>十一、「删记忆 ≠ 删尽所有记录」：边界在哪</h3>
-<p>文档明说：删掉一条记忆，本身不等于删掉那条信息的所有记录。<span class="badge b-doc">文档明文</span></p>
-<p>道理不难懂。记忆只是「Agent 对你的认识」，不是数据的唯一副本。同一件事，可能同时存在于对话记录里、文件里、其他留存里。删记忆，删掉的是认识那一层。</p>
-<p>所以先分清你要的是哪种：只想让它以后不再拿这件事说事，删记忆就够；想彻底清掉，用 Reset 走全量删除。搞清目标，再按对应的按钮——这正是第二部分说的「控制权连边界一起交付」。</p>
-
-<h3>十二、边界与代价</h3>
-<ul>
+</div><p>另外，语音输入只有一条规矩：<b>必须由用户主动发起</b>。没有环境监听，没有后台偷听，Agent 自己开不了麦克风。<span class="badge b-doc">文档明文</span></p><p>还有两个小但具体的点：存储快满时系统会给出提示，删文件可以腾出空间——控制权也包括「知道自己还剩多少地方」；你在哪个渠道找到它，都是同一个它、同一套记忆和同一套已连接服务，换渠道不会凭空多出一份数据，也不会少一份保护。</p></div>
+<div class="chunk"><h3>十一、「删记忆 ≠ 删尽所有记录」：边界在哪</h3><p>文档明说：删掉一条记忆，本身不等于删掉那条信息的所有记录。<span class="badge b-doc">文档明文</span></p><p>道理不难懂。记忆只是「Agent 对你的认识」，不是数据的唯一副本。同一件事，可能同时存在于对话记录里、文件里、其他留存里。删记忆，删掉的是认识那一层。</p><p>所以先分清你要的是哪种：只想让它以后不再拿这件事说事，删记忆就够；想彻底清掉，用 Reset 走全量删除。搞清目标，再按对应的按钮——这正是第二部分说的「控制权连边界一起交付」。</p></div>
+<div class="chunk"><h3>十二、边界与代价</h3><ul>
 <li><b>机密轨道不是无边界的</b>：你让 Agent 调外部服务干活，信息必然发到轨道外，对方按自己的条款处理，不再受这条边界保护。</li>
 <li><b>主动分享出去的也不在界内</b>：发布到外面的内容、你选作反馈或排障材料交给 Meta 的内容，都在界外。反馈流程必须明说「这会共享」；而且分享选中内容，只开放那一部分，不开放其余内容。</li>
 <li><b>这道门只能从里面开</b>：机密轨道下，平台想看内容只有一个合法入口——你主动选一份内容去反馈或排障。流程必须把「这会共享、共享后作何用途」说在前面，你点头才算数。除此之外没有后门，这也是「硬边界」和「政策承诺」的分界线：前者靠机制，后者靠自觉。</li>
 <li><b>标准轨道的代价是信任成本</b>：记录与审查真实存在，靠的是政策约束和退出开关，用户要自己权衡。</li>
 <li><b>机密轨道的代价是兜底变弱</b>：平台看不见内容，也就没法在内容层替你审查和兜底；外部服务一介入，边界就只剩段落性的。</li>
 <li><b>双轨本身也有代价</b>：同一套功能要在两种数据规则下都成立，工程和测试都要做两遍；用户也要多学一课——先搞清自己在哪条轨道上，文档里的每句承诺才对得上号。复杂度，就是为选择权付的价钱。</li>
-</ul>
-
-<h3>十三、证据分级小结：哪些未知就是未知</h3>
-<ul>
+</ul></div>
+<div class="chunk"><h3>十三、证据分级小结：哪些未知就是未知</h3><ul>
 <li><b>具体保留期限</b>：文档没有给数字。不猜。</li>
 <li><b>人工审查的流程细节</b>：谁来审、审多少、怎么抽，文档没写。</li>
 <li><b>TEE 的厂商与实现</b>：文档只说「硬件可信执行环境」，没有点名任何厂商方案。</li>
 <li><b>标准 VM 的存储密钥安排</b>：文档未特别说明，本章不替它补。</li>
 <li><b>权威来源不在本章</b>：真正算数的是 Meta 隐私政策与 Muse 的服务条款、隐私政策。本章依据的官方说明文档自己也定位为通则，细节以那些政策原文为准。</li>
-</ul>
-<div class="note">📌 本章主体事实均来自官方数据说明文档（data-handling），已随文标注「文档明文」；「双轨是让用户按风险定价」「开关缺席本身是声明」属于解读层面的合理推断；凡文档未给的期限、流程与实现细节，一律列为未知，不编造。</div>
-<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch12.html">← 上一章：安全设计</a></span><span><a href="ch14.html">下一章：页面交互与多端 →</a></span></div></section>
+</ul><div class="note">📌 本章主体事实均来自官方数据说明文档（data-handling），已随文标注「文档明文」；「双轨是让用户按风险定价」「开关缺席本身是声明」属于解读层面的合理推断；凡文档未给的期限、流程与实现细节，一律列为未知，不编造。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch12.html">← 上一章：安全设计</a></span><span><a href="ch14.html">下一章：页面交互与多端 →</a></span></div></section>
 </main>
 
 </body>
