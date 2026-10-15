@@ -144,19 +144,39 @@ td{color:#c3cee4}
 footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
+
+/* ===== chapter reading layout v2 ===== */
+.chpage main{max-width:920px}
+.chpage section{padding-top:42px;counter-reset:sec}
+.chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
+.chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
+.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+  padding:28px 32px 20px;margin:28px 0}
+.chpage .chunk:has(> h3){counter-increment:sec}
+.chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
+.chpage .chunk h3::before{content:counter(sec,decimal-leading-zero);flex:none;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
+  border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
+.chpage .chunk p b{color:#eef3ff}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
+.chpage .chunk pre{margin:18px 0}
+.chpage .chunk table{margin:18px 0}
+.chpage .chunk .note{margin:18px 0}
+.chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
+.chpage .chunk .layer{font-size:15px}
+@media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
 </style>
 </head>
-<body>
+<body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html" class="on">19 一次真实交互的全程解剖</a></nav>
 <main>
-<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 6 · 实证</div><h2><span class="no">19</span>一次真实交互的全程解剖</h2><div class="one">一句话：这一章不讲道理，只验尸——把一条<b>真实导出的轨迹</b>摊开，一条命令 <code>rm -rf stale_cache.txt</code> 从被拦下到被执行完，十条事件逐字段看完。<span class="badge b-verified">实测</span></div>
-
-<p>先交代这份材料的出身。它是官方 Cookbook 随附的轨迹导出（导出器自报 <code>Muse Code 0.1.0</code>，<code>redaction: "raw"</code>，即未脱敏原文）。整条会话的元数据是：<code>session_id</code> 为 c7dfaecc…，<code>trajectory_id</code> 为 trajectory_c7dfaecc…，<code>root_session_id</code> 与 session_id 相同（说明它就是根会话，不是子代理派生的）；共 <b>2 个 turn、230 个 step</b>；<code>accepted_spawns</code> 为空数组（没派过子代理）；<code>session_end</code> 是 <code>{exit_reason: "clean", uptime_ms: 153580}</code>——正常结束，存活约 153 秒。另有一处如实记录：<code>saw_history_gap: true</code>，导出自己承认这条轨迹的历史存在缺口，所以下面只解剖证据完整的那一段。</p>
-
-<p>我们看的切片是 <b>step 190–199</b>，对应事件流序号 <b>seq 193–202</b>，共十条记录。一条高危命令的完整一生：被请求、被等待、被裁决、被接纳、被调度、被声明、被执行，全在里面。</p>
-
-<h3>第 0 步 · 信封：十条记录共用的外壳</h3>
-<pre>envelope: {
+<section class="reveal in"><div class="part-head">PART 6 · 实证</div><h2><span class="no">19</span>一次真实交互的全程解剖</h2><div class="one">一句话：这一章不讲道理，只验尸——把一条<b>真实导出的轨迹</b>摊开，一条命令 <code>rm -rf stale_cache.txt</code> 从被拦下到被执行完，十条事件逐字段看完。<span class="badge b-verified">实测</span></div>
+<div class="chunk"><p>先交代这份材料的出身。它是官方 Cookbook 随附的轨迹导出（导出器自报 <code>Muse Code 0.1.0</code>，<code>redaction: "raw"</code>，即未脱敏原文）。整条会话的元数据是：<code>session_id</code> 为 c7dfaecc…，<code>trajectory_id</code> 为 trajectory_c7dfaecc…，<code>root_session_id</code> 与 session_id 相同（说明它就是根会话，不是子代理派生的）；共 <b>2 个 turn、230 个 step</b>；<code>accepted_spawns</code> 为空数组（没派过子代理）；<code>session_end</code> 是 <code>{exit_reason: "clean", uptime_ms: 153580}</code>——正常结束，存活约 153 秒。另有一处如实记录：<code>saw_history_gap: true</code>，导出自己承认这条轨迹的历史存在缺口，所以下面只解剖证据完整的那一段。</p><p>我们看的切片是 <b>step 190–199</b>，对应事件流序号 <b>seq 193–202</b>，共十条记录。一条高危命令的完整一生：被请求、被等待、被裁决、被接纳、被调度、被声明、被执行，全在里面。</p></div>
+<div class="chunk"><h3>第 0 步 · 信封：十条记录共用的外壳</h3><pre>envelope: {
   schema_version: 1,
   id: "9bf5c543-…",               <span class="c">// 本条记录自己的 UUID，每条都不同</span>
   stream: { kind: "session", id: "c7dfaecc-…" },
@@ -170,12 +190,8 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
   payload: { … }                  <span class="c">// 正文，各步不同</span>
 }
 derived: { session_id, trajectory_id, step_id: 190,
-           turn_count: 2, decoded: true }</pre>
-<p>三个细节值得先记住。第一，<code>derived</code> 是导出时算出的索引层：不用解开 payload，就能按 session、step、turn 定位每条记录；其中 <code>decoded: true</code> 表示导出时这条 payload 能被完整解开，没有解不开的黑盒。第二，<code>causation_id</code> 这个「因果链」字段在十条记录里全是 null——这条链的配对并不靠它，靠的是 payload 里的业务 ID（后面会看到）。第三，时间：十条记录的 <code>recorded_at</code> 从 …894205 到 …898190，<b>总跨度 3985 微秒，约 4 毫秒</b>；相邻两条的间隔都在 296–796 微秒之间，是同一次机器处理里连着落盘的节奏。这个数字先放这儿，第 5 步揭晓它意味着什么。</p>
-<p>还有一个坐标上的小发现：sequence 从 193 起，step_id 从 190 起，两者始终差 3。两种计数数的不是同一样东西——sequence 是这条 session 流里的事件序号，step_id 是轨迹的步数坐标，原点不同、步长相同，所以差值恒定。读这类导出时先把坐标系对齐，后面才不会把「第几条事件」和「第几步」混为一谈。另外注意 payload 里反复出现的三层流引用：<code>session_stream</code>、<code>run_stream</code>、<code>task_stream</code>——同一件事在会话、运行、任务三条流上都有坐标，事件写在哪条流、引用哪几条流，是这套结构组织数据的骨架。</p>
-
-<h3>第 1 步 · seq 193：审批被发起（approval / requested）</h3>
-<pre>payload: { kind: "approval", run_id: "002a75f8-…",
+           turn_count: 2, decoded: true }</pre><p>三个细节值得先记住。第一，<code>derived</code> 是导出时算出的索引层：不用解开 payload，就能按 session、step、turn 定位每条记录；其中 <code>decoded: true</code> 表示导出时这条 payload 能被完整解开，没有解不开的黑盒。第二，<code>causation_id</code> 这个「因果链」字段在十条记录里全是 null——这条链的配对并不靠它，靠的是 payload 里的业务 ID（后面会看到）。第三，时间：十条记录的 <code>recorded_at</code> 从 …894205 到 …898190，<b>总跨度 3985 微秒，约 4 毫秒</b>；相邻两条的间隔都在 296–796 微秒之间，是同一次机器处理里连着落盘的节奏。这个数字先放这儿，第 5 步揭晓它意味着什么。</p><p>还有一个坐标上的小发现：sequence 从 193 起，step_id 从 190 起，两者始终差 3。两种计数数的不是同一样东西——sequence 是这条 session 流里的事件序号，step_id 是轨迹的步数坐标，原点不同、步长相同，所以差值恒定。读这类导出时先把坐标系对齐，后面才不会把「第几条事件」和「第几步」混为一谈。另外注意 payload 里反复出现的三层流引用：<code>session_stream</code>、<code>run_stream</code>、<code>task_stream</code>——同一件事在会话、运行、任务三条流上都有坐标，事件写在哪条流、引用哪几条流，是这套结构组织数据的骨架。</p></div>
+<div class="chunk"><h3>第 1 步 · seq 193：审批被发起（approval / requested）</h3><pre>payload: { kind: "approval", run_id: "002a75f8-…",
  event: { kind: "requested",
   pending_action_id: "a54bb4eb-…",
   task_id: "a54bb4eb-…",              <span class="c">// 与 pending 同值</span>
@@ -204,9 +220,7 @@ derived: { session_id, trajectory_id, step_id: 190,
       decision: { kind: "approved_policy_amendment", … } },
     { choice_id: "abort", label: "Reject",
       decision: { kind: "abort" } } ],
-  candidate_decisions: [ … ] } }</pre>
-<p>这一条是十条里最胖的，因为它要把「批什么、能怎么批」一次说全：</p>
-<ul>
+  candidate_decisions: [ … ] } }</pre><p>这一条是十条里最胖的，因为它要把「批什么、能怎么批」一次说全：</p><ul>
 <li><b>raw_args 全文保存</b>：模型给 bash 的参数一个字不改地存下来，包括 workdir、shell、连 tty 和 yield_time_ms 都在。审批审的是原文，不是摘要——日后对账，账本里就是这串字符。</li>
 <li><b>命令被结构化拆解</b>：approval_subject 把命令拆成 stages（本例只有 1 段），每段有 requirement_id、argv 数组、argv_complete 标记。为什么拆？复合命令可以逐段裁决，而不是整条一刀切。这次只有一段，所以 source_index 0、total_stages 1。</li>
 <li><b>prefix_candidates 与 suggested_prefix</b>：系统把 argv 的各级前缀都算了出来（<code>["rm"]</code>、<code>["rm","-rf"]</code>、全命令），还附了一份建议前缀及其出处（提取器版本、语法包 <code>@withfig/autocomplete</code> 的版本与哈希）。这是给「长期放行」选项准备的弹药：放行哪一级前缀，要有据可查，不能拍脑袋。</li>
@@ -216,31 +230,23 @@ derived: { session_id, trajectory_id, step_id: 190,
 <li><b>candidate_decisions 是给裁决方的速览表</b>：三个候选结论各带一个 matcher 字段：approved 的 matcher 为 null（直接裁决即可）、approved_policy_amendment 的 matcher 是 shell_command_argv_prefix（要走前缀匹配这条路）、abort 的为 null。它和 available_choices 的区别是：choices 是给人看的选项（带 label），candidates 是给裁决逻辑看的索引。</li>
 <li><b>suggested_prefix 的 provenance（出处链）</b>：建议前缀不只给结论，还给全套出处——extractor_version（claude-code-2.1.207）、行为语料的版本与 SHA-256、语法包 <code>@withfig/autocomplete</code> 的版本号、git head、dist 完整性哈希、归一化 JSON 的哈希。一个「建议」都附带可复算的出处，这是整份导出的一贯风格：任何自动生成的判断，都要能回答「你凭什么」。</li>
 <li><b>execution_context 与 current_requirement_id</b>：前者把 canonical_workspace_root 再钉一次——执行环境的工作区根目录以规范化路径为准，不许用相对路径蒙混；后者指明当前正等待裁决的是哪个 requirement（就是 source_index 0 那个），让审批界面不用遍历 stages 也知道先处理哪一段。</li>
-</ul>
-
-<h3>第 2 步 · seq 194：等待开始（approval_wait.effect.started）</h3>
-<pre>payload_type: "approval_wait.effect.started"
+</ul></div>
+<div class="chunk"><h3>第 2 步 · seq 194：等待开始（approval_wait.effect.started）</h3><pre>payload_type: "approval_wait.effect.started"
 payload: { kind: "approval_wait_effect", run_id: "002a75f8-…",
  record: { kind: "started",
    pending_action_id: "a54bb4eb-…", task_id: "a54bb4eb-…",
    run_stream: { kind: "run", id: "002a75f8-…" },
    task_stream: { kind: "task", id: "a54bb4eb-…" },
-   tool_call_id: "call_019fc441…", tool_name: "bash" } }</pre>
-<p>注意 payload_type 变了：上一条是 runtime.session（会话事件），这条是独立的 effect 事件。它只带配对所需的最小信息：哪个 pending、哪个 task、哪个 tool_call。为什么要单独有这么一条？因为「等待」本身被建模成一个有生命周期的对象——有 started，就必须有 terminal 来关它。流程的挂起状态不写在任何进程里，就写在这条记录里；进程死了、机器换了，这条 started 还在，等待就还在。</p>
-
-<h3>第 3 步 · seq 195：单个 stage 的裁决落定（stage_requirement_resolved）</h3>
-<pre>event: { kind: "stage_requirement_resolved",
+   tool_call_id: "call_019fc441…", tool_name: "bash" } }</pre><p>注意 payload_type 变了：上一条是 runtime.session（会话事件），这条是独立的 effect 事件。它只带配对所需的最小信息：哪个 pending、哪个 task、哪个 tool_call。为什么要单独有这么一条？因为「等待」本身被建模成一个有生命周期的对象——有 started，就必须有 terminal 来关它。流程的挂起状态不写在任何进程里，就写在这条记录里；进程死了、机器换了，这条 started 还在，等待就还在。</p></div>
+<div class="chunk"><h3>第 3 步 · seq 195：单个 stage 的裁决落定（stage_requirement_resolved）</h3><pre>event: { kind: "stage_requirement_resolved",
   pending_action_id: "a54bb4eb-…",
   requirement_id: { pending_action_id: "a54bb4eb-…",
                     source_index: 0 },
   choice_id: "direct:{\"kind\":\"approved\"}",
   decision: "approved", policy_result: "allow",
   amendment: null,
-  resolution: { kind: "allow_once" } }</pre>
-<p>裁决是按 stage 粒度落的：requirement_id 精确指回第 1 步那个 source_index 0 的段。三个字段各管一件事：<code>decision</code> 是裁决本身（approved）；<code>policy_result</code> 是它在策略层的结果（allow）；<code>resolution</code> 是生效方式（allow_once，只许这一次）。<code>amendment</code> 为 null，说明裁决方没有顺带写入策略修订——如果选的是「永久放行前缀」，这里就会躺着那条新规则。<code>choice_id</code> 是个有意思的编码：<code>direct:{"kind":"approved"}</code>，把「直接裁决、内容是 approved」压进了一个字符串里。</p>
-
-<h3>第 4 步 · seq 196：裁决被正式应用（decision_applied）</h3>
-<pre>event: { kind: "decision_applied",
+  resolution: { kind: "allow_once" } }</pre><p>裁决是按 stage 粒度落的：requirement_id 精确指回第 1 步那个 source_index 0 的段。三个字段各管一件事：<code>decision</code> 是裁决本身（approved）；<code>policy_result</code> 是它在策略层的结果（allow）；<code>resolution</code> 是生效方式（allow_once，只许这一次）。<code>amendment</code> 为 null，说明裁决方没有顺带写入策略修订——如果选的是「永久放行前缀」，这里就会躺着那条新规则。<code>choice_id</code> 是个有意思的编码：<code>direct:{"kind":"approved"}</code>，把「直接裁决、内容是 approved」压进了一个字符串里。</p></div>
+<div class="chunk"><h3>第 4 步 · seq 196：裁决被正式应用（decision_applied）</h3><pre>event: { kind: "decision_applied",
   pending_action_id: "a54bb4eb-…",
   decision: "approved", policy_result: "allow",
   amendment: null,
@@ -250,47 +256,27 @@ payload: { kind: "approval_wait_effect", run_id: "002a75f8-…",
     resolution: { kind: "allow_once" } } ],
   decision_source: { kind: "llm_judge",
     prompt_version: 1, params_version: 2,
-    context_digest: "sha256:092e6c96…" } }</pre>
-<p>为什么 resolved 之后还要一条 applied？因为「作出裁决」和「裁决生效」是两个时刻：前者是某段的结论，后者是把全部 stage 的证据汇总、钉成正式记录。<code>stage_evidence</code> 就是证据袋：每个 stage 的 argv 原样再存一份——被批准的到底是哪几个参数，白纸黑字，不许事后口径漂移。<code>decision_source</code> 记录裁决者是谁、用的第几版提示词与参数、以及裁决那一刻上下文的 SHA-256 指纹（context_digest）。有了指纹，任何一次裁决都能回答「它当时是看着什么做的决定」，且可复算验证。</p>
-
-<h3>第 5 步 · 关于裁决者：这条轨迹的批人不是人</h3>
-<p><code>decision_source.kind</code> 写得明明白白：<code>llm_judge</code>。也就是说，这份官方演示轨迹里的审批，是由一个自动裁判（LLM judge）完成的，不是真人点击。第 0 步那个「全程约 4 毫秒」的时间跨度与此完全吻合——真人不可能在 4 毫秒里看完命令并点批准。如实说明这一点，不影响结构的真实性：事件类型、字段、配对方式都是产品真实用的那套；只是坐在裁决位上的，在这条演示轨迹里是自动裁判，在真实产品使用中可以是用户本人。seq 200 里还会出现 <code>policy_decision: "allow:llm_judge"</code>，把这次裁决的依据一路带到执行门口。</p>
-
-<h3>第 6 步 · seq 197：等待终结（approval_wait.effect.terminal）</h3>
-<pre>payload_type: "approval_wait.effect.terminal"
+    context_digest: "sha256:092e6c96…" } }</pre><p>为什么 resolved 之后还要一条 applied？因为「作出裁决」和「裁决生效」是两个时刻：前者是某段的结论，后者是把全部 stage 的证据汇总、钉成正式记录。<code>stage_evidence</code> 就是证据袋：每个 stage 的 argv 原样再存一份——被批准的到底是哪几个参数，白纸黑字，不许事后口径漂移。<code>decision_source</code> 记录裁决者是谁、用的第几版提示词与参数、以及裁决那一刻上下文的 SHA-256 指纹（context_digest）。有了指纹，任何一次裁决都能回答「它当时是看着什么做的决定」，且可复算验证。</p></div>
+<div class="chunk"><h3>第 5 步 · 关于裁决者：这条轨迹的批人不是人</h3><p><code>decision_source.kind</code> 写得明明白白：<code>llm_judge</code>。也就是说，这份官方演示轨迹里的审批，是由一个自动裁判（LLM judge）完成的，不是真人点击。第 0 步那个「全程约 4 毫秒」的时间跨度与此完全吻合——真人不可能在 4 毫秒里看完命令并点批准。如实说明这一点，不影响结构的真实性：事件类型、字段、配对方式都是产品真实用的那套；只是坐在裁决位上的，在这条演示轨迹里是自动裁判，在真实产品使用中可以是用户本人。seq 200 里还会出现 <code>policy_decision: "allow:llm_judge"</code>，把这次裁决的依据一路带到执行门口。</p></div>
+<div class="chunk"><h3>第 6 步 · seq 197：等待终结（approval_wait.effect.terminal）</h3><pre>payload_type: "approval_wait.effect.terminal"
 payload: { kind: "approval_wait_effect", run_id: "002a75f8-…",
  record: { kind: "terminal",
    pending_action_id: "a54bb4eb-…",
-   outcome: { kind: "approved" } } }</pre>
-<p>这是与第 2 步配对的那一半：同一个 kind（approval_wait_effect）、同一个 pending_action_id，一个 started、一个 terminal，中间夹着裁决的两条记录。恢复逻辑要找「还没关上的等待」，就是在流里找有 started 无 terminal 的 pending_action_id；要找「刚被放行的动作」，就看 terminal 的 outcome。这条记录本身极简，因为它需要的只是「关门」这个事实和结论。</p>
-
-<h3>第 7 步 · seq 198：任务被接纳（task / accepted）</h3>
-<pre>payload: { kind: "task", run_id: "002a75f8-…",
+   outcome: { kind: "approved" } } }</pre><p>这是与第 2 步配对的那一半：同一个 kind（approval_wait_effect）、同一个 pending_action_id，一个 started、一个 terminal，中间夹着裁决的两条记录。恢复逻辑要找「还没关上的等待」，就是在流里找有 started 无 terminal 的 pending_action_id；要找「刚被放行的动作」，就看 terminal 的 outcome。这条记录本身极简，因为它需要的只是「关门」这个事实和结论。</p></div>
+<div class="chunk"><h3>第 7 步 · seq 198：任务被接纳（task / accepted）</h3><pre>payload: { kind: "task", run_id: "002a75f8-…",
   task_id: "a54bb4eb-…",
-  event: { kind: "accepted", task_id: "a54bb4eb-…" } }</pre>
-<p>从这里起，payload 的 kind 从 approval 切换为 task，payload_schema_version 也从 2 降为 1（两类事件各自演进）。审批通过不等于立刻执行：动作先回到任务系统，被正式「接纳」。为什么多这一跳？因为审批和执行是两个子系统，审批只负责放行与否，任务系统才负责排队、调度、留痕。accepted 就是两个系统之间的交接单。补一句版本细节：整条切片里，approval 类的三条 runtime.session 事件用的是 payload_schema_version 2，task 类的四条用 1，两类 effect 事件也用 1——版本号是按 payload 类型各自独立的，说明这几类事件的格式在不同时间点冻结，读取端必须按类型分别解码，不能指望一个版本号管全部。</p>
-
-<h3>第 8 步 · seq 199：任务被调度（task / scheduled）</h3>
-<pre>event: { kind: "scheduled", task_id: "a54bb4eb-…",
-  idempotency_key: "tool:call_019fc441e26273d18c2dc570b154c39c" }</pre>
-<p><code>idempotency_key</code> 第二次出现。它在第 1 步由 tool_call_id 派生（<code>tool:</code> 前缀 + call id），在调度这一步被再次写明。理由很实际：调度可能重试、恢复可能重放，执行端认的是这把钥匙——同一把钥匙只执行一次。把钥匙在每个关键环节都显式带上，而不是指望谁「记得」，是这套数据结构的通用手法。</p>
-
-<h3>第 9 步 · seq 200：副作用意图声明（task / side_effect_intent）</h3>
-<pre>event: { kind: "side_effect_intent", task_id: "a54bb4eb-…",
+  event: { kind: "accepted", task_id: "a54bb4eb-…" } }</pre><p>从这里起，payload 的 kind 从 approval 切换为 task，payload_schema_version 也从 2 降为 1（两类事件各自演进）。审批通过不等于立刻执行：动作先回到任务系统，被正式「接纳」。为什么多这一跳？因为审批和执行是两个子系统，审批只负责放行与否，任务系统才负责排队、调度、留痕。accepted 就是两个系统之间的交接单。补一句版本细节：整条切片里，approval 类的三条 runtime.session 事件用的是 payload_schema_version 2，task 类的四条用 1，两类 effect 事件也用 1——版本号是按 payload 类型各自独立的，说明这几类事件的格式在不同时间点冻结，读取端必须按类型分别解码，不能指望一个版本号管全部。</p></div>
+<div class="chunk"><h3>第 8 步 · seq 199：任务被调度（task / scheduled）</h3><pre>event: { kind: "scheduled", task_id: "a54bb4eb-…",
+  idempotency_key: "tool:call_019fc441e26273d18c2dc570b154c39c" }</pre><p><code>idempotency_key</code> 第二次出现。它在第 1 步由 tool_call_id 派生（<code>tool:</code> 前缀 + call id），在调度这一步被再次写明。理由很实际：调度可能重试、恢复可能重放，执行端认的是这把钥匙——同一把钥匙只执行一次。把钥匙在每个关键环节都显式带上，而不是指望谁「记得」，是这套数据结构的通用手法。</p></div>
+<div class="chunk"><h3>第 9 步 · seq 200：副作用意图声明（task / side_effect_intent）</h3><pre>event: { kind: "side_effect_intent", task_id: "a54bb4eb-…",
   operation: "tool:bash",
   idempotency_key: "tool:call_019fc441…",
   policy_decision: "allow:llm_judge",
   cancellation_handle: null,
-  parent_task_id: null }</pre>
-<p>动手前先落一笔「意图」：我要执行什么操作（operation）、凭哪次裁决（policy_decision，把 llm_judge 的 allow 一路带到这里）、幂等钥匙是什么（第三次出现）。这笔记录的价值在出事时才显形：若执行中途崩溃，恢复时先查意图账——有意图无结果，说明事可能办了一半，要先核对再决定补办还是作罢。<code>cancellation_handle</code> 是预留的取消把手（本例为 null）；<code>parent_task_id</code> 为 null，标明它不是任何子任务，是一条顶层执行。</p>
-
-<h3>第 10 步 · seq 201：执行开始（task / started）</h3>
-<pre>event: { kind: "started", task_id: "a54bb4eb-…",
-  span_id: "ed7e2c608864e15c" }</pre>
-<p>全条最短的记录之一，只多了一个新字段 <code>span_id</code>：16 位十六进制，是给可观测系统用的调用链标识。执行从这里起进入 tracing 的世界——后面这条命令跑了多久、输出什么、退出码多少，都挂在这个 span 上。账本（事件流）管「该不该做、谁批准的」，span 管「做得怎么样」，两套记录各管一段，在 task_id 上汇合。</p>
-
-<h3>第 11 步 · seq 202：工具批次开始（tool_batch.effect.started）</h3>
-<pre>payload_type: "tool_batch.effect.started"
+  parent_task_id: null }</pre><p>动手前先落一笔「意图」：我要执行什么操作（operation）、凭哪次裁决（policy_decision，把 llm_judge 的 allow 一路带到这里）、幂等钥匙是什么（第三次出现）。这笔记录的价值在出事时才显形：若执行中途崩溃，恢复时先查意图账——有意图无结果，说明事可能办了一半，要先核对再决定补办还是作罢。<code>cancellation_handle</code> 是预留的取消把手（本例为 null）；<code>parent_task_id</code> 为 null，标明它不是任何子任务，是一条顶层执行。</p></div>
+<div class="chunk"><h3>第 10 步 · seq 201：执行开始（task / started）</h3><pre>event: { kind: "started", task_id: "a54bb4eb-…",
+  span_id: "ed7e2c608864e15c" }</pre><p>全条最短的记录之一，只多了一个新字段 <code>span_id</code>：16 位十六进制，是给可观测系统用的调用链标识。执行从这里起进入 tracing 的世界——后面这条命令跑了多久、输出什么、退出码多少，都挂在这个 span 上。账本（事件流）管「该不该做、谁批准的」，span 管「做得怎么样」，两套记录各管一段，在 task_id 上汇合。</p></div>
+<div class="chunk"><h3>第 11 步 · seq 202：工具批次开始（tool_batch.effect.started）</h3><pre>payload_type: "tool_batch.effect.started"
 payload: { kind: "tool_batch_effect", run_id: "002a75f8-…",
  record: { kind: "started",
    effect_id: "a54bb4eb-…",
@@ -298,11 +284,8 @@ payload: { kind: "tool_batch_effect", run_id: "002a75f8-…",
    task_id: "a54bb4eb-…",
    call_id: "call_019fc441e26273d18c2dc570b154c39c",
    tool_name: "bash",
-   parallel_profile: { kind: "ineligible" } } }</pre>
-<p>最后一环，执行被登记为一个 tool_batch effect：<code>effect_id</code> 再次等于 a54bb4eb…，与 pending_action_id、task_id 三值同体。<code>model_call_index: 0</code> 标明它属于本轮模型产出的第 0 个工具调用批次。<code>call_id</code> 就是第 1 步的 tool_call_id，绕了一圈，执行端认的仍是模型最初发出的那个编号。<code>parallel_profile: ineligible</code> 直译是「不具备并行资格」——这条命令被明确标记为不可与其他工具并行执行，删除类操作串行到底，是写在数据里的约束。</p>
-
-<h3>ID 流动表：一把钥匙开几把锁</h3>
-<table>
+   parallel_profile: { kind: "ineligible" } } }</pre><p>最后一环，执行被登记为一个 tool_batch effect：<code>effect_id</code> 再次等于 a54bb4eb…，与 pending_action_id、task_id 三值同体。<code>model_call_index: 0</code> 标明它属于本轮模型产出的第 0 个工具调用批次。<code>call_id</code> 就是第 1 步的 tool_call_id，绕了一圈，执行端认的仍是模型最初发出的那个编号。<code>parallel_profile: ineligible</code> 直译是「不具备并行资格」——这条命令被明确标记为不可与其他工具并行执行，删除类操作串行到底，是写在数据里的约束。</p></div>
+<div class="chunk"><h3>ID 流动表：一把钥匙开几把锁</h3><table>
 <tr><th>ID</th><th>出现位置</th><th>作用</th></tr>
 <tr><td><code>tool_call_id</code><br>call_019fc441…</td><td>seq 193（requested）、194（started）、202（以 call_id 出现）</td><td>模型最初发出的调用编号，首尾呼应，认出「自始至终同一次调用」</td></tr>
 <tr><td><code>idempotency_key</code><br>tool:call_019fc441…</td><td>seq 193（派生）、199（scheduled）、200（side_effect_intent），共三次</td><td>由 tool_call_id 派生；调度与执行端凭它防重复执行</td></tr>
@@ -312,16 +295,8 @@ payload: { kind: "tool_batch_effect", run_id: "002a75f8-…",
 <tr><td><code>run_id</code><br>002a75f8…</td><td>每条 payload</td><td>标明这批事件属于同一次运行</td></tr>
 <tr><td><code>requirement_id</code></td><td>seq 193（定义）、195、196</td><td>指向具体某个 stage，让裁决能按段落定</td></tr>
 <tr><td><code>span_id</code></td><td>seq 201</td><td>执行的 tracing 标识，连接事件账本与可观测系统</td></tr>
-</table>
-
-<p>把十条记录按配对关系收一遍，会看到三种不同的「成对」：第一种是<b>生命周期配对</b>——approval_wait 的 started（194）与 terminal（197）是一对，tool_batch 的 started（202）在切片内只有开始、终结在切片之外；凡是 effect，都有头有尾，找「悬挂未关」的对象就是找只有头的那一半。第二种是<b>阶段配对</b>——裁决的 resolved（195）与 applied（196）是一对，前者是单段结论、后者是汇总生效，中间不许跳过：没有 applied，resolved 只是一份草稿。第三种是<b>子系统交接</b>——approval 家族（193、195、196）把棒交给 task 家族（198–201），交接点是 accepted；两个家族共用同一套 ID，所以交接不丢线头。整条链的可靠性不来自某一条记录写得多全，而来自这三种配对都没有断。</p>
-
-<h3>切片之外：诚实边界</h3>
-<p>最后说清这章没看到什么。<b>切片之前</b>：用户的原始输入、运行时组装上下文的那一刻、模型推理产出这个 tool_call 的记录，都在 seq 193 之前，不在这份导出里。第 1 步的 raw_args 是从 requested 事件里读到的原文，这是实测；但「模型当时读到的上下文长什么样」只能按字段反推：turn_count 是 2、step 已经走到 190，说明这是第二轮对话里很靠后的一步，前面有 189 个 step 的历史——历史的具体内容不在切片内。<span class="badge b-infer">合理推断</span></p>
-<p><b>切片之后</b>：seq 202 只是 tool_batch 的 started。命令的实际输出、退出码、工具结果如何回注上下文、模型读到结果后说了什么、最终答复的文本，都不在这十条里。会话层面只知 session_end 是 clean 收尾、总存活约 153 秒。把这些空白明说出来，和把字段讲透同样重要：这份切片能证明的，是「一次高危调用从发起到执行门口，每一步都被记录、被配对、被钉死证据」；它不能证明执行结果本身。</p>
-<p>还有两处元数据层面的保留。其一，<code>saw_history_gap: true</code> 是会话自己声明的——这条轨迹在导出视角下历史并不完整，所以本文所有结论只对 seq 193–202 这段证据完整的区间负责，不外推到整条会话。其二，<code>is_copied_context: false</code> 说明这条会话不是从别的会话拷贝上下文起步的，是一条原生的根轨迹（与 root_session_id 等于 session_id 互相印证）；这保证了我们看到的审批链不是从某次分叉里继承来的半截状态。至于导出文件头里的 <code>redaction: "raw"</code>，它保证了字段是原文而非脱敏改写——本章引用的每个值，都与文件里的字节一致。</p>
-<div class="note">📌 与第 06 章的分工：06 讲审批机制为什么这样设计；这一章是同一件事的验尸报告。06 里说的每一句——状态外置、事件配对、批准绑内容、防重复执行——都能在上面十条记录里找到对应的字段落点。</div>
-<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch18.html">← 上一章：Goals 与 Ideas</a></span><span></span></div></section>
+</table><p>把十条记录按配对关系收一遍，会看到三种不同的「成对」：第一种是<b>生命周期配对</b>——approval_wait 的 started（194）与 terminal（197）是一对，tool_batch 的 started（202）在切片内只有开始、终结在切片之外；凡是 effect，都有头有尾，找「悬挂未关」的对象就是找只有头的那一半。第二种是<b>阶段配对</b>——裁决的 resolved（195）与 applied（196）是一对，前者是单段结论、后者是汇总生效，中间不许跳过：没有 applied，resolved 只是一份草稿。第三种是<b>子系统交接</b>——approval 家族（193、195、196）把棒交给 task 家族（198–201），交接点是 accepted；两个家族共用同一套 ID，所以交接不丢线头。整条链的可靠性不来自某一条记录写得多全，而来自这三种配对都没有断。</p></div>
+<div class="chunk"><h3>切片之外：诚实边界</h3><p>最后说清这章没看到什么。<b>切片之前</b>：用户的原始输入、运行时组装上下文的那一刻、模型推理产出这个 tool_call 的记录，都在 seq 193 之前，不在这份导出里。第 1 步的 raw_args 是从 requested 事件里读到的原文，这是实测；但「模型当时读到的上下文长什么样」只能按字段反推：turn_count 是 2、step 已经走到 190，说明这是第二轮对话里很靠后的一步，前面有 189 个 step 的历史——历史的具体内容不在切片内。<span class="badge b-infer">合理推断</span></p><p><b>切片之后</b>：seq 202 只是 tool_batch 的 started。命令的实际输出、退出码、工具结果如何回注上下文、模型读到结果后说了什么、最终答复的文本，都不在这十条里。会话层面只知 session_end 是 clean 收尾、总存活约 153 秒。把这些空白明说出来，和把字段讲透同样重要：这份切片能证明的，是「一次高危调用从发起到执行门口，每一步都被记录、被配对、被钉死证据」；它不能证明执行结果本身。</p><p>还有两处元数据层面的保留。其一，<code>saw_history_gap: true</code> 是会话自己声明的——这条轨迹在导出视角下历史并不完整，所以本文所有结论只对 seq 193–202 这段证据完整的区间负责，不外推到整条会话。其二，<code>is_copied_context: false</code> 说明这条会话不是从别的会话拷贝上下文起步的，是一条原生的根轨迹（与 root_session_id 等于 session_id 互相印证）；这保证了我们看到的审批链不是从某次分叉里继承来的半截状态。至于导出文件头里的 <code>redaction: "raw"</code>，它保证了字段是原文而非脱敏改写——本章引用的每个值，都与文件里的字节一致。</p><div class="note">📌 与第 06 章的分工：06 讲审批机制为什么这样设计；这一章是同一件事的验尸报告。06 里说的每一句——状态外置、事件配对、批准绑内容、防重复执行——都能在上面十条记录里找到对应的字段落点。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch18.html">← 上一章：Goals 与 Ideas</a></span><span></span></div></section>
 </main>
 
 </body>
