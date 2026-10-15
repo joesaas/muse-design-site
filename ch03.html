@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>03 LLM 设计 · Muse 核心设计全解</title>
+<style>
+:root{
+  --bg:#04060d; --panel:#0a0f1e; --panel2:#0d1526; --line:#1c2a4a;
+  --txt:#dbe4f5; --dim:#8494b3; --faint:#5b6b8c;
+  --cyan:#22d3ee; --violet:#a78bfa; --green:#34d399; --amber:#fbbf24; --red:#f87171; --pink:#f472b6;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;font-size:16px;
+  background-image:linear-gradient(rgba(34,211,238,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.035) 1px,transparent 1px);
+  background-size:44px 44px;}
+a{color:var(--cyan);text-decoration:none}
+::selection{background:rgba(34,211,238,.3)}
+
+/* ---------- nav ---------- */
+nav{position:fixed;left:0;top:0;bottom:0;width:248px;background:rgba(6,10,20,.92);backdrop-filter:blur(8px);
+  border-right:1px solid var(--line);padding:22px 14px;overflow-y:auto;z-index:50}
+nav .logo{font-family:var(--mono);font-size:19px;color:#fff;letter-spacing:.5px}
+nav .logo b{color:var(--cyan)}
+nav .sub{font-size:12px;color:var(--faint);margin:2px 0 18px}
+nav .part{font-size:11px;color:var(--violet);letter-spacing:2px;margin:16px 6px 6px;font-family:var(--mono)}
+nav a{display:block;color:var(--dim);font-size:13.5px;padding:5px 8px;border-radius:6px}
+nav a:hover{color:#fff;background:rgba(34,211,238,.08)}
+nav a.on{color:var(--cyan);background:rgba(34,211,238,.1)}
+main{margin-left:248px;padding:0 34px 90px;max-width:1240px}
+@media(max-width:860px){nav{display:none}main{margin-left:0;padding:0 16px 70px}}
+
+/* ---------- hero ---------- */
+.hero{min-height:88vh;display:flex;flex-direction:column;justify-content:center;padding:60px 10px 30px}
+.hero .kicker{font-family:var(--mono);color:var(--cyan);font-size:13px;letter-spacing:3px}
+.hero h1{font-size:clamp(34px,5.4vw,58px);line-height:1.22;color:#fff;margin:16px 0 8px;font-weight:800}
+.hero h1 .grad{background:linear-gradient(92deg,var(--cyan),var(--violet),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{color:var(--dim);font-size:17.5px;max-width:720px}
+.hero .stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+.hero .stat{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 18px;min-width:130px}
+.hero .stat b{display:block;font-size:22px;color:#fff;font-family:var(--mono)}
+.hero .stat span{font-size:12.5px;color:var(--faint)}
+.hero .scroll{margin-top:44px;color:var(--faint);font-size:13px;font-family:var(--mono);animation:bob 2.2s infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ---------- sections ---------- */
+section{padding:64px 10px 8px;scroll-margin-top:20px}
+.part-head{font-family:var(--mono);color:var(--violet);font-size:13px;letter-spacing:3px}
+h2{font-size:clamp(24px,3.4vw,34px);color:#fff;margin:6px 0 4px;font-weight:800}
+h2 .no{color:var(--cyan);font-family:var(--mono);font-size:.72em;margin-right:10px}
+.one{font-size:17.5px;color:#fff;background:linear-gradient(90deg,rgba(34,211,238,.12),transparent);
+  border-left:3px solid var(--cyan);padding:10px 16px;border-radius:0 10px 10px 0;margin:14px 0 18px}
+.one b{color:var(--cyan)}
+p{margin:10px 0;color:#c3cee4}
+.dim{color:var(--dim)} .small{font-size:13.5px}
+h3{color:#fff;font-size:19px;margin:26px 0 8px}
+h3::before{content:'▸ ';color:var(--cyan)}
+ul{margin:8px 0 8px 20px;color:#c3cee4}
+li{margin:5px 0}
+b,strong{color:#eef3ff}
+code{font-family:var(--mono);font-size:.88em;background:rgba(34,211,238,.1);color:#a5f3fc;padding:1px 6px;border-radius:5px}
+pre{background:#060b16;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;
+  font-family:var(--mono);font-size:13.5px;line-height:1.65;color:#b7c9e8;margin:12px 0}
+pre .c{color:#54678c}
+.badge{display:inline-block;font-size:11.5px;font-family:var(--mono);padding:2px 9px;border-radius:99px;vertical-align:2px;margin-left:8px}
+.b-verified{color:var(--green);border:1px solid rgba(52,211,153,.5);background:rgba(52,211,153,.08)}
+.b-doc{color:var(--cyan);border:1px solid rgba(34,211,238,.5);background:rgba(34,211,238,.08)}
+.b-infer{color:var(--amber);border:1px solid rgba(251,191,36,.5);background:rgba(251,191,36,.08)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:14px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card h4{color:#fff;font-size:16px;margin-bottom:5px}
+.card h4 .ic{margin-right:7px}
+.card p,.card li{font-size:14.5px;color:#b9c6de}
+.card ul{margin-left:17px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:#fff;font-weight:600}
+td{color:#c3cee4}
+.note{border:1px dashed rgba(167,139,250,.45);background:rgba(167,139,250,.06);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:14.5px;color:#cfc6f5}
+.warn{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.06);color:#f3e3bb}
+
+/* ---------- diagrams ---------- */
+.layers{margin:16px 0}
+.layer{border:1px solid var(--line);border-radius:12px;padding:12px 18px;margin:7px 0;background:var(--panel);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;transition:.25s;cursor:default}
+.layer:hover{border-color:var(--cyan);transform:translateX(4px)}
+.layer .nm{color:#fff;font-weight:700}
+.layer .ds{color:var(--dim);font-size:13.5px;text-align:right}
+.flowbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+.fstep{display:flex;gap:12px;align-items:flex-start;padding:8px 10px;border-radius:10px;transition:.3s}
+.fstep .dot{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--faint);color:var(--faint);
+  font-family:var(--mono);font-size:12.5px;display:flex;align-items:center;justify-content:center;margin-top:2px;background:#060b16}
+.fstep .tx b{color:#fff}
+.fstep .tx span{color:var(--dim);font-size:14px;display:block}
+.farrow{margin-left:22px;color:var(--faint);font-family:var(--mono);font-size:12px}
+.fstep.lit{background:rgba(34,211,238,.09)}
+.fstep.lit .dot{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 14px rgba(34,211,238,.5)}
+.fstep.async.lit{background:rgba(251,191,36,.08)}
+.fstep.async.lit .dot{border-color:var(--amber);color:var(--amber);box-shadow:0 0 14px rgba(251,191,36,.45)}
+.tag{font-family:var(--mono);font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--faint);color:var(--dim);white-space:nowrap}
+.tag.sync{border-color:rgba(34,211,238,.55);color:var(--cyan)}
+.tag.async{border-color:rgba(251,191,36,.55);color:var(--amber)}
+.btn{font-family:inherit;font-size:14.5px;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;
+  border:1px solid var(--cyan);background:rgba(34,211,238,.12);color:#cffafe;transition:.2s}
+.btn:hover{background:rgba(34,211,238,.25)}
+.btn.ghost{border-color:var(--line);background:transparent;color:var(--dim)}
+.btn.ok{border-color:rgba(52,211,153,.6);background:rgba(52,211,153,.12);color:#bbf7d0}
+.btn.no{border-color:rgba(248,113,113,.6);background:rgba(248,113,113,.1);color:#fecaca}
+.btn:disabled{opacity:.4;cursor:default}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.switch{display:inline-flex;align-items:center;gap:8px;color:var(--dim);font-size:14px;cursor:pointer;user-select:none}
+.switch input{accent-color:var(--amber);width:17px;height:17px}
+.simlog{font-family:var(--mono);font-size:13px;background:#060b16;border:1px solid var(--line);border-radius:10px;
+  padding:12px 16px;min-height:86px;color:#9fd8e8;margin-top:10px;white-space:pre-wrap}
+.simlog .a{color:var(--amber)} .simlog .g{color:var(--green)} .simlog .v{color:var(--violet)}
+
+/* fanout */
+.fan{position:relative;margin:10px 0}
+.fan .hub{text-align:center}
+.fan .hub span{display:inline-block;border:1px solid var(--violet);color:#e9e2ff;background:rgba(167,139,250,.1);
+  border-radius:12px;padding:9px 22px;font-weight:700}
+.workers{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px;min-height:118px}
+.worker{width:148px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);
+  text-align:center;font-size:13.5px;color:var(--dim);opacity:0;transform:translateY(-14px) scale(.92);transition:.45s}
+.worker.show{opacity:1;transform:none}
+.worker .st{font-family:var(--mono);font-size:12px;margin-top:6px;color:var(--amber)}
+.worker.done{border-color:rgba(52,211,153,.6)} .worker.done .st{color:var(--green)}
+.worker b{color:#fff;display:block;font-size:14.5px}
+
+/* context builder */
+.ctxlayer{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;
+  padding:9px 14px;margin:6px 0;background:var(--panel);cursor:pointer;transition:.2s;font-size:14.5px}
+.ctxlayer.off{opacity:.38}
+.ctxlayer .sz{font-family:var(--mono);color:var(--cyan);font-size:13px}
+.ctxbar{height:14px;border-radius:8px;background:#0a1120;border:1px solid var(--line);overflow:hidden;margin:12px 0 4px}
+.ctxbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width .5s}
+
+/* event timeline */
+.evt{font-family:var(--mono);font-size:13px;border-left:2px solid var(--line);margin:8px 0 8px 8px;padding:7px 14px;color:#b7c9e8;animation:ein .4s}
+.evt b{color:#fff}.evt .pair{color:var(--violet)}
+@keyframes ein{from{opacity:0;transform:translateX(-8px)}}
+footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
+.reveal{opacity:0;transform:translateY(16px);transition:.6s}
+.reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html" class="on">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
+<main>
+<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 2 · 大脑</div><h2><span class="no">03</span>LLM 设计</h2><div class="one">一句话：Muse 对大模型的用法只有一条——<b>把模型当成无状态的纯函数</b>。递进去一份上下文，收回来一段文字或一个工具调用，仅此而已。记忆、等待、连续性，全是运行时在模型外面造出来的。</div>
+
+<h3>底层设计原理：自回归生成决定了一切</h3>
+<p>先把大模型本身看透。它干活的方式叫<b>自回归生成</b>，拆开是三件事：</p>
+<ul>
+<li><b>一个字一个字往外吐。</b>模型每次只生成一个 token，下一个 token 建立在已经吐出的全部 token 之上。它是「写」出来的，不是「查」出来的。</li>
+<li><b>输入在开始那一刻就冻结了。</b>一次推理读什么，开工前就定死。生成中途没有第二个入口，新信息插不进来。</li>
+<li><b>权重里没有「暂停键」。</b>模型没有等待机制。它要么继续吐字，要么结束这次推理。没有第三种状态。</li>
+</ul>
+<p>再往下拆一层：一次推理其实分两段。<b>第一段是「读」</b>，把整份输入一口气吃进去，算好每个词的位置和关系。<b>第二段是「写」</b>，一个 token 一个 token 往外吐。所谓输入冻结，就是说「读」这一段结束之后，菜单就定死了；「写」的全过程只能照着这份菜单发挥，中途厨房不接新菜。</p>
+<p>这三件事直接决定了工具调用的形态。模型吐出一个 tool_call 之后，紧接着该写的内容是「工具返回了什么」。可那是真实世界的状态，只有真去执行了才知道。<b>模型如果不停下来继续写，就只能编。</b>编出来的结果再被当成事实往下推理，整条链就烂了。所以停笔不是产品策略，是生成机制逼出来的唯一解。</p>
+<p>编造的连锁后果值得说透。假设让它查余额：它编一个「余额 3200」，接着就会按这个假数字规划、甚至下单。等真实结果回来时，动作可能已经执行、钱已经花出去了。工具的全部意义，就是把模型接到真实世界上；续写等于亲手剪断这根线，还假装线还在。</p>
+<pre>上下文（开工前冻结） ──▶ 一次推理 ──▶ 纯文本：最终答复，收工
+                              └──▶ tool_call：交卷离场，等真实结果</pre>
+<p>由此得到 Muse 的核心用法哲学：<b>模型即纯函数</b>。给它材料，它给意图。运行时把它当函数调用，而不是当一个「住在内存里、可以喊它等一等」的进程。后者根本不存在——你喊不到一个已经结束的推理。</p>
+<p>把模型当纯函数，还有三个工程上的好处，后面章节会反复用到：</p>
+<ul>
+<li><b>可替换。</b>函数签名不变，内部换一个更强的模型，整套系统不用动。这正是 Spark 能升到 Wonder 的前提。</li>
+<li><b>可排查。</b>没有隐藏状态。输出不对，先查递进去的输入——材料错了、漏了，还是模型读错了，三选一，没有第四种玄学。</li>
+<li><b>可恢复。</b>函数调用失败，重发一次就行，不需要「把进程的状态抢救出来」。状态不在函数里，这句话是整个 Muse 可恢复设计的地基。</li>
+</ul>
+
+<h3>Muse 的选择：分工、服务化、人格外置</h3>
+<p><b>第一，模型分工。</b>免费版跑 Muse Spark（2026 年 4 月首发，当前版本 Spark 1.3）。付费版（含试用）由 Muse Wonder 承担五类工作：主对话、产物与应用构建、定时任务、子代理、后台工作。Wonder 于 2026 年 10 月 12 日发布。<span class="badge b-doc">文档明文</span></p>
+<p>注意这份分工的划线方式：它不是按「问题难不难」划的，是按「活的形态」划的。主对话、构建、定时、子代理、后台——全是<b>要连续干很多步、每一步都踩着上一步结果</b>的活。分工划在这里，等于承认了一件事：单步答题谁都能做，难的是长链条里不失手。</p>
+<p>为什么长活要强模型兜底？因为多步任务里<b>错误会累积</b>。第 3 步读错一个结果，第 10 步就全盘皆错。步数越长，单步判断可靠性的权重越大。Wonder 是 Meta 目前最强的模型，基于比 Spark 更大、更强的预训练模型，官方定位就是「长时、多步」的个人 Agent 工作——搬家、争议索赔、把爱好做成生意这类一拖数周的任务；它在需要规划、工具使用和长上下文推理的 agentic 与编码评测上表现强劲。<span class="badge b-doc">文档明文</span></p>
+<p><b>第二，推理即服务。</b>每次调用互相独立，模型不保留上一次的任何状态。「会话」这个概念在模型一侧根本不存在，只存在于运行时。运行时保管完整记录，每次调用把需要的部分重新组装、重新递进去（怎么组装是第 04 章的事）。代价是每次都要重传上下文；换来的是调用可重试、可迁移、机器换了也能接着跑。</p>
+<p>这条选择的推论很深：<b>系统里唯一有状态的一方是运行时</b>。所以 Muse 所有「记性」类的设计——事件日志、上下文组装、审批恢复——全长在运行时一侧，一点都不在模型里。后面凡是讲到「它怎么记得」「它怎么恢复」，答案都不在模型这一章，要去运行时那边找。</p>
+<p><b>第三，人格不靠权重，靠上下文。</b>它叫什么名字、什么脾气、怎么跟你说话，不写在模型参数里，写在系统提示和站立文件里（IDENTITY、SOUL、USER 等），每次推理随上下文一起递进去。改人格等于改文件，不用重训；换一个用户，换一套文件，同一个模型立刻是另一个人。</p>
+<p><b>第四，工具调用契约被产品层吃透。</b>产出 tool_call，就是交卷：运行时接管，去执行、去审批、把结果回注。产出纯文本，就是最终答复：循环结束。运行时只靠这一个信号，区分「它想做事」还是「它说完了」。整个 Agent 循环（第 05 章）就建在这一条契约上。</p>
+<p>回头看会发现，Muse 那些招牌设计——审批卡、子代理、定时任务、浏览器接管——本质上都是同一招：<b>在「交卷之后、执行之前」这段空档里做文章</b>。拦下来问人，是审批；转交给另一个自己，是子代理；存起来到点再跑，是定时。契约越简单稳定，上层能玩的花样反而越多。这是把模型当纯函数换来的复利。</p>
+
+<h3>具体实现方式：一次推理的输入与输出</h3>
+<p>一次推理的输入，是一个消息数组加一份工具清单：</p>
+<pre>messages = [
+  { role: "system",    content: 系统提示 + 站立文件（人格 / 用户档案 / 记忆摘要） },
+  { role: "user",      content: "第 1 轮用户的话" },
+  { role: "assistant", content: "第 1 轮答复，可夹带 tool_call 块" },
+  { role: "tool",      content: "工具结果，与上面的 tool_call 按 id 配对" },
+  <span class="c">// ……历史逐轮展开，一轮都不能缺……</span>
+  { role: "user",      content: "本轮新消息" }
+]
+tools = [ { name, description, parameters 的 schema }, … ]  <span class="c">// 本轮能用的工具</span></pre>
+<p>输出只有两种形态。一种是纯文本，即最终答复。另一种是 tool_call 块：assistant 消息里夹带一个或多个调用，推理到此结束。块的结构大致是这样：</p>
+<pre>tool_call 块 = {
+  id: "call_019fc…",          <span class="c">// 本次调用的唯一编号，结果靠它配对</span>
+  name: "bash",               <span class="c">// 要用哪个工具</span>
+  arguments: { command: "rm -rf stale_cache.txt", workdir: "/tmp/…", … }
+}</pre>
+<p>一轮可以夹带多个 tool_call。互相独立的可以并行跑；有危险或有先后依赖的必须串行——这个标记是写在执行数据里的（第 19 章能看到真实字段），不是靠模型自觉排队。</p>
+<p>回注靠 <b>id 配对</b>。运行时执行完工具，把结果作为一条 tool 角色消息追加进数组，id 与当初的 tool_call 一一对应。有调用，必有结果，往返必须闭合（第 19 章有真实轨迹字段可查）。下一次推理读到这条结果，模型才「知道」世界发生了什么。<span class="badge b-verified">实测</span></p>
+<p>还有一个容易被忽略的点：<b>工具清单本身也是输入的一部分</b>。这一轮能看见哪些工具、每个工具的参数长什么样，都是开工前写死在材料里的。想给它加一项能力或收回一项能力，改清单就行，不用动模型。Muse 的能力边界，就是这样在每一轮的输入里重新划定的。</p>
+<p><b>采样随机性带来一个硬约束：不可逐字复现。</b>生成带随机采样，同一份上下文喂两次，措辞可以不同，路径都可能不同（Muse 内部的采样参数配置官方未公开，这里只取「随机性存在」这一事实）。所以系统从不承诺「重跑一次会一样」，只保三条不变量：事实不丢（事件日志完整）、往返闭合（调用与结果配对）、待办可定位（靠 ID 找回）。关键动作另有护栏兜底——审批、幂等键、执行前核对——不把安全押在「模型这次别出错」上。</p>
+<p>这也改变了「对错」的定义。对纯函数式的用法来说，一次输出不理想，先别骂模型：十有八九是材料没递对、契约没写清。把随机性当常态、把不变量当承诺，是这套系统在不可复现之上还能保持可靠的原因。</p>
+<p><b>模型版本更替也是同理。</b>长会话跨天、跨周是常态，期间模型可能已经升级。因为状态全在上下文里、不在模型里，会话不会断；但新版本读同一份材料，语气和判断可能有细微漂移。契约稳定（tool_call 格式、人格文件不变）把漂移压在小范围内。这一段是基于机制的推演。<span class="badge b-infer">合理推断</span></p>
+
+<h3>边界与代价</h3>
+<ul>
+<li><b>重传的成本。</b>无状态的代价是每次推理都要把上下文重新递一遍，会话越长越贵，靠压缩缓解（第 04 章）。</li>
+<li><b>递漏即失忆。</b>「它记得你」完全依赖运行时把记录递对。哪份材料没递进去，它当场就不知道，没有任何兜底。</li>
+<li><b>递对了也可能读错。</b>工具结果原样递进去，模型仍可能理解偏。这一层的错拦不住，只能靠运行时侧的核对（金额、状态、幂等）在执行前再兜一道。</li>
+<li><b>窗口有上限。</b>一次推理能读的材料总量有硬顶，长会话必然要取舍和压缩——这是第 04 章存在的全部理由。</li>
+<li><b>每一步都要付一次「开工费」。</b>一次交互的等待，等于组装材料、重传上下文、逐字生成三段相加；任务有几十步，这笔费用就付几十次。所以产品层要用流式输出和进度回注压感知时延——让用户看见它在动，而不是干等一个最终结果。</li>
+<li><b>调试靠日志，不靠重跑。</b>行为不可完全复现，出了问题只能查事件流，不能指望「再跑一次看看」。</li>
+<li><b>模型会错。</b>官方对 Wonder 的定位里也写明：再强的模型也会出错，它最适合在目标清晰、有人复核的场景工作。<span class="badge b-doc">文档明文</span></li>
+</ul>
+
+<h3>证据分级小结</h3>
+<table>
+<tr><th>层级</th><th>本章对应内容</th></tr>
+<tr><td>LLM 通用原理（行业共识）</td><td>自回归逐 token 生成、输入冻结、无中途注入通道、tool_call 处必须终止生成</td></tr>
+<tr><td>Muse 文档明文</td><td>Spark / Wonder 的分工与承担的工作类型、Wonder 的定位与发布时间、模型的局限</td></tr>
+<tr><td>运行环境实测</td><td>tool_call 交卷、tool_result 按 id 配对回注、往返闭合这一整套契约行为</td></tr>
+<tr><td>合理推断</td><td>版本更替下的行为漂移及其应对；推理服务的内部实现</td></tr>
+</table>
+<div class="note">📌 一条纪律：Muse 的推理设施内部如何实现——用什么推理引擎、怎么调度算力——官方未公开。坊间把 vLLM、MTIA 等说法安在 Muse 头上，目前只有 Meta 通用基础设施层面的公开信息，没有 Muse 专属证据。本章一律不采信，只写能落到文档和实测的部分。</div>
+<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch02.html">← 上一章：运维设计</a></span><span><a href="ch04.html">下一章：上下文工程 →</a></span></div></section>
+</main>
+
+</body>
+</html>

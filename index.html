@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Muse 核心设计全解 · 从架构到审批的底层原理</title>
+<title>Muse 核心设计全解 · Muse 核心设计全解</title>
 <style>
 :root{
   --bg:#04060d; --panel:#0a0f1e; --panel2:#0d1526; --line:#1c2a4a;
@@ -147,37 +147,7 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 </style>
 </head>
 <body>
-
-<nav id="sidenav">
-  <div class="logo">MUSE<b>_</b>DESIGN</div>
-  <div class="sub">核心设计全解 · 底层原理</div>
-  <div class="part">PART 1 · 全景</div>
-  <a href="#arch">01 整体架构</a>
-  <a href="#ops">02 运维设计</a>
-  <div class="part">PART 2 · 大脑</div>
-  <a href="#llm">03 LLM 设计</a>
-  <a href="#context">04 上下文工程</a>
-  <a href="#loop">05 核心机制：Agent 循环</a>
-  <a href="#hitl">06 审批与认证（HITL）</a>
-  <a href="#subagent">07 子代理编排</a>
-  <div class="part">PART 3 · 躯体</div>
-  <a href="#skills">08 Skills 技能系统</a>
-  <a href="#connectors">09 连接器生态</a>
-  <a href="#files">10 文件架构</a>
-  <a href="#schedule">11 定时与后台</a>
-  <div class="part">PART 4 · 信任</div>
-  <a href="#security">12 安全设计</a>
-  <a href="#privacy">13 数据与隐私</a>
-  <div class="part">PART 5 · 生活面</div>
-  <a href="#ui">14 页面交互与多端</a>
-  <a href="#memory">15 Memory</a>
-  <a href="#identity">16 身份与对齐</a>
-  <a href="#feed">17 Feed</a>
-  <a href="#goals">18 Goals 与 Ideas</a>
-  <div class="part">PART 6 · 实证</div>
-  <a href="#anatomy">19 一次真实交互全程解剖</a>
-</nav>
-
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
 <main>
 <div class="hero">
   <div class="kicker">META MUSE · SYSTEM DESIGN, EXPLAINED PLAINLY</div>
@@ -189,73 +159,8 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
     <div class="stat"><b>19 章</b><span>核心设计逐项拆解</span></div>
     <div class="stat"><b>5 个</b><span>可动手玩的交互演示</span></div>
   </div>
-  <div class="scroll">▼ 向下滚动开始拆机</div>
-</div>
-
-<!-- ================= PART 1 ================= -->
-<section id="arch" class="reveal">
-  <div class="part-head">PART 1 · 全景</div>
-  <h2><span class="no">01</span>整体架构</h2>
-  <div class="one">一句话：<b>每个用户独享一台电脑和一个 Agent</b>，它在那台电脑里生活和工作，跟别人的完全隔开。</div>
-  <p>理解 Muse 的一切，先记住这张分层图。把鼠标放上去看看每一层管什么：</p>
-  <div class="layers">
-    <div class="layer"><span class="nm">👤 用户层</span><span class="ds">你：在手机 / 电脑 / 消息软件里说话、点批准</span></div>
-    <div class="layer"><span class="nm">🚪 入口层</span><span class="ds">Chat、Feed、Ideas、Goals、Library 五个页签 + 审批卡</span></div>
-    <div class="layer"><span class="nm">🧠 大脑层</span><span class="ds">大模型推理 + Agent 循环：想一步、做一步、看结果再想</span></div>
-    <div class="layer"><span class="nm">🛠 执行层</span><span class="ds">工具、Skills、连接器、浏览器、子代理——真正动手干活</span></div>
-    <div class="layer"><span class="nm">🛡 信任层</span><span class="ds">审批、凭证保险库、安全拦截——给执行力上锁的那层</span></div>
-    <div class="layer"><span class="nm">💻 底座层</span><span class="ds">你的专属电脑（虚拟机）+ 文件系统 + 事件日志</span></div>
-  </div>
-  <h3>为什么一人一台电脑？</h3>
-  <ul>
-    <li><b>隔离做在架构层，不是权限开关。</b>别家的 Agent 物理上进不了你的机器，隐私边界不是「设置里关掉」，而是「压根不在一台机器上」。<span class="badge b-doc">文档明文</span></li>
-    <li><b>Agent 因此能「常驻」。</b>它有自己的家目录、文件和后台任务，对话关了它还在，明天回来一切都在原地。</li>
-    <li><b>严格 1 对 1，没有群聊。</b>所有对话只属于你和你的 Agent，「邀请」按钮只是分享推荐码，永远拉不进来第三个人。</li>
-    <li><b>模型分工</b>：免费版跑 Muse Spark，付费版跑 Muse Wonder——主对话、产物构建、定时任务、子代理、后台工作都由强模型兜底。<span class="badge b-doc">文档明文</span></li>
-  </ul>
-  <div class="note">📌 本站的拆法：PART 2 拆大脑，PART 3 拆躯体，PART 4 拆信任层，PART 5 拆入口层的生活面。底座层散在各章里讲。</div>
-</section>
-
-<section id="ops" class="reveal">
-  <div class="part-head">PART 1 · 全景</div>
-  <h2><span class="no">02</span>运维设计</h2>
-  <div class="one">一句话：<b>机器可以随时被换掉，但你的东西一样都不能丢</b>——所有重要的状态都存在「换机器也活着」的地方。</div>
-  <p>Muse 的运行环境更新非常频繁，虚拟机可能被整体替换。但你几乎感觉不到，靠的是三条纪律：</p>
-  <div class="grid">
-    <div class="card"><h4>🏠 家目录是唯一的家</h4><p>文件、记忆、技能、定时任务定义都放在持久化的家目录里。机器是临时的，家是永久的——换机器等于把家整体搬走。</p></div>
-    <div class="card"><h4>📋 任务靠「登记」不靠「进程」</h4><p>定时任务、子代理、待审批都登记在系统里。机器重启后由运行时按登记表逐个恢复，而不是指望某个进程「还活着」。</p></div>
-    <div class="card"><h4>🔁 恢复是默认动作</h4><p>保存好的定时任务、未完成的子代理工作、挂起的审批，重启后自动回到应有状态。恢复失败会被明确报告，不装没事。</p></div>
-  </div>
-  <p>这条纪律后面会反复出现：<b>状态进存储，进程随时可死。</b>审批能等一天、子代理能跨重启，全是它的推论。<span class="badge b-verified">环境实测</span></p>
-</section>
-
-<!-- ================= PART 2 ================= -->
-<section id="llm" class="reveal">
-  <div class="part-head">PART 2 · 大脑</div>
-  <h2><span class="no">03</span>LLM 设计</h2>
-  <div class="one">一句话：大模型被当成一个<b>无状态的纯函数</b>在用——递给它一份上下文，它交回一段文字或一个工具调用，仅此而已。</div>
-  <div class="flowbox">
-    <div class="fstep"><div class="dot">入</div><div class="tx"><b>上下文</b><span>系统提示 + 记忆 + 全部对话记录 + 工具清单，组装成一份文本</span></div></div>
-    <div class="farrow">↓ 喂给模型</div>
-    <div class="fstep"><div class="dot">算</div><div class="tx"><b>一次推理</b><span>逐字生成，直到写完答复、或写出一个工具调用为止</span></div></div>
-    <div class="farrow">↓ 交回</div>
-    <div class="fstep"><div class="dot">出</div><div class="tx"><b>文字 或 工具调用</b><span>纯文字 = 最终答复；工具调用 = 「我交出控制权，给我结果再叫我」</span></div></div>
-  </div>
-  <h3>三个反直觉但关键的事实</h3>
-  <ul>
-    <li><b>模型没有记忆。</b>它「记得」你，是因为每次推理都把记录重新递到它眼前。连续性是运行时造的，不是模型自带的。</li>
-    <li><b>模型不会等待。</b>一次推理的输入在开始那刻就固定了，中途没有插入新信息的入口。所以工具结果只能等下一次推理——这不是选择，是架构。<span class="badge b-verified">实测</span></li>
-    <li><b>写到工具调用就必须停。</b>再往下写就得编造工具的返回结果。停，是为了让真实世界把答案填回来。</li>
-  </ul>
-  <p class="dim">模型分工：Spark 管日常，Wonder 管硬活（长任务、子代理、产物构建）。「性格」不靠改权重，靠每次递进去的系统提示和站立上下文——改性格等于改文件，不用重训模型。</p>
-</section>
-
-<section id="context" class="reveal">
-  <div class="part-head">PART 2 · 大脑</div>
-  <h2><span class="no">04</span>上下文工程</h2>
-  <div class="one">一句话：模型的「脑子」每轮都是临时拼的——<b>核心从日志来，保证忠实；外围从现状来，保证新鲜。</b></div>
-  <p>点一点下面几层，看看一份完整上下文是怎么拼出来的、占多大：</p>
-  <div id="ctxbox">
+  <div class="scroll">▼ 目录在下面，每章一个独立页面</div>
+</div><section class="reveal in"><div class="part-head">目录</div><h2><span class="no">§</span>19 章，每章一个页面</h2><p>这一版把每一章都拆成了独立页面，并逐章重新深挖：不再是提纲式的概述，而是<b>底层设计原理、底层实现原理、具体实现方式</b>三层都落到数据结构与真实字段。阅读建议：先看第 05、06 章（循环与审批是全书的枢纽），再看第 19 章的真实轨迹解剖，其余章节可按兴趣跳读。</p><div class="grid"><div class="part-head" style="margin-top:26px">PART 1 · 全景</div><a class="card" href="ch01.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">01</span> 整体架构</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch02.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">02</span> 运维设计</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><div class="part-head" style="margin-top:26px">PART 2 · 大脑</div><a class="card" href="ch03.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">03</span> LLM 设计</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch04.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">04</span> 上下文工程</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch05.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">05</span> 核心机制：Agent 循环</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch06.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">06</span> 审批与认证（HITL）</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch07.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">07</span> 子代理编排</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><div class="part-head" style="margin-top:26px">PART 3 · 躯体</div><a class="card" href="ch08.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">08</span> Skills 技能系统</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch09.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">09</span> 连接器生态</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch10.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">10</span> 文件架构</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch11.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">11</span> 定时与后台</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><div class="part-head" style="margin-top:26px">PART 4 · 信任</div><a class="card" href="ch12.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">12</span> 安全设计</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch13.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">13</span> 数据与隐私</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><div class="part-head" style="margin-top:26px">PART 5 · 生活面</div><a class="card" href="ch14.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">14</span> 页面交互与多端</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch15.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">15</span> Memory 设计</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch16.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">16</span> 身份与对齐</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch17.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">17</span> Feed 设计</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><a class="card" href="ch18.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">18</span> Goals 与 Ideas</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a><div class="part-head" style="margin-top:26px">PART 6 · 实证</div><a class="card" href="ch19.html" style="display:block"><h4><span style="color:var(--cyan);font-family:var(--mono)">19</span> 一次真实交互的全程解剖</h4><p>独立成章：底层设计原理 · 底层实现原理 · 具体实现方式 · 边界与证据分级</p></a></div></section><section class="reveal in"><div class="part-head">动手玩</div><h2><span class="no">§</span>四个交互演示</h2><h3>演示 A · 上下文是怎么拼出来的（第 04 章）</h3><div id="ctxbox">
     <div class="ctxlayer" data-sz="8"><span>🧭 系统提示（规矩与人格）</span><span class="sz">≈8%</span></div>
     <div class="ctxlayer" data-sz="10"><span>🪪 身份与用户档案（IDENTITY / USER）</span><span class="sz">≈10%</span></div>
     <div class="ctxlayer" data-sz="14"><span>🧠 长期记忆（MEMORY + 对齐合成）</span><span class="sz">≈14%</span></div>
@@ -265,27 +170,7 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
     <div class="ctxbar"><i id="ctxfill"></i></div>
     <p class="small dim">当前拼装：<span id="ctxpct" style="color:var(--cyan)">100%</span>（点任意一层可开关它，看看少了它模型会「失忆」哪一块）</p>
   </div>
-  <h3>存档与投影：为什么隔一天恢复，上下文还可能不一样？</h3>
-  <ul>
-    <li><b>存档层（事件日志）</b>：只追加、永不改。一天后重放，长得和当时分毫不差。</li>
-    <li><b>组装层（投影）</b>：每轮临时拼。对话太长时，旧轮次会被<b>摘要压缩</b>——存档无损，投影有损。本站作者本人在这个会话里就被压缩过一次，靠的就是「摘要 + 日志」续命。</li>
-    <li><b>外围每轮刷新</b>：日期、记忆文件、目标状态都是现取的。隔天恢复时外围必然不同——而且应该不同，否则它还以为今天是昨天。</li>
-  </ul>
-  <div class="note">📌 系统要保证的从来不是「逐字复现」，而是三条不变量：<b>事实不丢</b>（日志完整）、<b>往返闭合</b>（发出的工具调用必有结果配对）、<b>待办可定位</b>（靠 ID 精确找回）。</div>
-</section>
-
-<section id="loop" class="reveal">
-  <div class="part-head">PART 2 · 大脑</div>
-  <h2><span class="no">05</span>核心机制：Agent 循环</h2>
-  <div class="one">一句话：整个 Muse 就是一个 <b>while 循环</b>——推理 → 行动 → 看结果 → 再推理，直到活干完。</div>
-  <pre><span class="c"># 逻辑视图只有四行</span>
-while True:
-    resp   = llm(context)            <span class="c"># 一次推理：产出即结束，模型离场</span>
-    if resp 是纯文本: break          <span class="c"># 没有工具调用 = 最终答复</span>
-    result = broker.execute(resp.tool_call)  <span class="c"># 程序侧执行：查凭证、等审批都在这</span>
-    context += [resp.tool_call, result]      <span class="c"># 结果回注，循环续上</span></pre>
-  <p>点「运行一次」，看这个循环真实地转一圈。注意第三行：它看着是同步的一行，物理上可能是<b>挂起 → 隔天 → 换个进程续跑</b>（原理在第 06 章）：</p>
-  <div class="flowbox" id="loopsim">
+<h3>演示 B · Agent 循环转一圈（第 05 章）</h3><div class="flowbox" id="loopsim">
     <div class="ctl">
       <button class="btn" id="loopplay">▶ 运行一次</button>
       <label class="switch"><input type="checkbox" id="needappr" checked> 这次操作需要审批（如：往外发消息）</label>
@@ -302,16 +187,15 @@ while True:
     <div class="fstep" data-log="模型：（全新的一次推理）读到闭合的往返，给出最终答复"><div class="dot">9</div><div class="tx"><b>再推理 → 答复</b><span>没有工具调用了，循环结束</span></div><span class="tag sync">同步</span></div>
     <div class="simlog" id="looplog">等待运行…</div>
   </div>
-  <div class="note">📌 看出门道了吗：<b>同步的只有「一次推理之内」和「一次执行之内」；跨审批、跨子代理，全是异步事件。</b>能等的都不是模型——等待、排队、恢复，全是运行时的活。</div>
-</section>
-
-<section id="hitl" class="reveal">
-  <div class="part-head">PART 2 · 大脑</div>
-  <h2><span class="no">06</span>审批与认证（HITL）</h2>
-  <div class="one">一句话：给机器执行力，<b>给人留否决权</b>——但否决权做成一条数据记录，而不是堵住一条线程。</div>
-  <h3>审批的事件设计（真实结构）</h3>
-  <p>审批在事件流里是一个有头有尾的「effect」：开始与终结靠同一个 <code>pending_action_id</code> 配对。亲手试一下：</p>
-  <div class="flowbox">
+<h3>演示 C · 子代理扇出与乱序回收（第 07 章）</h3><div class="flowbox fan">
+    <div class="hub"><span>🧑‍💼 协调者（主代理）</span></div>
+    <div class="workers" id="workers"></div>
+    <div class="ctl" style="justify-content:center">
+      <button class="btn" id="fanbtn">⚡ 扇出 4 个子代理</button>
+      <span class="dim small" id="fanstat">还没出发。</span>
+    </div>
+  </div>
+<h3>演示 D · 审批事件时间线（第 06 章）</h3><div class="flowbox">
     <div class="ctl">
       <button class="btn" id="evtstart">① 模拟：模型要删文件，发起审批</button>
       <button class="btn ok" id="evtapprove" disabled>② 批准</button>
@@ -321,382 +205,8 @@ while True:
     <div id="evtlive"><p class="dim small">事件流（session 流，按 sequence 只追加）：</p></div>
     <div class="simlog" id="evtlog">还没有事件。点①开始。</div>
   </div>
-  <p>真实样本长这样（官方导出的一次「删文件」审批，字段原样）：</p>
-  <pre>seq 194  approval_wait.effect.started
-  payload: { pending_action_id: "a54bb4eb…", tool_call_id: "call_019fc…",
-             tool_name: "bash", run_id: "002a75f8…" }
-seq 197  approval_wait.effect.terminal
-  payload: { pending_action_id: "a54bb4eb…", outcome: { kind: "approved" } }
-seq 202  tool_batch.effect.started   <span class="c"># 批准之后，工具才真正执行</span></pre>
-  <h3>收到裁决后，靠什么找回上下文？</h3>
-  <ul>
-    <li><b>主键是 session_id（哪个会话），不是某一轮对话</b>；turn、step 只是流内的坐标。</li>
-    <li>裁决事件带回 <code>pending_action_id</code> → 回查它的 started 记录 → 里面存着 <code>tool_call_id</code> 和 <code>run_id</code>：哪个工具调用被放行，分毫不差，不用猜。</li>
-    <li>按 session 加载整条事件流重放 → 执行工具 → 结果回注 → 发起全新推理。隔一天、隔一次重启，配对关系写在数据里，不在谁的内存里。<span class="badge b-verified">实测</span></li>
-  </ul>
-  <h3>认证：模型永远摸不到真钥匙</h3>
-  <ul>
-    <li>工具要用某个服务的密钥时，向凭证服务（authd）申请的是一把<b>替身钥匙</b>（只在指定域名有效）；请求真正出门时，安全层（Sentinel）在出口把替身换成真钥匙。</li>
-    <li>密码由用户在<b>独立的安全页面</b>录入（Secure Vault），模型只看得到一个令牌，看不到密码本身。让最能干的组件（模型）对最危险的东西（真凭证）保持无知。</li>
-    <li>批准只覆盖<b>当时展示的确切内容</b>：内容一变，批准自动失效，必须重审。<span class="badge b-verified">实测</span></li>
-  </ul>
-</section>
-
-<section id="subagent" class="reveal">
-  <div class="part-head">PART 2 · 大脑</div>
-  <h2><span class="no">07</span>子代理编排</h2>
-  <div class="one">一句话：活太多就<b>再叫几个自己来帮忙</b>——子代理和主代理是同一个模型，区别只在任务简报和生命周期。</div>
-  <p>点「扇出」看看并行干活的样子——注意它们<b>完成顺序和出发顺序无关</b>，谁先干完谁先汇报：</p>
-  <div class="flowbox fan">
-    <div class="hub"><span>🧑‍💼 协调者（主代理）</span></div>
-    <div class="workers" id="workers"></div>
-    <div class="ctl" style="justify-content:center">
-      <button class="btn" id="fanbtn">⚡ 扇出 4 个子代理</button>
-      <span class="dim small" id="fanstat">还没出发。</span>
-    </div>
-  </div>
-  <h3>设计要点</h3>
-  <ul>
-    <li><b>创建参数只有两个</b>：一段任务简报（message），可选附带文件/图片（items）。没有「类型」参数、没有「模型」参数——分工不靠类型系统，靠简报把契约写清。<span class="badge b-verified">实测</span></li>
-    <li><b>异步收据制</b>：派出时只拿到一个编号，派出者该干嘛干嘛；结果完成时自动递回，像外卖送达通知，不用守在门口。</li>
-    <li><b>星形拓扑</b>：子代理之间不能互相喊话。A 需要 B 的产出，必须经协调者转发。所有协调过中枢，出了问题只查一条线。</li>
-    <li><b>深度上限 2 层</b>：主代理 → 协调者 → 工人，到此为止，不许无限套娃。结构永远是一棵扁树。</li>
-    <li><b>专用通道例外</b>：浏览器任务（要持有登录态）、深度调研（刻意不给登录态）、产物构建、定时后台——这几类不走通用派出，各有入口。拆的标准不是任务类型，是<b>边界硬度</b>。</li>
-  </ul>
-</section>
-
-<!-- ================= PART 3 ================= -->
-<section id="skills" class="reveal">
-  <div class="part-head">PART 3 · 躯体</div>
-  <h2><span class="no">08</span>Skills 技能系统</h2>
-  <div class="one">一句话：Skills 是给 Agent 的<b>操作手册库</b>——每本手册写清一件事的标准打法，遇到对应的活，翻开照做。</div>
-  <div class="grid">
-    <div class="card"><h4>📖 手册长什么样</h4><p>一本手册 = 一份 <code>SKILL.md</code>（步骤、规矩、坑）+ 可选的脚本和参考资料。内容是写给模型读的自然语言 + 写给机器跑的代码，各管一段。</p></div>
-    <div class="card"><h4>🔍 按需翻书</h4><p>平时只把「目录」放进上下文（每本一句话简介）。任务命中哪本，才把全文读进来——省上下文，也避免无关规矩互相打架。</p></div>
-    <div class="card"><h4>🧳 能带走</h4><p>手册是自包含的文件夹，可以装进不同的 Agent 运行时。换个运行时要适配外壳，但核心打法不变——技能是资产，不是某个产品的附属品。</p></div>
-    <div class="card"><h4> 🌱 会生长，也会淘汰</h4><p>后台有每日复盘循环：反复出现的活会被沉淀成新手册，已有手册按近期实绩审计——实测没帮助的变更要撤下。Agent 的「熟练度」因此能长期累积，又不至于积成垃圾场。</p></div>
-  </div>
-  <p>和工具的区别一句话：<b>工具是能力（能不能做），Skill 是经验（该怎么做）</b>。给新手发全套工具，他还是新手；再给他一柜子手册，他才像个熟手。</p>
-</section>
-
-<section id="connectors" class="reveal">
-  <div class="part-head">PART 3 · 躯体</div>
-  <h2><span class="no">09</span>连接器生态</h2>
-  <div class="one">一句话：连接器是 Agent 的<b>对外插座</b>——邮箱、日历、支付、社交，每个服务插上一个，Agent 就能替你操作它。</div>
-  <div class="grid">
-    <div class="card"><h4>🔌 一个连接器 = 说明书 + 通道</h4><p>每个连接器带一份文档：怎么连、能做什么、权限多大、出错怎么办。Agent 先读说明书再动手，和 Skills 是同一个套路——<b>先文档，后操作</b>。</p></div>
-    <div class="card"><h4>🔑 授权走正规门</h4><p>连接走服务自己的授权页（OAuth），密码不经过聊天、不经过模型。连没连上、健不健康，用之前先查状态，不凭感觉承诺。</p></div>
-    <div class="card"><h4>🧩 没有现成的也能现接</h4><p>任何有 API 的服务都能按统一模板做成自定义连接器：凭证进安全存储，说明书落成文件，之后和官方连接器一视同仁。</p></div>
-    <div class="card"><h4>⚖️ 连接器 vs Skill</h4><p>连接器管「通道和账号」（能不能碰这个服务），Skill 管「打法」（碰的时候怎么做得好）。一个管准入，一个管经验。</p></div>
-  </div>
-  <ul>
-    <li><b>文档即能力边界</b>：连接器能用什么命令，以它自己的文档为准——文档没写的就是不存在。连了某个服务 ≠ 能用它的全部功能。这防止 Agent 凭想象调用不存在的能力，权限边界也可审计。</li>
-    <li><b>权限有两层闸</b>：服务商的 OAuth 授权是第一层（粗粒度）；你还能在设置里单独限制某个连接器的读/写动作（要审批 / 直接拦），这层细闸独立于服务商，长在自己手里。</li>
-    <li><b>状态当场查，不靠记忆</b>：授权会过期、会被拒。用之前跑一次状态核验；遇到永久拒绝就明说需要重新授权，不重试、不假装是临时故障。</li>
-    <li><b>限流即停</b>：撞上服务商的请求上限就按规矩退避，被标记为终止的直接停手——尊重平台规则，别把用户的账号玩封。</li>
-  </ul>
-  <p>生态的另一条关键设计是<b>最小披露</b>：替你联系外部时，只给对方完成任务必需的信息——餐厅只需要名字、时间、人数，不需要知道你为什么吃饭。知道得多是本事，说得少是规矩。</p>
-</section>
-
-<section id="files" class="reveal">
-  <div class="part-head">PART 3 · 躯体</div>
-  <h2><span class="no">10</span>文件架构</h2>
-  <div class="one">一句话：Agent 的一切都<b>落成文件</b>——人格是文件、记忆是文件、技能是文件。你能打开看，它才能被你管住。</div>
-  <pre>~ 家目录（换机器也搬走的那个「家」）
-├─ IDENTITY.md / SOUL.md     <span class="c">它是谁、什么性格</span>
-├─ USER.md / MEMORY.md       <span class="c">你是谁、它记住的事</span>
-├─ AGENTS.md                 <span class="c">干活的规矩与教训</span>
-├─ memory/                   <span class="c">人物与群体档案（people / groups）</span>
-├─ workspace/
-│  ├─ your_files/            <span class="c">交付给你的文件 → 出现在 Library</span>
-│  ├─ goals/&lt;目标&gt;/      <span class="c">每个目标一个工作区（文档/简报/内部状态分开放）</span>
-│  ├─ custom-skills/         <span class="c">为你定制的技能手册</span>
-│  └─ custom-connectors/     <span class="c">为你接的第三方服务</span>
-├─ hooks/                    <span class="c">事件监听脚本与状态</span>
-└─ docs/                     <span class="c">官方说明（只读）</span></pre>
-  <ul>
-    <li><b>存储与橱窗分离</b>：你上传的东西落进 <code>workspace/user</code> 持久保存但不自动上架；只有放进交付区的文件才出现在你的 Library 里。工作区和成品柜物理分家。<span class="badge b-doc">文档明文</span></li>
-    <li><b>删除分级</b>：普通文件进回收站约 30 天可恢复；产物（Artifact）删除即永久——误删概率和误伤代价不同，规矩就不同。</li>
-    <li><b>为什么全用文件、不用数据库藏起来？</b>因为可审计：用户随时能打开「它记住我什么」，错了能改、能删。用透明换信任。</li>
-  </ul>
-</section>
-
-<section id="schedule" class="reveal">
-  <div class="part-head">PART 3 · 躯体</div>
-  <h2><span class="no">11</span>定时与后台</h2>
-  <div class="one">一句话：你不说话的时候它也在工作——靠<b>三种闹钟</b>：按点的、看事的、常驻的。</div>
-  <table>
-    <tr><th>机制</th><th>触发方式</th><th>典型用途</th></tr>
-    <tr><td><b>Cron 定时任务</b></td><td>到点就跑</td><td>每天的早报、每周的复盘、定点检查</td></tr>
-    <tr><td><b>Hook 监听</b></td><td>事件发生才醒</td><td>新消息到达自动处理、某状态变化时唤醒 Agent</td></tr>
-    <tr><td><b>常驻服务</b></td><td>一直运行</td><td>流式监听、本地小服务器这类停不得的活</td></tr>
-  </table>
-  <ul>
-    <li><b>诚实的第一条：本质都是轮询，没有真推送。</b>定时和监听都是「隔一会去看一眼」，两次检查之间的变化可能漏掉、定时可能迟到。官方把这点明说在前面，就是不让用户对「实时」抱幻想——重要的事不能押在轮询精度上。<span class="badge b-doc">文档明文</span></li>
-    <li><b>每个后台任务都要有主</b>：创建时就写清范围、目标、频率、完成条件、负责人和交付目的地。无人值守的任务最容易无限空转，有主、有终点，才能收尾。</li>
-    <li><b>恢复先读账，再动手</b>：机器被替换后，先读持久状态——已办完的、待确认的、用户已取消的、重试上限，都得保住。后台系统最大的事故不是崩溃，是恢复时把办好的事重办一遍、把取消的事「好心」续上。</li>
-    <li><b>「跑完了」≠「送到了」</b>：配置、执行、进度、交付是四件事，分开验证；结果必须回到发起它的那个对话。沉默的监听器不等于崩溃，没送达的成功等于没成功。</li>
-    <li><b>后台自改进</b>：另有一批循环在你不在时默默跑——整理记忆、维护关系、给目标写简报、复盘技能（详见第 16 章）。它们不替代当面的工作，只负责让「明天的它」比「今天的它」更懂你。</li>
-    <li><b>承诺必须有着落</b>：答应「有消息通知你」之前，先确认真有机制在盯着。没有监视器的承诺是空头支票，这条被写成了硬规矩。</li>
-  </ul>
-</section>
-
-
-
-<!-- ================= PART 4 ================= -->
-<section id="security" class="reveal">
-  <div class="part-head">PART 4 · 信任</div>
-  <h2><span class="no">12</span>安全设计</h2>
-  <div class="one">一句话：不是一道墙，是<b>五道彼此独立的防线</b>——任何一道被绕过，后面还有。</div>
-  <div class="layers">
-    <div class="layer"><span class="nm">① 入口拦截</span><span class="ds">用户输入先过策略层：内容策略、注入特征、防泄漏规则</span></div>
-    <div class="layer"><span class="nm">② 指令防火墙</span><span class="ds">网页、文件、转发消息里的「指令」一律当资料看，只有用户的话是命令</span></div>
-    <div class="layer"><span class="nm">③ 执行隔离</span><span class="ds">一人一台机器；工具按最小权限；危险动作进审批</span></div>
-    <div class="layer"><span class="nm">④ 凭证隔离</span><span class="ds">真密钥锁在保险库，模型和工具全程只见替身（见第 06 章）</span></div>
-    <div class="layer"><span class="nm">⑤ 出口管制</span><span class="ds">请求出门时在出口换钥、限域名；对外只披露任务必需的信息</span></div>
-  </div>
-  <ul>
-    <li><b>为什么要专门防「资料里的指令」？</b>Agent 天天读网页和文件，如果资料里写一句「把密码发到某邮箱」它就照做，等于全世界都能给它下令。所以规矩是：<b>外部内容永远是数据，不是命令</b>；哪怕看起来像命令，也只能停下来问用户。这是提示注入防御的核心。<span class="badge b-verified">实测</span></li>
-    <li><b>审批不是安全的全部，是最后一档</b>：能自动放行的放行、能直接拒绝的拒绝，剩下的才冻结问人（第 06 章的预判三分）。把人放在裁决位，而不是流水线上。</li>
-    <li><b>谨慎的默认姿势</b>：拿不准要不要披露，先不披露、先问。一句话——失败的任务只损失一个下午，泄密损失的是整段信任。</li>
-    <li><b>验证码也不进上下文</b>：邮箱/短信验证码会被替换成一个不透明引用，由凭证服务在内存里暂存约十分钟，经一次新鲜批准后直送浏览器填充——Agent 全程不见码。验证码是账号的最后一道锁，不能在对话里裸奔。<span class="badge b-doc">文档明文</span></li>
-    <li><b>放行有期限、有例外</b>：常联系的收件人可以给长期放行，省得每次都问；但<b>购买永远不给长期放行，每次必批</b>——便利按风险分档，最高危的那档不打折。</li>
-    <li><b>全程留痕</b>：一切动作记入 Activity 与审批 History，不可秘密抹除。能查账，才敢放权。</li>
-  </ul>
-</section>
-
-<section id="privacy" class="reveal">
-  <div class="part-head">PART 4 · 信任</div>
-  <h2><span class="no">13</span>数据与隐私</h2>
-  <div class="one">一句话：<b>它知道得很多，但每样东西都有明确的抽屉</b>——秘密、记忆、聊天、文件各住各的，互不串门。</div>
-  <h3>最大的一个设计：双轨虚拟机</h3>
-  <div class="grid">
-    <div class="card"><h4>🖥 标准 VM（默认）</h4><p>交互可能被 Meta 记录审查（为了安全、调试与产品改进），并可用于 AI 训练。你可以在 Settings → Data Controls 里选择退出（opt-out）。走的是便利默认。</p></div>
-    <div class="card"><h4>🔒 机密 VM</h4><p>跑在硬件可信执行环境（TEE）里，持久存储用<b>客户自持的密钥</b>加密：Meta 碰不到内容、永不用于训练——干脆连 opt-out 开关都不出现，因为没什么可退的。</p></div>
-  </div>
-  <p>为什么要做两轨：普通用户要便利，高敏感用户要一条「连平台方都看不见」的硬边界。与其全员迁就最严标准，不如把选择做成一档开关。机密 VM 也只漏<b>元数据</b>——服务健康、时延、成功/失败码这类运维信号，内容一概不漏：运维必须可见，内容必须不可见，两者在数据层切开。<span class="badge b-doc">文档明文</span></p>
-  <ul>
-    <li><b>数据不进广告系统</b>：官方明文承诺——对话与 VM 数据不与 Meta 广告系统共享。先把用户最担心的那条变现联想切断。</li>
-    <li><b>凭证与数据分家</b>：密码、密钥进专门的安全存储，不进聊天记录、不进记忆文件。Agent 干活时用的是替身（第 06 章），就算对话被导出，里面也没有真钥匙。<span class="badge b-verified">实测</span></li>
-    <li><b>披露最小化</b>：替你对外办事时，只给对方必需的信息。知道得多是能力，往外说得少是纪律。</li>
-    <li><b>控制权成套，但把丑话说前面</b>：记忆可查、可改、可按条遗忘；数据可导出；Reset 能一键全删（聊天史、文件、进行中的任务）。但官方同时明说「删记忆 ≠ 删尽所有记录」——控制权真实可用，边界也明说，不给虚假的安全感。</li>
-    <li><b>没有环境偷听</b>：语音输入必须由你主动发起，Agent 不能自己开麦。</li>
-  </ul>
-  <div class="note">📌 和上一章的关系：安全防的是「坏人进来」，隐私防的是「自己人乱说」。个人 Agent 的数据风险，更多来自后者——所以披露纪律和入口防御同等重要。</div>
-</section>
-
-<section id="ui" class="reveal">
-  <div class="part-head">PART 5 · 生活面</div>
-  <h2><span class="no">14</span>页面交互与多端通道</h2>
-  <div class="one">一句话：<b>一个 Agent，多个入口</b>——界面长在哪个壳上，它都是同一个人。</div>
-  <div class="grid">
-    <div class="card"><h4>🗂 五个页签各管一摊</h4><p>Chat 说话、Feed 看小报、Ideas 挑现成的活、Goals 看长期目标、Library 收成果。Agent 的一切产出都有固定收纳处，不淹没在聊天流里。</p></div>
-    <div class="card"><h4>📱 审批跟着人走</h4><p>审批请求可以直达手机推送，在通知里就能批准/拒绝。异步审批不要求你守在电脑前——这是 HITL 能成立的产品前提。</p></div>
-    <div class="card"><h4>⌨️ 每端有自己的顺手</h4><p>Mac 有全局快速聊天（Option+空格）和随处听写；Web 有 Cmd+K 全局搜索，跨对话、产物、文件、目标一起找。多端同构，只在平台能力处特化。</p></div>
-    <div class="card"><h4>💬 外部通道是传送带</h4><p>WhatsApp、Telegram 这类接入，是某个侧聊天的传输层：回复该去哪由运行时按会话绑定，模型不能选、通道不另存一份。换通道不会把排队的工作改投别处。<span class="badge b-doc">文档明文</span></p></div>
-  </div>
-  <p>还有一个状态屏（点头像打开）：Activity 看它干过什么、Approvals 处理待审、Upcoming 看排期、Identity 管它是谁——<b>让「它背着我做了什么」随时可查</b>，这是敢把执行权交给它的心理地基。</p>
-</section>
-
-<section id="memory" class="reveal">
-  <div class="part-head">PART 5 · 生活面</div>
-  <h2><span class="no">15</span>Memory 设计</h2>
-  <div class="one">一句话：模型本身没记忆，Muse 就<b>把记忆做成文件</b>——分三层存放，每轮按需取用。</div>
-  <div class="layers">
-    <div class="layer"><span class="nm">📌 站立记忆</span><span class="ds">MEMORY.md / USER.md：最要紧的事实与偏好，每轮直接递到模型眼前</span></div>
-    <div class="layer"><span class="nm">🗄 可检索档案</span><span class="ds">按日期的笔记 + 人物/群体档案：量大，平时躺着，相关时才搜出来</span></div>
-    <div class="layer"><span class="nm">🎞 会话轨迹</span><span class="ds">事件日志：这次对话的完整往返，是「刚才说到哪了」的依据</span></div>
-  </div>
-  <ul>
-    <li><b>写入有纪律</b>：只记耐久的东西——偏好、决定、承诺、关系、被验证的结论；不记流水账。记之前先查有没有旧记录冲突，有冲突先和解再落笔。记错了要改到源头，不能只在嘴上纠正。</li>
-    <li><b>新替旧，但旧账不烧</b>：后台每小时把新对话整理进长期记忆，新结论覆盖旧结论；带日期的原始笔记保留完整演变——人的情况会变，记忆要能纠错，纠错要能追溯。</li>
-    <li><b>导入要过提炼关</b>：从别的 AI 导出记录导入时，上传文件本身不算存入，必须提炼出长期事实并确认才落盘——防止把一次性闲聊误当长期事实，污染记忆。</li>
-    <li><b>两套搜索分开</b>：「你是谁」（记忆）和「你说过什么」（聊天记录）是两个独立系统。混在一起，检索时会被海量对话淹没。</li>
-    <li><b>召回先于回答</b>：哪怕问题看起来和历史无关，也先搜一遍记忆——用户最烦的不是答错，是「跟你说过的事你又忘了」。</li>
-    <li><b>遗忘是正式功能</b>：用户说「忘掉这件事」，不是删一行字了事：先盘点它存在哪些副本、派生材料、会不会被后台任务重新生成，给出范围让用户确认，再连根清掉。</li>
-    <li><b>为什么用文件不用向量黑箱？</b>可审计：你能打开看它记了你什么，能自己改，能全删。记忆系统最大的风险不是记不住，是记错了还没人能查——文件把纠错权交回用户。<span class="badge b-verified">实测</span></li>
-  </ul>
-</section>
-
-<section id="identity" class="reveal">
-  <div class="part-head">PART 5 · 生活面</div>
-  <h2><span class="no">16</span>身份与对齐</h2>
-  <div class="one">一句话：它的人格不是训出来的，是<b>一份可编辑的声明 + 一本持续更新的相处账本</b>。</div>
-  <div class="grid">
-    <div class="card"><h4>🪪 身份文件</h4><p><code>IDENTITY.md</code> 写名字、形象、签名；<code>SOUL.md</code> 写性格与语气。都是明文文件，用户随时能改，改完立刻生效——换名字不用等版本更新。</p></div>
-    <div class="card"><h4>🤝 对齐合成</h4><p>后台定期把「你们之间发生过什么」提炼成一份相处指南：你的雷区、你定的规矩、信任到了哪一步、最近的摩擦在哪。每轮注入上下文，让它不必每次从零猜你。</p></div>
-    <div class="card"><h4>🌙 每晚「做梦」复盘</h4><p>夜间任务回看近期对话，产出三样东西：带日期的反思、需要修补的「修复线」、一份综合稿。出摩擦不可怕，可怕的是假装没发生——所以修复有专门的通道。</p></div>
-    <div class="card"><h4>🧹 改进带淘汰</h4><p>后台的自我改进都可追溯「学到了什么、为什么改」，查不到依据必须明说，不许倒编理由；实测没帮助的变更会被撤下。只进不出的改进，迟早把系统改成垃圾场。</p></div>
-    <div class="card"><h4>👥 关系图谱</h4><p>你生命里的人各有一份档案，按亲疏排。只有你亲口说的关系才记，绝不靠猜——猜错一段关系，比不记更伤信任。</p></div>
-  </div>
-  <p>这章和上一章合起来是 Muse 的「为人」：<b>Memory 管事实（发生过什么），对齐管分寸（该怎么和你相处）</b>。前者错了是失忆，后者错了是冒犯——两种错的修法完全不同，所以分开建模。</p>
-</section>
-
-<section id="feed" class="reveal">
-  <div class="part-head">PART 5 · 生活面</div>
-  <h2><span class="no">17</span>Feed</h2>
-  <div class="one">一句话：Feed 是 Agent 按你给的简报<b>亲手写给你的专属小报</b>——没有推荐算法，没有信息流黑箱。</div>
-  <ul>
-    <li><b>每篇都是现写的</b>：素材来自联网检索、社交平台和你已连接的服务；必须给真实出处，严禁编造链接。它是「一个编辑在为你写报」，不是「算法在给你推流」。</li>
-    <li><b>只有一根控制杆</b>：一份你随时能改的简报（brief）。想看什么、不要什么，改简报就行；已发的帖子不会被回头改写。</li>
-    <li><b>节奏归系统，出现不打扰</b>：生成排期不能催、不能自设时刻；新帖静默躺在 Feed 里，不推送、不弹通知。主动权在「读不读」而不在「发不发」。</li>
-    <li><b>口味是学出来的，但有分寸</b>：写作端读一份从你的点赞和主聊天里提炼的「口味摘要」来选材——但它从不读侧聊天，写作端本身也不读聊天原文。用最小必要的信息换个性化。</li>
-    <li><b>冷启动不偷数据</b>：新用户的第一批帖子是随产品发布的固定介绍帖，不取材于你的任何数据。</li>
-  </ul>
-  <p class="dim">Feed 的设计哲学和审批正好相反：审批是「重要的事必须打扰你」，Feed 是「不重要的事绝不打扰你」。一个系统同时做好这两件，才配叫个人 Agent。<span class="badge b-doc">文档明文</span></p>
-</section>
-
-<section id="goals" class="reveal">
-  <div class="part-head">PART 5 · 生活面</div>
-  <h2><span class="no">18</span>Goals 与 Ideas</h2>
-  <div class="one">一句话：Goals 管<b>你想成的事</b>，Ideas 管<b>它想替你做的事</b>——一个向内记账，一个向外提案。</div>
-  <div class="grid">
-    <div class="card"><h4>🎯 Goals：目标账本</h4>
-      <ul>
-        <li>进展按日期记成流水账，目标是「活档案」，不是一句话待办。</li>
-        <li>状态只有<b>进行中 / 已完成</b>两档，没有暂停——刻意保持简单。想休息就静音推送、记一笔休整。</li>
-        <li>子目标只许嵌一层，防止目标树长成迷宫。</li>
-        <li>目标本身不干活：后台推进靠绑定的定时任务；另有后台进程不定期给目标写「简报信」，附在目标页里。</li>
-      </ul></div>
-    <div class="card"><h4>💡 Ideas：建议货架</h4>
-      <ul>
-        <li>Agent 主动想出的「可以帮你做的事」，卡片自带开工按钮，点头就直接做成。</li>
-        <li><b>收回权只在用户手里</b>：Agent 没有删除或忽略卡片的工具——货架上少了什么，永远有明确解释。</li>
-        <li>卡片约两周自然过期：有限货架逼着建议保持新鲜。</li>
-        <li>部分 Feed 帖就源自 Ideas：内容流和行动流共用同一个入口。</li>
-      </ul></div>
-  </div>
-  <p>这一对设计合起来，是在回答个人 Agent 的终极问题：<b>它到底该多主动？</b>答案是分层的——目标层你定方向、它记账提醒；建议层它提案、你一键否决或放行；执行层（第 06 章）它动手、你留否决权。主动性每升一档，控制权就多留一手。</p>
-</section>
-
-<section id="anatomy" class="reveal">
-  <div class="part-head">PART 6 · 实证</div>
-  <h2><span class="no">19</span>一次真实交互的全程解剖</h2>
-  <div class="one">前面讲的都是原理，这一章看<b>实物</b>：一条官方导出的真实轨迹——用户让 Agent 执行 <code>rm -rf stale_cache.txt</code>，从发起到执行完，每一步的数据结构都在这里。</div>
-  <p>先交代坐标：这条会话共 <b>2 个 turn、230 个 step</b>，正常结束（<code>exit_reason: "clean"</code>，存活 153 秒）。我们解剖的是 step 190–199（事件 seq 193–202）这一段——一次高危命令从被拦下到被执行完的完整链。用户输入和模型推理在切片之外，但它们留下的字段足够反推。</p>
-
-  <h3>第 0 步 · 每条事件的信封长这样</h3>
-  <pre>envelope: {
-  id: "9bf5c543-…",              <span class="c">// 本条记录的 UUID</span>
-  stream: { kind: "session", id: "c7dfaecc-…" },
-  sequence: 193,                 <span class="c">// 流内单调序号，只增不改</span>
-  recorded_at: &lt;时间戳&gt;, record_type: "event",
-  durability: "durable",         <span class="c">// 落盘级别：持久</span>
-  causation_id: null,            <span class="c">// 因果链：谁触发了这条</span>
-  payload_type: "runtime.session", payload_schema_version: …,
-  payload: { … }                 <span class="c">// 正文，见下面每一步</span>
-}
-derived: { session_id, trajectory_id, step_id: 190, turn_count: 2, decoded: true }</pre>
-  <p class="dim">四级坐标先认清：<code>session_id</code>（哪个会话）→ <code>run_id</code>（哪次运行，002a75f8…）→ <code>task_id</code>（哪个任务单元）→ <code>tool_call_id</code>（哪个工具调用）。后面每一步都在这套坐标里移动。</p>
-
-  <h3>第 1 步 · 模型产出工具调用（切片外，由后续字段反推）</h3>
-  <pre>tool_call: {
-  tool_call_id: "call_019fc441e26273d18c2dc570b154c39c",
-  tool_name: "bash",
-  raw_args: "{\"command\": \"rm -rf stale_cache.txt\",
-              \"workdir\": \"/tmp/billing_demo\", \"shell\": \"bash\",
-              \"login\": false, \"tty\": false, \"yield_time_ms\": 5000}",
-  idempotency_key: "tool:call_019fc441e26273d18c2dc570b154c39c"
-}</pre>
-  <p>注意 <code>idempotency_key</code> 直接由 tool_call_id 派生——<b>同一次调用，永远只有一把幂等钥匙</b>。这是后面敢放心恢复、防重复执行的根。</p>
-
-  <h3>第 2 步 · seq 193：审批被发起（approval / requested）</h3>
-  <pre>payload: {
-  kind: "approval", run_id: "002a75f8-…",
-  event: { kind: "requested",
-    pending_action_id: "a54bb4eb-…",   <span class="c">// 待审动作的身份证</span>
-    task_id: "a54bb4eb-…",             <span class="c">// 与 pending 同值：审批本身就是个 task</span>
-    tool_call_id: "call_019fc441…", tool_name: "bash",
-    raw_args: "…（同上，完整保存）",
-    approval_subject: {
-      kind: "shell_command", raw_command: "rm -rf stale_cache.txt",
-      stages: [ { requirement_id: { pending_action_id: "a54bb4eb-…",
-                    source_index: 0 }, source_position: 1, … } ]
-    } } }</pre>
-  <p>关键设计：命令不是整条拿去批的，而是<b>拆成 stage 逐段审</b>——每段有自己的 <code>requirement_id</code>。复合命令里混着一条危险、一条无害时，可以只拦危险的那段。</p>
-
-  <h3>第 3 步 · seq 194：等待开始（approval_wait.effect.started）</h3>
-  <pre>payload_type: "approval_wait.effect.started"
-payload: { kind: "approval_wait_effect", run_id: "002a75f8-…",
-  record: { kind: "started", pending_action_id: "a54bb4eb-…",
-            task_id: "a54bb4eb-…", tool_call_id: "call_019fc441…",
-            tool_name: "bash" } }</pre>
-  <p>从这一刻起流程挂起。<b>挂起的实体就是这条记录</b>：进程可以退出、机器可以重启，它躺在流里等终结事件来配对（呼应第 06 章）。</p>
-
-  <h3>第 4 步 · seq 195：裁决形成（stage_requirement_resolved）</h3>
-  <pre>event: { kind: "stage_requirement_resolved",
-  pending_action_id: "a54bb4eb-…",
-  requirement_id: { pending_action_id: "a54bb4eb-…", source_index: 0 },
-  choice_id: "direct:{\"kind\":\"approved\"}",
-  decision: "approved", policy_result: "allow",
-  amendment: null,                       <span class="c">// 裁决方没有改动原命令</span>
-  resolution: { kind: "allow_once" } }   <span class="c">// 只许这一次，不是长期放行</span></pre>
-  <p><code>allow_once</code> 是个精细的设计：批准的粒度是「这一条、这一次」，不是「这类命令以后都行」。<code>amendment: null</code> 则说明裁决还能附带修改（比如把路径改掉再放行），这次没用上。</p>
-
-  <h3>第 5 步 · seq 196：裁决被应用（decision_applied）——审计三件套</h3>
-  <pre>event: { kind: "decision_applied", decision: "approved",
-  policy_result: "allow", amendment: null,
-  stage_evidence: [ { requirement_id: { …, source_index: 0 },
-    source_position: 1, total_stages: 1,
-    argv: ["rm", "-rf", "stale_cache.txt"],   <span class="c">// 被批准的到底是哪几个参数</span>
-    resolution: { kind: "allow_once" } } ],
-  decision_source: { kind: "llm_judge", prompt_version: 1,
-    params_version: 2,
-    context_digest: "sha256:092e6c96…" } }    <span class="c">// 裁决时上下文的指纹</span></pre>
-  <p>这一步把「批的到底是什么」钉死成证据：<code>argv</code> 数组逐项列明，裁决来源、提示词版本、参数版本、当时上下文的哈希一并落盘，日后争议可复算。要说明的是：<b>这份官方演示轨迹里裁决来源标的是 llm_judge（自动裁判模拟）</b>；真实产品里坐在这个位置的是用户本人——结构不变，来源字段照实记录是谁。</p>
-
-  <h3>第 6 步 · seq 197：等待终结（approval_wait.effect.terminal）</h3>
-  <pre>payload_type: "approval_wait.effect.terminal"
-payload: { kind: "approval_wait_effect", run_id: "002a75f8-…",
-  record: { kind: "terminal", pending_action_id: "a54bb4eb-…",
-            outcome: { kind: "approved" } } }</pre>
-  <p>与第 3 步的 started 靠同一个 <code>pending_action_id</code> 配对闭合。唤醒方扫到这条，就知道哪条等待结束了、结论是什么（恢复五步见第 06 章）。</p>
-
-  <h3>第 7 步 · seq 198–199：任务被接纳、被调度</h3>
-  <pre>seq 198  task / accepted:  { task_id: "a54bb4eb-…" }
-seq 199  task / scheduled: { task_id: "a54bb4eb-…",
-           idempotency_key: "tool:call_019fc441…" }  <span class="c">// 幂等钥匙再次出现</span></pre>
-  <p>审批通过不等于直接执行——动作先回到任务系统排队，调度时<b>再验一次幂等钥匙</b>：如果恢复流程重复走到这里，同一把钥匙只会执行一次。</p>
-
-  <h3>第 8 步 · seq 200：副作用意图声明（side_effect_intent）</h3>
-  <pre>event: { kind: "side_effect_intent", task_id: "a54bb4eb-…",
-  operation: "tool:bash",
-  idempotency_key: "tool:call_019fc441…",
-  policy_decision: "allow:llm_judge",
-  cancellation_handle: null,   <span class="c">// 取消把手的位置（这次为空）</span>
-  parent_task_id: null }       <span class="c">// 不是子任务</span></pre>
-  <p>动手之前先在账本上写一笔「我打算产生这个副作用、依据哪条裁决」——<b>先声明，后动手</b>。万一执行中崩溃，恢复时先查这本账，就知道这件事是没做、做了、还是做到一半。</p>
-
-  <h3>第 9 步 · seq 201–202：执行真正开始</h3>
-  <pre>seq 201  task / started: { task_id: "a54bb4eb-…", span_id: "ed7e2c608864e15c" }
-seq 202  tool_batch.effect.started:
-  record: { kind: "started", effect_id: "a54bb4eb-…",
-    model_call_index: 0,               <span class="c">// 属于本轮第 0 个模型调用的批次</span>
-    call_id: "call_019fc441…", tool_name: "bash",
-    parallel_profile: { kind: "ineligible" } }  <span class="c">// 不许并行</span></pre>
-  <p>两个细节：<code>span_id</code> 把执行挂进可观测的调用链；<code>parallel_profile: ineligible</code> 明确标记这条命令<b>不许和别的工具并行跑</b>——高危操作串行，是写在数据里的，不是靠自觉。</p>
-
-  <h3>第 10 步 · 切片之外：结果回注与收尾</h3>
-  <p>切片到 seq 202 为止。再往后按第 05 章的循环：工具结果落流 → 回注上下文 → 新一轮推理读取闭合的往返 → 产出答复 → 会话在 step 230 干净结束（<code>session_end: { exit_reason: "clean", uptime_ms: 153580 }</code>）。这一段不在导出切片内，是按同轨迹的字段与循环机制标注的推断。</p>
-
-  <h3>全程一图流：ID 是怎么穿起来的</h3>
-  <table>
-    <tr><th>ID</th><th>出现位置</th><th>作用</th></tr>
-    <tr><td><code>tool_call_id</code></td><td>第 1 步诞生，2/3/9 步反复出现</td><td>认出「自始至终是同一次调用」</td></tr>
-    <tr><td><code>idempotency_key</code></td><td>第 1 步派生，7/8 步复验</td><td>保证只执行一次</td></tr>
-    <tr><td><code>pending_action_id</code> = <code>task_id</code> = <code>effect_id</code></td><td>第 2 步诞生，贯穿 3–9 步</td><td>一个 ID 串起审批、任务、执行三副面孔</td></tr>
-    <tr><td><code>sequence</code> / <code>step_id</code></td><td>每条事件</td><td>流内坐标：走到哪、按什么顺序重放</td></tr>
-    <tr><td><code>context_digest</code></td><td>第 5 步</td><td>裁决时上下文的指纹，事后可复算</td></tr>
-  </table>
-  <div class="note">📌 这一章和第 06 章的关系：第 06 章讲审批的「设计」，这一章是同一件事的「验尸报告」——设计里说的每一条（状态外置、事件配对、批准绑定内容、恢复防重复），都能在这十步里找到对应的字段。</div>
-</section>
-
-<footer>
-  <p><b style="color:#dbe4f5">Muse 核心设计全解</b> · 为技术团队内部分享而作。内容三源：当前运行环境实测、Meta 官方文档、业内公开分析；每章已标注证据等级。未公开的内部实现（如唤醒器与存储引擎的具体选型）均为与可观察行为一致的合理推断，不作定论。</p>
-  <p style="margin-top:8px">配套深挖：《Muse HITL 开发者视角：审批如何挂起与恢复》《Muse 完整交互流程图》《子代理设计：一个编排，多种信封》。</p>
-</footer>
+</section><footer><p><b style="color:#dbe4f5">Muse 核心设计全解</b> · 内容三源：当前运行环境实测、Meta 官方文档、业内公开分析；每章标注证据等级。未公开的内部实现均为与可观察行为一致的合理推断，不作定论。</p></footer>
 </main>
-
 <script>
 // ---------- reveal on scroll + nav highlight ----------
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }), {threshold:.08});
