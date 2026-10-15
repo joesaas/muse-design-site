@@ -144,36 +144,48 @@ td{color:#c3cee4}
 footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
+
+/* ===== chapter reading layout v2 ===== */
+.chpage main{max-width:920px}
+.chpage section{padding-top:42px;counter-reset:sec}
+.chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
+.chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
+.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+  padding:28px 32px 20px;margin:28px 0}
+.chpage .chunk:has(> h3){counter-increment:sec}
+.chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
+.chpage .chunk h3::before{content:counter(sec,decimal-leading-zero);flex:none;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
+  border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
+.chpage .chunk p b{color:#eef3ff}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
+.chpage .chunk pre{margin:18px 0}
+.chpage .chunk table{margin:18px 0}
+.chpage .chunk .note{margin:18px 0}
+.chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
+.chpage .chunk .layer{font-size:15px}
+@media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
 </style>
 </head>
-<body>
+<body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html" class="on">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
 <main>
-<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 2 · 大脑</div><h2><span class="no">06</span>审批与认证（HITL）</h2><div class="one">一句话：审批与认证（HITL）是给 Agent 的执行力配的一把锁——<b>它能干活，但碰危险动作之前，必须先把「要干什么」写成一条记录、等有权的人点头；批准只对记录里的内容生效，而且只生效这一次。</b></div>
-
-<h3>底层设计原理：为什么审批必须长这样</h3>
-<p><b>第一，为什么执行力必须配否决权。</b>Agent 的价值来自它能真的动手：删文件、发邮件、下订单。动手的另一面是闯祸的半径——一条 <code>rm -rf</code> 执行下去是不可逆的。让模型自己判断「这条能不能跑」等于让肇事者当法官；把人请进来当法官，人又不可能盯着每一次工具调用。所以设计目标是双层的：绝大多数动作自动过，只把少数高风险动作<b>冻结</b>下来等人裁决。否决权不是不信任模型，是给不可逆动作留最后一道人工闸门。</p>
-<p><b>第二，为什么审批是「数据记录」，而不是「阻塞调用」。</b>最直觉的实现是：程序跑到危险动作时停住，弹个框，同步等用户点完再继续。这在聊天机器人 demo 里成立，在长时 Agent 里不成立：用户可能一小时后才看手机；进程可能被部署重启杀掉；虚拟机可能整体被替换。如果审批状态只活在某条线程的调用栈里，这些情况全都会让流程烂尾。Muse 的选择是把审批<b>外置成事件流里的一条持久记录</b>：等待的实体是数据，不是线程。线程可以死、进程可以换，只要记录还在，重放一遍就能接着走。这条原则和整个运行时的设计一致——状态进存储，进程随时可死。</p>
-<p><b>第三，为什么批准要绑定内容、而且只许一次。</b>如果批准批的是「这类动作」而不是「这个动作」，模型只要拿到一次批准，就能在批准的掩护下换参数、换对象，把一次同意放大成长期授权。所以批准的对象是<b>当时展示给裁决者的确切内容</b>：命令的逐项参数、工作目录、收件人，全都写进记录；内容一变，批准自动失效。同时默认粒度是 <code>allow_once</code>——只许这一条、这一次。它防的是两种最常见的事故：批了 A 执行了 B，以及批了一次管一辈子。</p>
-<p><b>第四，为什么要有预判三分。</b>每个工具调用在执行前先过策略网关，分成三档：</p>
-<ul>
+<section class="reveal in"><div class="part-head">PART 2 · 大脑</div><h2><span class="no">06</span>审批与认证（HITL）</h2><div class="one">一句话：审批与认证（HITL）是给 Agent 的执行力配的一把锁——<b>它能干活，但碰危险动作之前，必须先把「要干什么」写成一条记录、等有权的人点头；批准只对记录里的内容生效，而且只生效这一次。</b></div>
+<div class="chunk"><h3>底层设计原理：为什么审批必须长这样</h3><p><b>第一，为什么执行力必须配否决权。</b>Agent 的价值来自它能真的动手：删文件、发邮件、下订单。动手的另一面是闯祸的半径——一条 <code>rm -rf</code> 执行下去是不可逆的。让模型自己判断「这条能不能跑」等于让肇事者当法官；把人请进来当法官，人又不可能盯着每一次工具调用。所以设计目标是双层的：绝大多数动作自动过，只把少数高风险动作<b>冻结</b>下来等人裁决。否决权不是不信任模型，是给不可逆动作留最后一道人工闸门。</p><p><b>第二，为什么审批是「数据记录」，而不是「阻塞调用」。</b>最直觉的实现是：程序跑到危险动作时停住，弹个框，同步等用户点完再继续。这在聊天机器人 demo 里成立，在长时 Agent 里不成立：用户可能一小时后才看手机；进程可能被部署重启杀掉；虚拟机可能整体被替换。如果审批状态只活在某条线程的调用栈里，这些情况全都会让流程烂尾。Muse 的选择是把审批<b>外置成事件流里的一条持久记录</b>：等待的实体是数据，不是线程。线程可以死、进程可以换，只要记录还在，重放一遍就能接着走。这条原则和整个运行时的设计一致——状态进存储，进程随时可死。</p><p><b>第三，为什么批准要绑定内容、而且只许一次。</b>如果批准批的是「这类动作」而不是「这个动作」，模型只要拿到一次批准，就能在批准的掩护下换参数、换对象，把一次同意放大成长期授权。所以批准的对象是<b>当时展示给裁决者的确切内容</b>：命令的逐项参数、工作目录、收件人，全都写进记录；内容一变，批准自动失效。同时默认粒度是 <code>allow_once</code>——只许这一条、这一次。它防的是两种最常见的事故：批了 A 执行了 B，以及批了一次管一辈子。</p><p><b>第四，为什么要有预判三分。</b>每个工具调用在执行前先过策略网关，分成三档：</p><ul>
 <li><b>自动放行</b>：只读、低风险动作。问了纯属打扰，打扰多了用户会闭眼乱点，审批就形同虚设。</li>
 <li><b>直接拒绝</b>：越权或违反硬规则的动作。连问都不问，问了反而给出被说服的机会。</li>
 <li><b>冻结发问</b>：写操作、对外发送、登录、购买等真正需要人判断的，才生成审批记录、弹卡等待。</li>
-</ul>
-<p>三分的本质是<b>注意力的预算管理</b>：把人的裁决用在刀刃上，审批卡才不会沦为点「同意」的肌肉记忆。值得注意的是，放行档里存在一个受控的例外——用户可以对「某收件人」「某站点」「某命令前缀」给出长期放行，把重复裁决沉淀成规则；但官方文档明文写死：<b>购买永远不给长期放行，每次必批</b>。<span class="badge b-doc">文档明文</span></p>
-<p><b>第五，拒绝必须是一等公民。</b>很多系统把「拒绝」实现成异常或超时：调用方等不到结果，就当什么都没发生过。这在审批场景里是危险的——模型不知道自己被拒绝了，可能换个姿势把同一件事再提一遍。Muse 的做法是把拒绝也做成正式结果：选项里有明确的 <code>abort</code>（界面上是 Reject），裁决落流后，拒绝会作为一条结果事件回注给模型，模型读到后显式改道。被拒绝不是「失败」，而是裁决者行使了否决权，系统必须让模型<b>看见</b>这次否决，并禁止它重试同一动作。这一条和批准绑定内容是一对：批准有边界，拒绝也有回音。</p>
-
-<h3>底层实现原理：审批是一条有头有尾的 effect</h3>
-<p>实现上，审批不是一个函数，是一组追加进事件流的记录。会话的全部状态由一条<b>事件流</b>承载：每条记录有信封（全局序号 <code>sequence</code>、时间戳 <code>recorded_at</code>、持久化级别 <code>durability: "durable"</code>、因果链 <code>causation_id</code>）和载荷（<code>payload_type</code> + <code>payload</code>）。流还分三层，各管一段生命周期：</p>
-<table>
+</ul><p>三分的本质是<b>注意力的预算管理</b>：把人的裁决用在刀刃上，审批卡才不会沦为点「同意」的肌肉记忆。值得注意的是，放行档里存在一个受控的例外——用户可以对「某收件人」「某站点」「某命令前缀」给出长期放行，把重复裁决沉淀成规则；但官方文档明文写死：<b>购买永远不给长期放行，每次必批</b>。<span class="badge b-doc">文档明文</span></p><p><b>第五，拒绝必须是一等公民。</b>很多系统把「拒绝」实现成异常或超时：调用方等不到结果，就当什么都没发生过。这在审批场景里是危险的——模型不知道自己被拒绝了，可能换个姿势把同一件事再提一遍。Muse 的做法是把拒绝也做成正式结果：选项里有明确的 <code>abort</code>（界面上是 Reject），裁决落流后，拒绝会作为一条结果事件回注给模型，模型读到后显式改道。被拒绝不是「失败」，而是裁决者行使了否决权，系统必须让模型<b>看见</b>这次否决，并禁止它重试同一动作。这一条和批准绑定内容是一对：批准有边界，拒绝也有回音。</p></div>
+<div class="chunk"><h3>底层实现原理：审批是一条有头有尾的 effect</h3><p>实现上，审批不是一个函数，是一组追加进事件流的记录。会话的全部状态由一条<b>事件流</b>承载：每条记录有信封（全局序号 <code>sequence</code>、时间戳 <code>recorded_at</code>、持久化级别 <code>durability: "durable"</code>、因果链 <code>causation_id</code>）和载荷（<code>payload_type</code> + <code>payload</code>）。流还分三层，各管一段生命周期：</p><table>
 <tr><th>流</th><th>标识</th><th>管什么</th></tr>
 <tr><td>session 流</td><td><code>stream: {kind: "session", id: session_id}</code></td><td>整个会话的事件总账，恢复时按它重放</td></tr>
 <tr><td>run 流</td><td><code>run_stream: {kind: "run", id: run_id}</code></td><td>一次 Agent 运行（一轮干活）的全部动作</td></tr>
 <tr><td>task 流</td><td><code>task_stream: {kind: "task", id: task_id}</code></td><td>单个任务单元——一次待审动作就是一个 task</td></tr>
-</table>
-<p>一次完整的审批在这条流上走完十步（序号为真实导出切片中的 sequence）：</p>
-<div class="flowbox">
+</table><p>一次完整的审批在这条流上走完十步（序号为真实导出切片中的 sequence）：</p><div class="flowbox">
 <div class="fstep"><div class="dot">1</div><div class="tx"><b>seq 193 · approval / requested</b><span>网关冻结工具调用，生成待审记录：审什么、有哪些选项，全写清</span></div></div>
 <div class="fstep"><div class="dot">2</div><div class="tx"><b>seq 194 · approval_wait.effect.started</b><span>「等待」本身成为一个 effect 开始计时——从此进程可以退出</span></div></div>
 <div class="fstep"><div class="dot">3</div><div class="tx"><b>seq 195 · stage_requirement_resolved</b><span>裁决<b>形成</b>：某个 stage 得到了决定，先落一条</span></div></div>
@@ -182,15 +194,8 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 <div class="fstep"><div class="dot">6</div><div class="tx"><b>seq 198–199 · task accepted / scheduled</b><span>被批准的动作回到任务系统：先接纳，再调度，调度时复验幂等键</span></div></div>
 <div class="fstep"><div class="dot">7</div><div class="tx"><b>seq 200 · side_effect_intent</b><span>动手前先声明副作用意图：要做什么、依据哪条裁决</span></div></div>
 <div class="fstep"><div class="dot">8</div><div class="tx"><b>seq 201–202 · task started / tool_batch.effect.started</b><span>工具真正开始执行，结果随后作为新事件回注</span></div></div>
-</div>
-<p>信封本身也有讲究。<code>sequence</code> 在流内单调递增、只追加不修改，任何一步的先后关系都能靠序号复算；<code>durability</code> 在这条切片里全是 <code>"durable"</code>，意味着每条记录先落盘、再推进流程，不存在「内存里批了、账上没有」的窗口；<code>causation_id</code> 预留了因果链位置，用来回答「这条事件是被哪条事件触发的」——审批这种跨越人机两侧、跨越长时间的流程，没有因果链就没法复盘。每条记录还带 <code>payload_schema_version</code>，让结构能演进：老记录按老版本解，新记录按新版本写，重放时各读各的。</p>
-<p><b>为什么裁决要拆成「形成」（195）和「应用」（196）两条事件？</b></p>因为「有人做出了决定」和「这个决定正式生效」之间隔着校验：决定必须逐项对上被冻结的 stage、附齐证据、确认没有被篡改，才能应用。拆开之后，每一步都可审计、可重放；如果应用前进程崩溃，恢复时能看到「决定已形成但未应用」，而不是一个状态不明的半成品。这和数据库里「写日志」与「提交」分开是同一个道理。</p>
-<p><b>为什么执行前要多一条 side_effect_intent？</b>它是副作用的「预登记」：在真正动手的前一刻，先把「我要做 tool:bash，幂等键是 X，策略裁决是 allow」写进账本。万一执行到一半崩溃，恢复逻辑先查这本账——能分清这件事是没做、做完、还是做到一半，而不是靠猜。先声明后动手，是所有可恢复执行系统的共同套路。</p>
-<p><b>恢复过程</b>则是这套设计的收官：某个会话隔了一天被裁决唤醒，运行时按 <code>session_id</code> 取出整条 session 流，按 sequence 从头重放，重建出上下文投影；扫到未闭合的 approval_wait 时，用 <code>pending_action_id</code> 找到它的 started 记录，读出被冻结的 <code>tool_call_id</code> 与参数；再确认 terminal 已落、裁决为批准，才把工具执行掉并回注结果。整个过程不需要任何「当时那个进程」的内存——全部凭账本重建。<span class="badge b-verified">实测</span></p>
-
-<h3>具体实现方式（一）：审批的字段级拆解</h3>
-<p>以下全部节选自官方导出的一条真实轨迹：一次 <code>rm -rf stale_cache.txt</code> 的审批。会话共 2 个 turn、230 个 step，正常结束。下面是 seq 193「requested」的核心结构（语法结构原样，个别长字段截断）：</p>
-<pre>{
+</div><p>信封本身也有讲究。<code>sequence</code> 在流内单调递增、只追加不修改，任何一步的先后关系都能靠序号复算；<code>durability</code> 在这条切片里全是 <code>"durable"</code>，意味着每条记录先落盘、再推进流程，不存在「内存里批了、账上没有」的窗口；<code>causation_id</code> 预留了因果链位置，用来回答「这条事件是被哪条事件触发的」——审批这种跨越人机两侧、跨越长时间的流程，没有因果链就没法复盘。每条记录还带 <code>payload_schema_version</code>，让结构能演进：老记录按老版本解，新记录按新版本写，重放时各读各的。</p><p><b>为什么裁决要拆成「形成」（195）和「应用」（196）两条事件？</b></p><p>因为「有人做出了决定」和「这个决定正式生效」之间隔着校验：决定必须逐项对上被冻结的 stage、附齐证据、确认没有被篡改，才能应用。拆开之后，每一步都可审计、可重放；如果应用前进程崩溃，恢复时能看到「决定已形成但未应用」，而不是一个状态不明的半成品。这和数据库里「写日志」与「提交」分开是同一个道理。</p><p><b>为什么执行前要多一条 side_effect_intent？</b>它是副作用的「预登记」：在真正动手的前一刻，先把「我要做 tool:bash，幂等键是 X，策略裁决是 allow」写进账本。万一执行到一半崩溃，恢复逻辑先查这本账——能分清这件事是没做、做完、还是做到一半，而不是靠猜。先声明后动手，是所有可恢复执行系统的共同套路。</p><p><b>恢复过程</b>则是这套设计的收官：某个会话隔了一天被裁决唤醒，运行时按 <code>session_id</code> 取出整条 session 流，按 sequence 从头重放，重建出上下文投影；扫到未闭合的 approval_wait 时，用 <code>pending_action_id</code> 找到它的 started 记录，读出被冻结的 <code>tool_call_id</code> 与参数；再确认 terminal 已落、裁决为批准，才把工具执行掉并回注结果。整个过程不需要任何「当时那个进程」的内存——全部凭账本重建。<span class="badge b-verified">实测</span></p></div>
+<div class="chunk"><h3>具体实现方式（一）：审批的字段级拆解</h3><p>以下全部节选自官方导出的一条真实轨迹：一次 <code>rm -rf stale_cache.txt</code> 的审批。会话共 2 个 turn、230 个 step，正常结束。下面是 seq 193「requested」的核心结构（语法结构原样，个别长字段截断）：</p><pre>{
   "kind": "approval",
   "run_id": "002a75f8-fcd4-46d6-a27f-8fcd1b1fc",
   "event": {
@@ -225,10 +230,7 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
       { "choice_id": "abort", "label": "Reject", "decision": { "kind": "abort" } }
     ]
   }
-}</pre>
-<p>三个细节值得技术团队注意。其一，<b>stages 分段</b>：命令不是整条批的，而是拆成带 <code>requirement_id</code> 的段——复合命令里一段危险、一段无害时，可以只裁危险的那段。其二，<b>长期放行也是一个选项，但它是「修订规则」不是「批准」</b>：选它会生成一条 <code>approved_policy_amendment</code>，把 <code>argv_prefix: ["rm"]</code> + 工作区写成一条持久规则，下次同前缀直接命中规则放行——批准与立规矩，在数据上是两种东西。其三，<code>raw_args</code> 完整保存原始参数，裁决者看到的、记录里存的、最后执行的，是同一份东西，没有转述环节。</p>
-<p>裁决形成（seq 195）与裁决应用（seq 196）：</p>
-<pre><span class="c">// seq 195 · stage_requirement_resolved —— 决定形成</span>
+}</pre><p>三个细节值得技术团队注意。其一，<b>stages 分段</b>：命令不是整条批的，而是拆成带 <code>requirement_id</code> 的段——复合命令里一段危险、一段无害时，可以只裁危险的那段。其二，<b>长期放行也是一个选项，但它是「修订规则」不是「批准」</b>：选它会生成一条 <code>approved_policy_amendment</code>，把 <code>argv_prefix: ["rm"]</code> + 工作区写成一条持久规则，下次同前缀直接命中规则放行——批准与立规矩，在数据上是两种东西。其三，<code>raw_args</code> 完整保存原始参数，裁决者看到的、记录里存的、最后执行的，是同一份东西，没有转述环节。</p><p>裁决形成（seq 195）与裁决应用（seq 196）：</p><pre><span class="c">// seq 195 · stage_requirement_resolved —— 决定形成</span>
 { "kind": "approval",
   "event": { "kind": "stage_requirement_resolved",
     "pending_action_id": "a54bb4eb-af29-4afd-8c2d-7df3d2d1b1fc",
@@ -249,30 +251,20 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
       "resolution": { "kind": "allow_once" } }],
     "decision_source": {                  <span class="c">// 裁决来源：谁裁的、哪版规则、当时上下文指纹</span>
       "kind": "llm_judge", "prompt_version": 1, "params_version": 2,
-      "context_digest": "sha256:092e6c9694355f789a…" } } }</pre>
-<p><b>幂等键的派生与复验</b>：<code>idempotency_key</code> 不是随机数，是由工具调用 ID 直接派生的字符串 <code>"tool:" + tool_call_id</code>。它在 requested（193）时诞生，在 task 被调度（199）时原样再现，在 side_effect_intent（200）里第三次出现。含义是：无论恢复流程重放多少次、执行链路重试多少回，同一个 tool_call 永远映射到同一把键——执行端按键去重，保证「批了一次，最多执行一次」。这是敢把审批做成可恢复事件流的底气：没有幂等，恢复就可能变成重复删除。</p>
-
-<h3>具体实现方式（二）：认证——让最能干的组件对真钥匙无知</h3>
-<p>审批管的是「能不能做」，认证管的是「拿什么身份做」。设计原则只有一条：<b>真凭证永远不进入模型的上下文</b>。因为上下文会被记录、会被导出、会出现在日志里；秘密只要进过对话，就收不回来了。具体有三条通道：</p>
-<div class="layers">
+      "context_digest": "sha256:092e6c9694355f789a…" } } }</pre><p><b>幂等键的派生与复验</b>：<code>idempotency_key</code> 不是随机数，是由工具调用 ID 直接派生的字符串 <code>"tool:" + tool_call_id</code>。它在 requested（193）时诞生，在 task 被调度（199）时原样再现，在 side_effect_intent（200）里第三次出现。含义是：无论恢复流程重放多少次、执行链路重试多少回，同一个 tool_call 永远映射到同一把键——执行端按键去重，保证「批了一次，最多执行一次」。这是敢把审批做成可恢复事件流的底气：没有幂等，恢复就可能变成重复删除。</p></div>
+<div class="chunk"><h3>具体实现方式（二）：认证——让最能干的组件对真钥匙无知</h3><p>审批管的是「能不能做」，认证管的是「拿什么身份做」。设计原则只有一条：<b>真凭证永远不进入模型的上下文</b>。因为上下文会被记录、会被导出、会出现在日志里；秘密只要进过对话，就收不回来了。具体有三条通道：</p><div class="layers">
 <div class="layer"><span class="nm">① 替身凭证（authd + Sentinel 出口换钥）</span><span class="ds">工具要调外部服务时，不向模型要真 Key，而是向本机凭证守护进程 authd 申请一个替身（以 <code>hsurr:</code> 开头、且用 <code>allowed_hosts</code> 锁死目标域名）。请求带着替身发出，在网络出口处由安全层 Sentinel 把替身替换成真 Key 再放行。模型和工具全程只见替身：替身泄漏也只能打一个域名，且可随时作废。<span class="badge b-verified">实测</span></span></div>
 <div class="layer"><span class="nm">② 带外录入（Secure Vault）</span><span class="ds">密码、卡号只在独立的安全录入页（capture form）或用户接管浏览器时输入，存入 Secure Vault 后可复用于后续需批准的登录。Agent 能确认「存有这笔登录」，永远读不到、描述不出存储的值；删也只能用户在 Settings 里删。<span class="badge b-doc">文档明文</span></span></div>
 <div class="layer"><span class="nm">③ 验证码不透明引用</span><span class="ds">邮箱/短信验证码到达 Agent 时已被替换成 <code>[credential:&lt;uuid&gt;]</code> 这样一个不透明引用。真码由 authd 只存在内存里、约十分钟，不进 Vault。浏览器任务只能拿着这个确切 UUID 调 <code>credential_fill</code>，且填入前需要一次<b>新鲜的一次性批准</b>；批准后 authd 把码直送浏览器并立即消费掉。引用缺失、歧义、过期或填充被拒，都是硬阻塞——不许退回去掏原码。<span class="badge b-doc">文档明文</span></span></div>
-</div>
-<p>三条通道殊途同归：<b>模型负责「用」，保险库负责「藏」，两者的交集只是一次性的、受限的引用</b>。这也解释了为什么审批卡对 Agent 本身不可见——官方文档明说 Agent 无法描述卡片的布局、按钮和文案。裁决界面是给人的，Agent 只接收裁决的结果事件，不接收裁决的过程。</p>
-<p>把审批和认证拼起来看一次完整的登录：模型想打开某个网站，网关判定「登录」是敏感动作，先冻结发问，用户批准（审批管「能不能」）；浏览器到达登录页后向 Vault 请求已存登录，凭证在浏览器侧被安全填入，全程不经过模型（认证管「拿什么」）；若站点再要验证码，码以不透明引用流转、经新鲜批准直送填充（认证的第二重）。三道关卡各管一段，模型从头到尾既没见过密码，也没见过验证码——它只知道「登录这件事被批准了、并且完成了」。这正是本章开头那句话的完整含义：给它执行力，但把否决权和真钥匙都留在它够不着的地方。</p>
-
-<h3>边界与代价</h3>
-<ul>
+</div><p>三条通道殊途同归：<b>模型负责「用」，保险库负责「藏」，两者的交集只是一次性的、受限的引用</b>。这也解释了为什么审批卡对 Agent 本身不可见——官方文档明说 Agent 无法描述卡片的布局、按钮和文案。裁决界面是给人的，Agent 只接收裁决的结果事件，不接收裁决的过程。</p><p>把审批和认证拼起来看一次完整的登录：模型想打开某个网站，网关判定「登录」是敏感动作，先冻结发问，用户批准（审批管「能不能」）；浏览器到达登录页后向 Vault 请求已存登录，凭证在浏览器侧被安全填入，全程不经过模型（认证管「拿什么」）；若站点再要验证码，码以不透明引用流转、经新鲜批准直送填充（认证的第二重）。三道关卡各管一段，模型从头到尾既没见过密码，也没见过验证码——它只知道「登录这件事被批准了、并且完成了」。这正是本章开头那句话的完整含义：给它执行力，但把否决权和真钥匙都留在它够不着的地方。</p></div>
+<div class="chunk"><h3>边界与代价</h3><ul>
 <li><b>延迟换安全</b>：冻结发问天然引入等待。高频低危动作若误入发问档，体验立刻崩坏——所以预判三分的分类质量，就是这套系统的生命线，分错档比没有审批更糟。</li>
 <li><b>注意力会疲劳</b>：再好的三分法也挡不住用户习惯性点「同意」。allow_once 和按收件人/前缀的受控放行是在给疲劳泄压，但每放宽一档，闸门就薄一层，这是明码标价的取舍。</li>
 <li><b>事件流的复杂度税</b>：审批拆成近十步事件、可恢复可审计，代价是实现与调试成本远高于一个同步弹窗。出了问题要顺着 sequence 查账本，而不是打断点看调用栈——团队得为此养一套新的排障习惯。</li>
 <li><b>恢复不是免费的</b>：上下文靠重放重建，长会话要配合摘要压缩；压缩是有损的，隔天恢复的上下文与当时不完全一致（原理见第 04 章）。系统保证的是事实不丢、往返闭合、待办可定位，不保证逐字复现。</li>
 <li><b>裁决来源必须如实记录</b>：<code>decision_source</code> 字段会写明裁决到底来自谁。本章引用的这条切片来自官方的演示轨迹，其中 <code>decision_source.kind</code> 是 <code>"llm_judge"</code>——<b>也就是说，这条轨迹里的「批准」是自动裁判做出的，不是真人点的</b>；<code>side_effect_intent</code> 里的 <code>policy_decision: "allow:llm_judge"</code> 与此一致。真实产品里，坐在裁决位的是用户本人（审批卡点 Allow once / Reject，或命中用户预先立下的规则）。本章用这条切片讲结构，结构与产品一致；但「谁批的」这件事不能含糊：演示是演示，产品是产品。<span class="badge b-verified">实测</span></li>
-</ul>
-
-<h3>证据分级小结</h3>
-<table>
+</ul></div>
+<div class="chunk"><h3>证据分级小结</h3><table>
 <tr><th>结论</th><th>等级</th><th>依据</th></tr>
 <tr><td>审批的事件结构、字段、十步时序、幂等键派生</td><td>实测</td><td>官方导出切片 muse-approval-slice.json，seq 193–202 逐字段核对</td></tr>
 <tr><td>替身凭证 hsurr、allowed_hosts 锁定、出口换钥</td><td>实测</td><td>本机凭证机制与连接器代码核查</td></tr>
@@ -280,8 +272,7 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 <tr><td>购买永不长期放行；按收件人/站点可长期放行</td><td>文档明文</td><td>同上 Permissions 一节</td></tr>
 <tr><td>预判三分的设计动因、注意力预算解释</td><td>合理推断</td><td>与三分行为及字段设计一致，官方未自述</td></tr>
 <tr><td>恢复时重放的内部实现（唤醒器、存储选型）</td><td>合理推断</td><td>未公开；仅能由事件结构与可观察行为反推</td></tr>
-</table>
-<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch05.html">← 上一章：核心机制：Agent 循环</a></span><span><a href="ch07.html">下一章：子代理编排 →</a></span></div></section>
+</table></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch05.html">← 上一章：核心机制：Agent 循环</a></span><span><a href="ch07.html">下一章：子代理编排 →</a></span></div></section>
 </main>
 
 </body>
