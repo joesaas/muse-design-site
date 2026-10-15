@@ -150,7 +150,7 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 .chpage section{padding-top:42px;counter-reset:sec}
 .chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
 .chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
-.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+.chpage .chunk{border:1px solid var(--line);border-radius:16px;
   padding:28px 32px 20px;margin:28px 0}
 .chpage .chunk:has(> h3){counter-increment:sec}
 .chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
@@ -159,9 +159,8 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
   font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
   border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
   border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
-.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
-.chpage .chunk p b{color:#eef3ff}
-.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;margin:15px 0}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px}
 .chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
 .chpage .chunk pre{margin:18px 0}
 .chpage .chunk table{margin:18px 0}
@@ -169,6 +168,44 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 .chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
 .chpage .chunk .layer{font-size:15px}
 @media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
+
+/* ===== chapter light reading theme v3（用户反馈：深色霓虹读久了眼睛累）=====
+   暖白纸面 + 墨色字 + 深青强调；先重定义变量让 var() 规则整体翻转，再逐个覆盖硬编码颜色。 */
+body.chpage{
+  --bg:#f6f3ec; --panel:#fffdf8; --panel2:#f0ece1;
+  --line:#e3ddcd; --txt:#272b31; --dim:#5b636e; --faint:#8b929c;
+  --cyan:#0e7490; --violet:#6d5fc0; --green:#15803d; --amber:#b45309; --red:#c2413c; --pink:#be5a83;
+  background:#f6f3ec;background-image:none;color:var(--txt)}
+.chpage ::selection{background:rgba(14,116,144,.18)}
+.chpage nav{background:rgba(255,253,248,.95)}
+.chpage nav .logo{color:#191d22}
+.chpage nav a:hover{color:#0e7490;background:rgba(14,116,144,.07)}
+.chpage nav a.on{background:rgba(14,116,144,.10)}
+.chpage h2{color:#16191e}
+.chpage .one{background:linear-gradient(90deg,rgba(14,116,144,.10),rgba(14,116,144,.015));
+  color:#1d2b33;border-left-color:#0e7490}
+.chpage .chunk{background:#fffdf8;box-shadow:0 1px 2px rgba(31,28,18,.04),0 10px 28px rgba(31,28,18,.045)}
+.chpage .chunk h3{color:#16191e}
+.chpage .chunk h3::before{border-color:rgba(14,116,144,.4);background:rgba(14,116,144,.07)}
+.chpage .chunk p{color:#2e333b}
+.chpage .chunk p b{color:#12151a}
+.chpage .chunk ul,.chpage .chunk ol{color:#2e333b}
+.chpage code{background:#edeae1;color:#0d5a72}
+.chpage pre{background:#f3f0e7;color:#333842;border-color:#e0dac9}
+.chpage pre .c{color:#98917c}
+.chpage pre code{background:transparent;color:inherit;padding:0}
+.chpage th{color:#16191e}
+.chpage .note{color:#4a3f78;background:rgba(109,95,192,.055);border-color:rgba(109,95,192,.38)}
+.chpage .card h4{color:#16191e}
+.chpage .chunk .card p,.chpage .chunk .card li{color:#454c56}
+.chpage .layer{color:#2e333b}
+.chpage .layer b{color:#16191e}
+.chpage .layer span{color:var(--dim)}
+.chpage .fstep .tx b{color:#16191e}
+.chpage .fstep .dot{background:#fffdf8}
+.chpage .b-doc{border-color:rgba(14,116,144,.45);background:rgba(14,116,144,.06)}
+.chpage .b-verified{border-color:rgba(21,128,61,.45);background:rgba(21,128,61,.06)}
+.chpage .b-infer{border-color:rgba(180,83,9,.45);background:rgba(180,83,9,.06)}
 </style>
 </head>
 <body class="chpage">
