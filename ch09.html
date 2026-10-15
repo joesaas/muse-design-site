@@ -144,47 +144,52 @@ td{color:#c3cee4}
 footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
+
+/* ===== chapter reading layout v2 ===== */
+.chpage main{max-width:920px}
+.chpage section{padding-top:42px;counter-reset:sec}
+.chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
+.chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
+.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+  padding:28px 32px 20px;margin:28px 0}
+.chpage .chunk:has(> h3){counter-increment:sec}
+.chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
+.chpage .chunk h3::before{content:counter(sec,decimal-leading-zero);flex:none;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
+  border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
+.chpage .chunk p b{color:#eef3ff}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
+.chpage .chunk pre{margin:18px 0}
+.chpage .chunk table{margin:18px 0}
+.chpage .chunk .note{margin:18px 0}
+.chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
+.chpage .chunk .layer{font-size:15px}
+@media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
 </style>
 </head>
-<body>
+<body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html" class="on">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
 <main>
-<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 3 · 躯体</div><h2><span class="no">09</span>连接器生态</h2><div class="one">一句话：连接器是 Muse 伸向外部服务的<b>插座加说明书</b>——插上哪个服务、能干哪些事，全凭一份文档说了算；文档没写的，就是不存在。</div>
-
-<h3>一、底层设计原理：为什么是「文档即接口」</h3>
-<p>最直白的问题：Gmail、GitHub、Spotify 有几百个服务，为什么不把每个服务的操作直接写死在 Muse 的代码里？三个原因。</p>
-<ul>
+<section class="reveal in"><div class="part-head">PART 3 · 躯体</div><h2><span class="no">09</span>连接器生态</h2><div class="one">一句话：连接器是 Muse 伸向外部服务的<b>插座加说明书</b>——插上哪个服务、能干哪些事，全凭一份文档说了算；文档没写的，就是不存在。</div>
+<div class="chunk"><h3>一、底层设计原理：为什么是「文档即接口」</h3><p>最直白的问题：Gmail、GitHub、Spotify 有几百个服务，为什么不把每个服务的操作直接写死在 Muse 的代码里？三个原因。</p><ul>
 <li><b>服务太多、变得太快。</b>写死代码，等于每接一个新服务、每改一个接口，都要改主程序、发新版本。文档是数据，不是代码：新增一个服务，就是新增一个文件夹，主程序一行不动。</li>
 <li><b>能力必须可审计。</b>一份写明「能做什么、不能做什么」的文档，用户和系统都能照着查。代码里的能力是黑箱，文档里的能力是白纸黑字。</li>
 <li><b>说明书同时就是白名单。</b>文档不只是给 Agent 看的教程，它就是权限边界本身：没写进文档的命令，等于不存在，Agent 不许凭想象调出来。</li>
-</ul>
-<p><b>连接器和 Skill 的分工</b>，一句话分清：</p>
-<div class="grid">
+</ul><p><b>连接器和 Skill 的分工</b>，一句话分清：</p><div class="grid">
 <div class="card"><h4>🔌 连接器管「准入」</h4><p>能不能碰这个服务、碰的时候权限多大、钥匙在哪。它是门禁卡：决定你进不进得去这栋楼。</p></div>
 <div class="card"><h4>📖 Skill 管「经验」</h4><p>进了楼以后，事情该怎么办得好、有哪些坑。它是老员工手册：决定你干活像不像熟手。</p></div>
-</div>
-<p>还有一层好处容易漏看：<b>文档和连接是解耦的</b>。说明书在服务没连上时照样能读，所以「先看说明书、再决定要不要连」成为可能——用户是先看清这个连接器能干什么、会碰哪些数据，再决定授不授权。要是能力写死在代码里，这一步就只能靠口头描述，授权就成了盲签。另外，每个服务都有一套自己的脾气：限流规则、错误格式、权限模型全不一样。把这些脾气写进各自的文档，等于把「适配差异」的成本从主程序转移到一份份可单独修订的文本上，哪个服务变了，只改它那一份。</p>
-<p><b>为什么授权必须走服务商的正规流程，不许托管密码？</b></p>因为密码一旦进了聊天、记忆或日志，就再也收不回来。OAuth 的做法是：用户在服务商自己的页面上点头，Muse 只拿到一张可随时撤销的授权凭据，全程不碰密码明文。所以密码登录、会话 Cookie 这类没法走正规授权的服务，自定义连接流程会直接婉拒——不是嫌麻烦，是这条路本身不安全。</p>
-
-<h3>二、底层实现原理：一次连接的一生</h3>
-<p>一个连接器从接上到用完，走五步：</p>
-<pre>连接 ──▶ 选范围 ──▶ 状态核验 ──▶ 调用 ──▶ 异常处理
+</div><p>还有一层好处容易漏看：<b>文档和连接是解耦的</b>。说明书在服务没连上时照样能读，所以「先看说明书、再决定要不要连」成为可能——用户是先看清这个连接器能干什么、会碰哪些数据，再决定授不授权。要是能力写死在代码里，这一步就只能靠口头描述，授权就成了盲签。另外，每个服务都有一套自己的脾气：限流规则、错误格式、权限模型全不一样。把这些脾气写进各自的文档，等于把「适配差异」的成本从主程序转移到一份份可单独修订的文本上，哪个服务变了，只改它那一份。</p><p><b>为什么授权必须走服务商的正规流程，不许托管密码？</b></p><p>因为密码一旦进了聊天、记忆或日志，就再也收不回来。OAuth 的做法是：用户在服务商自己的页面上点头，Muse 只拿到一张可随时撤销的授权凭据，全程不碰密码明文。所以密码登录、会话 Cookie 这类没法走正规授权的服务，自定义连接流程会直接婉拒——不是嫌麻烦，是这条路本身不安全。</p></div>
+<div class="chunk"><h3>二、底层实现原理：一次连接的一生</h3><p>一个连接器从接上到用完，走五步：</p><pre>连接 ──▶ 选范围 ──▶ 状态核验 ──▶ 调用 ──▶ 异常处理
 OAuth    授权到哪    用之前先查    读写分流   限流 / 拒绝
-托管页   （如选仓库）  当场查        按闸放行    各有规矩</pre>
-<p><b>状态当场查，不靠记忆。</b>连接状态是易变事实：授权会过期、会被服务商吊销、会被用户改设置。所以「上次对话里连着的」不算数，用之前先跑一次状态检查；本轮已经查过的才算数。调用中途报鉴权错误，立刻复查。有个细节：权限范围不够的错误，重连是没用的——问题不在连接断没断，在授权够不够，别白折腾。<span class="badge b-doc">文档明文</span></p>
-<p><b>「文档即能力边界」怎么执行？</b>两头都管。回答「你能不能用某服务做某事」时，Agent 去读那份文档——没连上也能读，文档在不在和服务连没连是两回事。真正调用时，工具层只暴露文档里列出的命令。文档没写的命令，不是「暂时不能用」，是这个连接器上不存在这个功能：不会以后解锁，重连也不会有。</p>
-<p><b>两层权限闸，缺一不可。</b></p>
-<ul>
+托管页   （如选仓库）  当场查        按闸放行    各有规矩</pre><p><b>状态当场查，不靠记忆。</b>连接状态是易变事实：授权会过期、会被服务商吊销、会被用户改设置。所以「上次对话里连着的」不算数，用之前先跑一次状态检查；本轮已经查过的才算数。调用中途报鉴权错误，立刻复查。有个细节：权限范围不够的错误，重连是没用的——问题不在连接断没断，在授权够不够，别白折腾。<span class="badge b-doc">文档明文</span></p><p><b>「文档即能力边界」怎么执行？</b>两头都管。回答「你能不能用某服务做某事」时，Agent 去读那份文档——没连上也能读，文档在不在和服务连没连是两回事。真正调用时，工具层只暴露文档里列出的命令。文档没写的命令，不是「暂时不能用」，是这个连接器上不存在这个功能：不会以后解锁，重连也不会有。</p><p><b>两层权限闸，缺一不可。</b></p><ul>
 <li><b>第一层：服务商的 OAuth 授权范围（粗闸）。</b>用户在服务商页面上同意的范围，比如「能读邮件」。这是服务商给的。</li>
 <li><b>第二层：用户侧的动作限制（细闸）。</b>写在连接器的清单文件里，读和写分开设默认：放行（Allow）、每次问我（Ask）、直接拦（Deny）。单个方法可以覆盖分组默认——比如读邮件放行、发邮件要问、删邮件禁止。这一层独立于服务商，长在用户自己手里。</li>
-</ul>
-<p>两层都放行，动作才执行。以 GitHub 连接器为例：读默认放行、写默认要问，清单里就这么写的。清单里甚至把「命令归哪一闸」都预先登记死了：查状态、拉工具清单、读工具，归读闸；写工具归写闸——执行时不用临场判断，查表就行。清单里还有一个不起眼但重要的字段：响应守卫。读回来的内容如果混着验证码这类敏感串，会在进入对话之前被替换成受保护的引用——权限闸管「能不能取」，响应守卫管「取回来能不能原样露出来」，两头都堵。<span class="badge b-verified">实测</span></p>
-<p><b>授权被永久拒绝怎么办？</b>服务商有个明确的失败信号 <code>reauthorization_required</code>，意思是「这张旧授权我作废了」。处理规矩是死的：不重试、不许说成「临时故障」、把重连链接原样给用户；用户重新授权之后，也<b>不自动重放</b>刚才那个写操作——写操作重放可能造成重复提交，必须由用户重新开口。<span class="badge b-doc">文档明文</span></p>
-<p><b>限流即停。</b>限流有两层：服务商自己的频率限制，加上连接器自带的一个请求上限（GitHub 的清单里写的是每分钟 50 次、突发 10 次）。撞上上限，调用直接失败，返回 <code>connector_rate_limited</code> 和一个「多少秒后再来」的值。要是返回值里带着「本次尝试终止」的标记，那就彻底停手：报告做到哪了，不许睡觉等、不许换个工具绕、不许另派任务接力——冷却时间到了，下一次再继续。这条规矩防的是把用户的账号刷到被平台封掉。</p>
-
-<h3>三、具体实现方式：拆开一个连接器看</h3>
-<p>系统自带的连接器和用户自建的连接器，文件构成是同一套。下面两个目录都是本机真实存在的：</p>
-<pre><span class="c"># 系统连接器（以 GitHub 为例）：/opt/hatch/connectors/github/</span>
+</ul><p>两层都放行，动作才执行。以 GitHub 连接器为例：读默认放行、写默认要问，清单里就这么写的。清单里甚至把「命令归哪一闸」都预先登记死了：查状态、拉工具清单、读工具，归读闸；写工具归写闸——执行时不用临场判断，查表就行。清单里还有一个不起眼但重要的字段：响应守卫。读回来的内容如果混着验证码这类敏感串，会在进入对话之前被替换成受保护的引用——权限闸管「能不能取」，响应守卫管「取回来能不能原样露出来」，两头都堵。<span class="badge b-verified">实测</span></p><p><b>授权被永久拒绝怎么办？</b>服务商有个明确的失败信号 <code>reauthorization_required</code>，意思是「这张旧授权我作废了」。处理规矩是死的：不重试、不许说成「临时故障」、把重连链接原样给用户；用户重新授权之后，也<b>不自动重放</b>刚才那个写操作——写操作重放可能造成重复提交，必须由用户重新开口。<span class="badge b-doc">文档明文</span></p><p><b>限流即停。</b>限流有两层：服务商自己的频率限制，加上连接器自带的一个请求上限（GitHub 的清单里写的是每分钟 50 次、突发 10 次）。撞上上限，调用直接失败，返回 <code>connector_rate_limited</code> 和一个「多少秒后再来」的值。要是返回值里带着「本次尝试终止」的标记，那就彻底停手：报告做到哪了，不许睡觉等、不许换个工具绕、不许另派任务接力——冷却时间到了，下一次再继续。这条规矩防的是把用户的账号刷到被平台封掉。</p></div>
+<div class="chunk"><h3>三、具体实现方式：拆开一个连接器看</h3><p>系统自带的连接器和用户自建的连接器，文件构成是同一套。下面两个目录都是本机真实存在的：</p><pre><span class="c"># 系统连接器（以 GitHub 为例）：/opt/hatch/connectors/github/</span>
 ├─ CONNECTOR.md     <span class="c"># 说明书：怎么连、能调什么、出错怎么办</span>
 ├─ connector.yaml   <span class="c"># 登记表：id、别名、是否进提示词、鉴权方式</span>
 └─ manifest.yaml    <span class="c"># 清单：权限默认值、请求上限、命令与读写的映射</span>
@@ -194,41 +199,30 @@ custom.legacy-telegram-bot/
 ├─ CONNECTOR.md     <span class="c"># 同样一份说明书，自建的也照这个格式写</span>
 ├─ connector.yaml   <span class="c"># id 以 custom. 开头，其余字段和系统版一致</span>
 └─ bin/             <span class="c"># 辅助脚本目录：真正发请求的命令行工具住这儿</span>
-   └─ telegram      <span class="c"># 如 telegram send / telegram updates</span></pre>
-<p>两个 yaml 各管一摊，分工很清楚。<code>connector.yaml</code> 是登记表：这个连接器是谁（id、标题、一句话描述）、要不要出现在给模型的提示词里、在保密虚拟机上可不可用、鉴权走哪条路（GitHub 写的是走命令行授权）。<code>manifest.yaml</code> 只系统连接器有，是执行清单：权限分组的默认值、每分钟请求上限、每个命令映射到读闸还是写闸、授权页上给用户看的说明文字。自建连接器没有 manifest，不等于没规矩——两层权限闸和限流纪律由平台统一兜底，不靠每个连接器自觉。</p>
-<table>
+   └─ telegram      <span class="c"># 如 telegram send / telegram updates</span></pre><p>两个 yaml 各管一摊，分工很清楚。<code>connector.yaml</code> 是登记表：这个连接器是谁（id、标题、一句话描述）、要不要出现在给模型的提示词里、在保密虚拟机上可不可用、鉴权走哪条路（GitHub 写的是走命令行授权）。<code>manifest.yaml</code> 只系统连接器有，是执行清单：权限分组的默认值、每分钟请求上限、每个命令映射到读闸还是写闸、授权页上给用户看的说明文字。自建连接器没有 manifest，不等于没规矩——两层权限闸和限流纪律由平台统一兜底，不靠每个连接器自觉。</p><table>
 <tr><th>对比项</th><th>系统连接器</th><th>自定义连接器</th></tr>
 <tr><td>谁做的</td><td>官方预置，随产品发布</td><td>用户有需求时按模板现建</td></tr>
 <tr><td>住在哪</td><td>系统目录，只读，部署时整体替换</td><td>用户工作区，跨部署保留</td></tr>
 <tr><td>底层通道</td><td>多为官方 MCP 服务器或官方 CLI</td><td>多为自写 CLI 脚本调服务商 API</td></tr>
 <tr><td>说明书格式</td><td colspan="2">完全一样：同一套 CONNECTOR.md + connector.yaml，长在同一条流水线上</td></tr>
-</table>
-<p><b>调用时的命令形态</b>（GitHub 连接器，真实命令）：</p>
-<pre>github status                                   <span class="c"># 先查连接状态</span>
+</table><p><b>调用时的命令形态</b>（GitHub 连接器，真实命令）：</p><pre>github status                                   <span class="c"># 先查连接状态</span>
 github authorize-url                            <span class="c"># 没连时：拿 OAuth 授权链接</span>
 github install-url                              <span class="c"># 授权后：选哪些仓库可访问</span>
 github list-tools                               <span class="c"># 实时拉取可用工具清单</span>
 github call-read-tool  --name get_file_contents …  <span class="c"># 读：只许白名单内的只读工具</span>
-github call-tool       --name push_files …         <span class="c"># 写：每次都要新鲜批准</span></pre>
-<p>读写分流是写进命令的：<code>call-read-tool</code> 只接受一份审定过的只读工具名单（查文件、查 issue、搜代码这类），名单外的名字直接拒绝；一切写操作和没审过的新工具都走 <code>call-tool</code>，每次调用都要用户当场重新批准，清单里这一条叫「仅新鲜同意」。还有一个容易忽略的点：GitHub 的实际可达范围是三者的交集——用户自己的 GitHub 权限、应用的权限、安装时选中的仓库，少一层都进不去。<span class="badge b-verified">实测</span></p>
-<p><b>从「没有现成连接器」到自建一个，完整路径是这样：</b></p>
-<ul>
+github call-tool       --name push_files …         <span class="c"># 写：每次都要新鲜批准</span></pre><p>读写分流是写进命令的：<code>call-read-tool</code> 只接受一份审定过的只读工具名单（查文件、查 issue、搜代码这类），名单外的名字直接拒绝；一切写操作和没审过的新工具都走 <code>call-tool</code>，每次调用都要用户当场重新批准，清单里这一条叫「仅新鲜同意」。还有一个容易忽略的点：GitHub 的实际可达范围是三者的交集——用户自己的 GitHub 权限、应用的权限、安装时选中的仓库，少一层都进不去。<span class="badge b-verified">实测</span></p><p><b>从「没有现成连接器」到自建一个，完整路径是这样：</b></p><ul>
 <li><b>先确认真的没有。</b>查连接器目录，有现成的绝不自建；没有，也不许编造一个设置页或接入流程糊弄过去。</li>
 <li><b>过服务商这一关。</b>只能走官方的自定义连接流程：系统先核查这个服务商，生成一个托管连接页，用户在页面里填 API 密钥或走服务商自己的 OAuth。密码登录、多把密钥、请求签名类的服务商会被直接拒绝并说明原因。</li>
 <li><b>按模板搭文件。</b>用脚手架生成 CONNECTOR.md 和 connector.yaml 的骨架，把「能调什么命令、出错怎么办」写成说明书，再把真正发请求的脚本放进 bin/。</li>
 <li><b>钥匙不进脚本。</b>脚本运行时向本机的凭证服务申请一把「替身」——一个只对指定域名有效的值（以 <code>hsurr:</code> 开头），请求真正出门时由安全层在出口换成真钥匙。脚本源码、日志、聊天里永远只有替身。某个域名之外，替身一文不值。</li>
 <li><b>自检后转正。</b>状态检查跑通，这个自建连接器就和官方的一视同仁：同样的文档规则、同样的两层权限闸、同样的限流纪律。本机现有的 Telegram Bot、YouTube 两个自定义连接器，都是这么落地的。看 Telegram Bot 的说明书就能感受到自建连接器的颗粒度：发消息是 <code>telegram send &lt;chat_id&gt; &lt;文本&gt;</code>，收消息是 <code>telegram updates</code> 长轮询，连「先用 getme 验证机器人身份再干活」这种操作顺序都写死在文档里，Agent 照章办事即可。<span class="badge b-verified">实测</span></li>
-</ul>
-
-<h3>四、边界与代价</h3>
-<ul>
+</ul></div>
+<div class="chunk"><h3>四、边界与代价</h3><ul>
 <li><b>能力被文档封顶，是有意付的代价。</b>服务商有、但文档没写的功能，就是用不了。要换来的是可审计和不失控——Agent 永远不会「自作主张」调出一个没人批准过的能力。</li>
 <li><b>每次用之前多一步查状态，批量活会被限流拖慢。</b>Google 系几个连接器的上限最紧，正确姿势是能合并的请求合并着发，而不是一条一条循环。</li>
 <li><b>有些「不能用」是设计状态，不是故障。</b>个别连接器按地区不提供，这时它在设置里根本没有那一行；个别连接器在保密虚拟机上不可用。遇到这种，照实说并给出还能走的路，不重试、不许诺「以后会有」。</li>
 <li><b>连接器不是通道。</b>在 WhatsApp 上和 Muse 说话，那是消息通道，不是连接器——通道管「话从哪来」，连接器管「手能伸到哪」，两套东西别混。</li>
-</ul>
-<div class="note">📌 <b>证据分级小结</b>：连接生命周期、两层权限、限流与 <code>reauthorization_required</code> 的处理规矩，来自官方文档明文<span class="badge b-doc">文档明文</span>；文件构成、GitHub 的读写分流与配额数值、替身机制、两个自定义连接器的落地形态，来自本机真实目录与文档的实地核对<span class="badge b-verified">实测</span>；连接器目录的上架审核流程、连接器服务端（MCP 服务器内部、托管连接页的实现）未公开，本章未展开，相关细节属<span class="badge b-infer">合理推断</span>范围之外，不作定论。</div>
-<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch08.html">← 上一章：Skills 技能系统</a></span><span><a href="ch10.html">下一章：文件架构 →</a></span></div></section>
+</ul><div class="note">📌 <b>证据分级小结</b>：连接生命周期、两层权限、限流与 <code>reauthorization_required</code> 的处理规矩，来自官方文档明文<span class="badge b-doc">文档明文</span>；文件构成、GitHub 的读写分流与配额数值、替身机制、两个自定义连接器的落地形态，来自本机真实目录与文档的实地核对<span class="badge b-verified">实测</span>；连接器目录的上架审核流程、连接器服务端（MCP 服务器内部、托管连接页的实现）未公开，本章未展开，相关细节属<span class="badge b-infer">合理推断</span>范围之外，不作定论。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch08.html">← 上一章：Skills 技能系统</a></span><span><a href="ch10.html">下一章：文件架构 →</a></span></div></section>
 </main>
 
 </body>

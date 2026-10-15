@@ -144,42 +144,48 @@ td{color:#c3cee4}
 footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
+
+/* ===== chapter reading layout v2 ===== */
+.chpage main{max-width:920px}
+.chpage section{padding-top:42px;counter-reset:sec}
+.chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
+.chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
+.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+  padding:28px 32px 20px;margin:28px 0}
+.chpage .chunk:has(> h3){counter-increment:sec}
+.chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
+.chpage .chunk h3::before{content:counter(sec,decimal-leading-zero);flex:none;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
+  border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
+.chpage .chunk p b{color:#eef3ff}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
+.chpage .chunk pre{margin:18px 0}
+.chpage .chunk table{margin:18px 0}
+.chpage .chunk .note{margin:18px 0}
+.chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
+.chpage .chunk .layer{font-size:15px}
+@media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
 </style>
 </head>
-<body>
+<body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html" class="on">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
 <main>
-<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 3 · 躯体</div><h2><span class="no">08</span>Skills 技能系统</h2><div class="one">一句话：Skills 是给 Agent 的<b>操作手册库</b>——工具管「能不能做」，Skill 管「该怎么做」；经验不长在模型脑子里，而是写成文件，放在磁盘上。</div>
-
-<h3>底层设计原理：为什么把经验拆出模型</h3>
-<p>先想一个问题：让一个大模型学会「订机票要先比总价再比时长」，有几种办法？</p>
-<ul>
+<section class="reveal in"><div class="part-head">PART 3 · 躯体</div><h2><span class="no">08</span>Skills 技能系统</h2><div class="one">一句话：Skills 是给 Agent 的<b>操作手册库</b>——工具管「能不能做」，Skill 管「该怎么做」；经验不长在模型脑子里，而是写成文件，放在磁盘上。</div>
+<div class="chunk"><h3>底层设计原理：为什么把经验拆出模型</h3><p>先想一个问题：让一个大模型学会「订机票要先比总价再比时长」，有几种办法？</p><ul>
 <li><b>训进权重</b>：改一次要重训，错了要重训，你还看不见它到底学了什么。</li>
 <li><b>写进系统提示</b>：所有任务都背着全部规矩，上下文被无关内容塞满，规矩之间还会互相打架。</li>
 <li><b>写成文件、按需取用</b>：这就是 Skill 的路。一本手册一个任务，错了改文件，删了就没了，全程可审计。</li>
-</ul>
-<p>选第三条，背后是三层分工逻辑：</p>
-<div class="grid">
+</ul><p>选第三条，背后是三层分工逻辑：</p><div class="grid">
 <div class="card"><h4>🔧 工具 = 能力</h4><p>工具是可执行的操作：查航班、发邮件、读文件。它只回答「能不能做」。给新手发全套工具，他还是新手。</p></div>
 <div class="card"><h4>📖 Skill = 打法</h4><p>Skill 是写给模型读的说明书：先做什么、后做什么、有哪些坑、什么时候停下来问人。它回答「该怎么做」。给新手再配一柜子手册，他才像熟手。</p></div>
 <div class="card"><h4>🔌 连接器 = 准入</h4><p>连接器管账号和通道：能不能碰这个服务、凭证怎么走。三者各管一段，改打法不用动能力，换账号不用改打法。</p></div>
-</div>
-<p><b>技能是资产，不是附属品。</b>一本手册是自包含的文件夹，可以复制、可以审阅、可以装进不同的 Agent 运行时。换个运行时只需适配外壳——比如引用路径的写法——核心打法不变。用户为自己沉淀的技能存在自己的工作区里，不随产品版本更新被冲掉。经验因此第一次有了「产权」：它属于攒下它的人，而不是属于平台或者模型厂商。</p>
-<p><b>经验与模型解耦，还有一个长远好处：换脑不丢经验。</b>模型会升级、会换代，权重里的东西带不走；文件里的手册可以原样搬进下一代模型继续用。同理，一本手册里的教训——比如某个接口的坑、某种用户的雷区——是组织里的人攒下来的，写成文件后，新来的 Agent 第一天就能继承，不必每人重新踩一遍。经验从「某个模型的一次性表现」变成了「可以交接的工件」，这是把经验拆出模型的第二层理由。</p>
-<p><b>按需加载是上下文经济学。</b></p>上下文窗口是最贵的资源。每轮对话都把几十本手册全文塞进去，等于让模型每答一句话先默读一遍整个图书馆。Skill 的解法是两级制：平时只带「目录页」，命中任务才取「正文」。目录页的成本是一本一行，正文的成本只在真正用到的那一轮付出。下文实现部分会看到，这个两级制是写死在描述符字段里的。</p>
-
-<h3>底层实现原理：发现、触发、协作、进化</h3>
-<p><b>第一步，发现。</b>每个技能目录里有一份 <code>skill.yaml</code> 描述符，其中 <code>description</code> 一句话写清「产出什么、何时用」——注释里明说：这句话就是模型在技能列表里看到的全部。<code>include_in_prompt: true</code> 的技能，每轮对话都把名字加一句话简介列进上下文；标 <code>false</code> 的不占这个位置，只能靠 <code>muse.skill_search</code> 按关键词（默认 BM25 排序，也支持正则）从全量目录里搜出来。<span class="badge b-verified">实测</span></p>
-<p><b>第二步，触发。</b>任务来了，Agent 对照目录页判断：有明确命中的，读那本的 <code>SKILL.md</code> 全文再动手；几个都像，选最具体的那个；目录页里没有，就先搜索再下结论，不许凭印象说「没这个能力」。还有一条硬规矩：有些技能自带触发条件，比如本机就装着一本只许用户手动输入暗号才启动、平时绝不自动触发的手册——触发权可以完全收回给用户。<span class="badge b-verified">实测</span></p>
-<p><b>第三步，送达有两条路。</b>多数技能靠 Agent 自己读文件。但个别场景运行时会直接把内容「组装」后注入当轮上下文——例如在目标页签里新建目标时，注入的是按类别拼好的完整创建契约，此时反而禁止再去读技能文件，免得两份指令打架。同一个技能，送达方式随入口而变。<span class="badge b-doc">文档明文</span></p>
-<p><b>SKILL.md 的结构契约。</b>正文没有强制的机器格式，就是给模型读的自然语言，但有一套稳定惯例：标题之下按「先做什么、注意什么、收尾怎么验」分节；文中用相对链接引用同目录的参考文件，解析规则是<b>以引用所在文件的文件夹为基准</b>；文末常设一节「Available connectors」，列出这个任务要读的连接器文档。也就是说，手册正文管流程，细节沉到 <code>references/</code>，需要时才展开——手册内部又是一层两级制。</p>
-<p><b>手册还有一层「文体契约」。</b>读者是模型，不是人，所以通篇是祈使句和显式分支：「先查状态再动手」「命中 X 走 A、命中 Y 走 B」；红线用否定式写死——「绝不」「不要」单列成段，不埋在叙述里。给人看的文档可以留白让人悟，给模型看的手册必须把判断点全部摊开：含糊一处，执行时就多一次自由发挥。前面几本真实手册读下来，结构不同，文体惊人一致，就是这个道理。</p>
-<p><b>和子代理、连接器怎么协作。</b></p>技能是「读物」，谁干活谁读：主代理命中就自己读；派子代理时，简报里点名要用的技能，子代理在自己的上下文里读同一份文件——文件是共享的，理解是各自的。技能与连接器的关系是引用关系：手册负责在正确的步骤写明「去读某连接器的文档、按它的状态检查先验连通性」，连接器文档负责该服务的具体命令。手册不复制连接器的内容，只负责编排它出现的时机。</p>
-<p><b>自改进循环。</b>据官方自改进文档，后台有一道<b>每日技能复盘</b>：重复出现的工作流可以被沉淀成用户的新技能；已有技能要对照近期实绩审计；实测证明没帮助的变更会被<b>退役</b>。这类由复盘发布的技能，描述符里带一个专门字段 <code>skill_improvement: { managed: true, status: active }</code>，标明「这本是系统托管的」，人工修订时要原样保留这个字段。<span class="badge b-doc">文档明文</span></p>
-
-<h3>具体实现方式：一本真实手册的解剖</h3>
-<p>下面是本机一本在用的自定义技能 <code>local-prompt</code> 的真实骨架（节选，结构未改）：</p>
-<pre># /prompt 提示词生成器            <span class="c">← 标题即技能名，一眼认出管什么</span>
+</div><p><b>技能是资产，不是附属品。</b>一本手册是自包含的文件夹，可以复制、可以审阅、可以装进不同的 Agent 运行时。换个运行时只需适配外壳——比如引用路径的写法——核心打法不变。用户为自己沉淀的技能存在自己的工作区里，不随产品版本更新被冲掉。经验因此第一次有了「产权」：它属于攒下它的人，而不是属于平台或者模型厂商。</p><p><b>经验与模型解耦，还有一个长远好处：换脑不丢经验。</b>模型会升级、会换代，权重里的东西带不走；文件里的手册可以原样搬进下一代模型继续用。同理，一本手册里的教训——比如某个接口的坑、某种用户的雷区——是组织里的人攒下来的，写成文件后，新来的 Agent 第一天就能继承，不必每人重新踩一遍。经验从「某个模型的一次性表现」变成了「可以交接的工件」，这是把经验拆出模型的第二层理由。</p><p><b>按需加载是上下文经济学。</b></p><p>上下文窗口是最贵的资源。每轮对话都把几十本手册全文塞进去，等于让模型每答一句话先默读一遍整个图书馆。Skill 的解法是两级制：平时只带「目录页」，命中任务才取「正文」。目录页的成本是一本一行，正文的成本只在真正用到的那一轮付出。下文实现部分会看到，这个两级制是写死在描述符字段里的。</p></div>
+<div class="chunk"><h3>底层实现原理：发现、触发、协作、进化</h3><p><b>第一步，发现。</b>每个技能目录里有一份 <code>skill.yaml</code> 描述符，其中 <code>description</code> 一句话写清「产出什么、何时用」——注释里明说：这句话就是模型在技能列表里看到的全部。<code>include_in_prompt: true</code> 的技能，每轮对话都把名字加一句话简介列进上下文；标 <code>false</code> 的不占这个位置，只能靠 <code>muse.skill_search</code> 按关键词（默认 BM25 排序，也支持正则）从全量目录里搜出来。<span class="badge b-verified">实测</span></p><p><b>第二步，触发。</b>任务来了，Agent 对照目录页判断：有明确命中的，读那本的 <code>SKILL.md</code> 全文再动手；几个都像，选最具体的那个；目录页里没有，就先搜索再下结论，不许凭印象说「没这个能力」。还有一条硬规矩：有些技能自带触发条件，比如本机就装着一本只许用户手动输入暗号才启动、平时绝不自动触发的手册——触发权可以完全收回给用户。<span class="badge b-verified">实测</span></p><p><b>第三步，送达有两条路。</b>多数技能靠 Agent 自己读文件。但个别场景运行时会直接把内容「组装」后注入当轮上下文——例如在目标页签里新建目标时，注入的是按类别拼好的完整创建契约，此时反而禁止再去读技能文件，免得两份指令打架。同一个技能，送达方式随入口而变。<span class="badge b-doc">文档明文</span></p><p><b>SKILL.md 的结构契约。</b>正文没有强制的机器格式，就是给模型读的自然语言，但有一套稳定惯例：标题之下按「先做什么、注意什么、收尾怎么验」分节；文中用相对链接引用同目录的参考文件，解析规则是<b>以引用所在文件的文件夹为基准</b>；文末常设一节「Available connectors」，列出这个任务要读的连接器文档。也就是说，手册正文管流程，细节沉到 <code>references/</code>，需要时才展开——手册内部又是一层两级制。</p><p><b>手册还有一层「文体契约」。</b>读者是模型，不是人，所以通篇是祈使句和显式分支：「先查状态再动手」「命中 X 走 A、命中 Y 走 B」；红线用否定式写死——「绝不」「不要」单列成段，不埋在叙述里。给人看的文档可以留白让人悟，给模型看的手册必须把判断点全部摊开：含糊一处，执行时就多一次自由发挥。前面几本真实手册读下来，结构不同，文体惊人一致，就是这个道理。</p><p><b>和子代理、连接器怎么协作。</b></p><p>技能是「读物」，谁干活谁读：主代理命中就自己读；派子代理时，简报里点名要用的技能，子代理在自己的上下文里读同一份文件——文件是共享的，理解是各自的。技能与连接器的关系是引用关系：手册负责在正确的步骤写明「去读某连接器的文档、按它的状态检查先验连通性」，连接器文档负责该服务的具体命令。手册不复制连接器的内容，只负责编排它出现的时机。</p><p><b>自改进循环。</b>据官方自改进文档，后台有一道<b>每日技能复盘</b>：重复出现的工作流可以被沉淀成用户的新技能；已有技能要对照近期实绩审计；实测证明没帮助的变更会被<b>退役</b>。这类由复盘发布的技能，描述符里带一个专门字段 <code>skill_improvement: { managed: true, status: active }</code>，标明「这本是系统托管的」，人工修订时要原样保留这个字段。<span class="badge b-doc">文档明文</span></p></div>
+<div class="chunk"><h3>具体实现方式：一本真实手册的解剖</h3><p>下面是本机一本在用的自定义技能 <code>local-prompt</code> 的真实骨架（节选，结构未改）：</p><pre># /prompt 提示词生成器            <span class="c">← 标题即技能名，一眼认出管什么</span>
 
 ## Purpose                      <span class="c">← 先讲为什么存在，不先讲步骤</span>
 把「任务+背景+要求+例子」的万能公式，
@@ -194,47 +200,34 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 
 ## Operating Rules              <span class="c">← 硬规矩单列，与流程分开</span>
 1. 不替用户编造答案
-2. 成稿后不自动上传、不自动执行</pre>
-<p>拆完看得出四个固定段：<b>Purpose</b> 定身份，<b>Trigger</b> 定边界，<b>Workflow</b> 定步骤，<b>Operating Rules</b> 定红线。复杂技能（如目标类）正文只做「分诊台」：判断当前场景属于哪一类，再指到 <code>creation/&lt;类别&gt;.md</code> 或 <code>guides/&lt;类别&gt;/scaffold.md</code> 去读细则，正文自己不背全部内容。</p>
-<p>技能目录的完整布局（实测）：</p>
-<pre>/opt/muse/skills/&lt;技能&gt;/          <span class="c">← 系统技能：只读，每次部署整体替换</span>
+2. 成稿后不自动上传、不自动执行</pre><p>拆完看得出四个固定段：<b>Purpose</b> 定身份，<b>Trigger</b> 定边界，<b>Workflow</b> 定步骤，<b>Operating Rules</b> 定红线。复杂技能（如目标类）正文只做「分诊台」：判断当前场景属于哪一类，再指到 <code>creation/&lt;类别&gt;.md</code> 或 <code>guides/&lt;类别&gt;/scaffold.md</code> 去读细则，正文自己不背全部内容。</p><p>技能目录的完整布局（实测）：</p><pre>/opt/muse/skills/&lt;技能&gt;/          <span class="c">← 系统技能：只读，每次部署整体替换</span>
 ~/workspace/custom-skills/&lt;技能&gt;/  <span class="c">← 自定义技能：可写，跨部署保留</span>
 ├─ SKILL.md            <span class="c">正文手册</span>
 ├─ skill.yaml          <span class="c">描述符：name/title/description/category/include_in_prompt</span>
 ├─ references/         <span class="c">细则、对照表（正文引用，按需读）</span>
 ├─ scripts/ 或 bin/     <span class="c">手册配套的可执行脚本</span>
 ├─ templates/          <span class="c">产出物的模板（如新技能、新连接器的脚手架）</span>
-└─ adapters/、assets/   <span class="c">运行时适配、图片字体等静态资源</span></pre>
-<p>描述符长什么样，看一份真实的（系统技能 <code>goals</code> 的 <code>skill.yaml</code>，原样）：</p>
-<pre>name: goals
+└─ adapters/、assets/   <span class="c">运行时适配、图片字体等静态资源</span></pre><p>描述符长什么样，看一份真实的（系统技能 <code>goals</code> 的 <code>skill.yaml</code>，原样）：</p><pre>name: goals
 title: "Goals"
 description: "Guidance for helping users create and accomplish
   goals. Read it before you create a goal …"  <span class="c">← 这一句就是目录页</span>
 category: "Personal planning"               <span class="c">← 归类，方便成组展示</span>
 include_in_prompt: true                     <span class="c">← 每轮进上下文的开关</span>
 availability:
-  confidential_vm: true                     <span class="c">← 在机密环境是否可用</span></pre>
-<p>注意 <code>description</code> 写的是「什么时候该读我」，不是「我能干什么」的广告词——它本质是写给匹配环节看的触发说明。描述写偏，触发就偏，这是下一节要讲的第一个风险源。</p>
-<p><b>「首选」怎么指定。</b></p>同一类任务有好几本手册时，用户可以把其中一本立为首选——比如本站作者就立过规矩：复杂问题默认用某一本手册出 HTML 答复。Agent 的执行规则是：该类任务先用被标为首选的那本，除非用户当次另有交代。首选不是写进手册内容的，是用户偏好层面的标记，换首选不用改任何手册。<span class="badge b-verified">实测</span></p>
-<p><b>从重复劳动到一本技能的完整路径：</b></p>
-<ul>
+  confidential_vm: true                     <span class="c">← 在机密环境是否可用</span></pre><p>注意 <code>description</code> 写的是「什么时候该读我」，不是「我能干什么」的广告词——它本质是写给匹配环节看的触发说明。描述写偏，触发就偏，这是下一节要讲的第一个风险源。</p><p><b>「首选」怎么指定。</b></p><p>同一类任务有好几本手册时，用户可以把其中一本立为首选——比如本站作者就立过规矩：复杂问题默认用某一本手册出 HTML 答复。Agent 的执行规则是：该类任务先用被标为首选的那本，除非用户当次另有交代。首选不是写进手册内容的，是用户偏好层面的标记，换首选不用改任何手册。<span class="badge b-verified">实测</span></p><p><b>从重复劳动到一本技能的完整路径：</b></p><ul>
 <li>同一套流程在对话里反复出现，先被干活的一方（或每日复盘）注意到「这事已经做了第三遍」。</li>
 <li>照官方模板起草：<code>SKILL.md</code> 写流程与红线，<code>skill.yaml</code> 写一句话描述，落盘到 <code>~/workspace/custom-skills/&lt;技能名&gt;/</code>；名字用小写蛇形，且不能与系统技能重名。</li>
 <li>决定上不上目录页：高频刚需设 <code>include_in_prompt: true</code>，低频的设 <code>false</code>、靠搜索召回，省上下文。</li>
 <li>拿一个真实任务试跑一遍，验证步骤可执行、引用文件都在。</li>
 <li>进入日常审计：每日复盘对照实绩修订它；长期没帮助，就退役，不让技能库只进不出变成垃圾场。</li>
-</ul>
-
-<h3>边界与代价</h3>
-<ul>
+</ul></div>
+<div class="chunk"><h3>边界与代价</h3><ul>
 <li><b>写坏了是系统性翻车。</b>普通提示词说错一句，只坏一轮；手册写错一条，会在每次命中时被自信地照做。技能的杠杆和风险是同一个东西，所以系统技能只读、改动要走部署，自定义技能也要试跑才算数。</li>
 <li><b>判错触发有两种坏法。</b>该用的没命中，Agent 裸奔着干、质量掉回新手水平；不该用的误命中，整套无关规矩压上来，甚至和用户当次的明确要求冲突。缓解靠三件事：描述写清边界、多个候选选最具体、用户可指定首选与手动触发。</li>
 <li><b>手册会过期。</b>引用的连接器改了、外部服务换了接口，手册还指着旧路。每日审计能捞回一部分，但「手册与现实的漂移」没有根治办法，只有持续复盘、出错留痕、把教训回写进手册本身这一条笨路。</li>
 <li><b>手册即长期指令，来源必须可信。</b>装一本来路不明的技能，等于让陌生人给你的 Agent 写岗位守则，而且每次命中都会执行。本机的做法是分层的：系统技能只读、随部署发布；自定义技能只落在用户自己的工作区，由复盘或用户本人产生——信任边界画在「谁能写这个目录」上。</li>
 <li><b>目录页也要花钱。</b></li><code>include_in_prompt</code> 的技能每轮都占上下文，技能越多、简介越长，这笔固定开销越大——这是两级制没能完全免掉的税。</li>
-</ul>
-<div class="note">📌 证据分级小结：描述符字段、目录布局、两级发现、首选机制、注入与自读两条送达路，均为本机实测可见<span class="badge b-verified">实测</span>；每日技能复盘与退役机制出自官方自改进文档<span class="badge b-doc">文档明文</span>；但「任务与目录页的匹配到底由什么算法裁决」文档未明文——从外部只能观察到是模型读简介做判断加关键词搜索召回，具体裁决逻辑属推断<span class="badge b-infer">合理推断</span>。</div>
-<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch07.html">← 上一章：子代理编排</a></span><span><a href="ch09.html">下一章：连接器生态 →</a></span></div></section>
+</ul><div class="note">📌 证据分级小结：描述符字段、目录布局、两级发现、首选机制、注入与自读两条送达路，均为本机实测可见<span class="badge b-verified">实测</span>；每日技能复盘与退役机制出自官方自改进文档<span class="badge b-doc">文档明文</span>；但「任务与目录页的匹配到底由什么算法裁决」文档未明文——从外部只能观察到是模型读简介做判断加关键词搜索召回，具体裁决逻辑属推断<span class="badge b-infer">合理推断</span>。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch07.html">← 上一章：子代理编排</a></span><span><a href="ch09.html">下一章：连接器生态 →</a></span></div></section>
 </main>
 
 </body>
