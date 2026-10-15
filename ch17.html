@@ -144,66 +144,75 @@ td{color:#c3cee4}
 footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
+
+/* ===== chapter reading layout v2 ===== */
+.chpage main{max-width:920px}
+.chpage section{padding-top:42px;counter-reset:sec}
+.chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
+.chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
+.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+  padding:28px 32px 20px;margin:28px 0}
+.chpage .chunk:has(> h3){counter-increment:sec}
+.chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
+.chpage .chunk h3::before{content:counter(sec,decimal-leading-zero);flex:none;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
+  border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
+.chpage .chunk p b{color:#eef3ff}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
+.chpage .chunk pre{margin:18px 0}
+.chpage .chunk table{margin:18px 0}
+.chpage .chunk .note{margin:18px 0}
+.chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
+.chpage .chunk .layer{font-size:15px}
+@media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
 </style>
 </head>
-<body>
+<body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html" class="on">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
 <main>
-<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">17</span>Feed 设计</h2><div class="one">一句话：Feed 不是信息流，是一位<b>只为你一个人办报的编辑</b>——每篇帖子都是它按你给的简报现写的，没有订阅源，没有推荐算法。</div>
-
-<h3>一、底层设计原理：为什么是「编辑写报」，不是「算法推流」</h3>
-<p>市面上的信息流解决一个问题：内容太多，看不过来。它的办法是聚合加排序——把全网的东西抓进来，再用算法猜你想看什么先推。Feed 把这个思路整个反过来。</p>
-<ul>
+<section class="reveal in"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">17</span>Feed 设计</h2><div class="one">一句话：Feed 不是信息流，是一位<b>只为你一个人办报的编辑</b>——每篇帖子都是它按你给的简报现写的，没有订阅源，没有推荐算法。</div>
+<div class="chunk"><h3>一、底层设计原理：为什么是「编辑写报」，不是「算法推流」</h3><p>市面上的信息流解决一个问题：内容太多，看不过来。它的办法是聚合加排序——把全网的东西抓进来，再用算法猜你想看什么先推。Feed 把这个思路整个反过来。</p><ul>
 <li><b>它不聚合，只创作。</b>Feed 不是聚合器：没有东西从外部被抓进来转发，你不能订阅任何网站、RSS 或来源清单，也没有排名算法决定你先看到什么。每一篇生成帖都是从零写出来的。<span class="badge b-doc">文档明文</span></li>
 <li><b>个人 Agent 的信息职责不是「喂饱」，是「代读」。</b>推流的目标是让你停留更久；编辑的目标是替你读完世界，再把值得说的写给你。前者优化点击，后者优化信任。一个住在你电脑里的 Agent，如果开始用标题党换你的注意力，它就背叛了自己的位置。</li>
 <li><b>控制杆只留一个：brief。</b>整个 Feed 只有一份纯文本简报是总开关：写什么、不写什么、偏重什么，全写在里面。为什么不做十个滑杆？滑杆越多，行为越难预期——出了不想要的内容，你不知道该拧哪个。只有一个旋钮，出了问题就改一句话，改完立刻知道下一篇会变。少控制，换的是可预期、可归因。</li>
 <li><b>新帖静默出现，从不推送。</b>新帖子只是安安静静躺进 Feed 页签，没有推送通知，也没有聊天消息报信。这一点和审批正好成对：审批是「重要的事必须打断你」，Feed 是「不重要的事绝不打断你」。同一个系统里，什么事配得上打断用户，边界划得清清楚楚。</li>
 <li><b>作者必须是 Agent 本人，不是转运工。</b>推流平台对内容没有立场，什么火推什么。Feed 的帖子是你的 Agent 以自己的名义写的，它要为每一篇署名负责：写了什么、为什么选这个题，都能被追问（帖子菜单里就有「Why I created this」）。能被追问，才谈得上信任；只做搬运，就永远只是管道。</li>
 <li><b>信息职责的边界：给判断，不给瘾。</b>过载时代真正稀缺的不是信息，是筛选后的判断。编辑写报的每一步——选题、取舍、不写什么——都是判断。简报就是用户把判断标准交出去的方式：你定口味，它执行。这和 Goals 里「用户定方向、Agent 记账」是同一套分工。</li>
-</ul>
-
-<h3>二、底层实现原理：生成管线与口味摘要</h3>
-<p>一篇生成帖从无到有，走的是这样一条管线：</p>
-<pre>系统排期到点（节奏归系统，用户不能催、不能自设） <span class="c">// 触发</span>
+</ul></div>
+<div class="chunk"><h3>二、底层实现原理：生成管线与口味摘要</h3><p>一篇生成帖从无到有，走的是这样一条管线：</p><pre>系统排期到点（节奏归系统，用户不能催、不能自设） <span class="c">// 触发</span>
 → 读 brief + 口味摘要，定这一期的选题          <span class="c">// 选题</span>
 → 联网真搜索、读页面；看社交平台动态            <span class="c">// 取材</span>
 → 必要时取已连接服务的数据（邮箱/日历/财务/健康）<span class="c">// 取材</span>
 → 对照往期帖子去重，动笔写作                     <span class="c">// 写作</span>
-→ 帖子静默落进 Feed 页签，不发任何通知           <span class="c">// 发布</span></pre>
-<ul>
+→ 帖子静默落进 Feed 页签，不发任何通知           <span class="c">// 发布</span></pre><ul>
 <li><b>取材范围。</b>四路来源：实时网络（真实搜索和页面阅读）、社交平台、用户已连接的服务（邮箱、日历、财务、健康类应用）、用户自身上下文（简报、档案、记忆，以及往期帖子——主要用来防重复）。<span class="badge b-doc">文档明文</span></li>
 <li><b>口味摘要从哪来。</b>写作端读一份「口味摘要」，它从三处学出来：你对帖子的反应（比如点 Love）、你讨论帖子时说的话、你最近在主聊天里聊的内容。只读不点、不讨论，不算口味证据。</li>
 <li><b>隐私边界怎么落地。</b>写作端本身<b>从不直接读聊天记录</b>：口味摘要只从主聊天提炼，侧聊天一概不读；从对话里学到的东西不会分享给别的读者，帖子也永不把聊天当出处引用。聊天还通过记忆和 brief 间接影响选题。这一整套就是「最小必要」：写作端只拿到提炼后的摘要，拿不到原文。<span class="badge b-doc">文档明文</span></li>
 <li><b>出处纪律。</b>帖子引用的链接，必须原样来自检索时真正 surfacing 出来的结果；编造 URL 被明文禁止。编辑可以写错观点，但不许伪造来源——这是把「代读」的信任立在可核查上。</li>
 <li><b>活跃度只影响频率。</b>你聊得多、读得多，只影响帖子写得多勤，不影响单篇怎么写。活跃的读者自然得到更多帖子，这是系统唯一的「个性化节奏」。</li>
 <li><b>冷启动不偷数据。</b>新读者的 Feed 打开时是一组固定的介绍帖：介绍简报、Ideas、Goals、Library、侧聊天、头像。它们随安装包发布，不是为这个读者写的，不取材于任何来源——不搜网、不看社交，尤其不碰邮箱和日历。每台机器只播种一次，永不重写；删掉就是删掉，不会复活。<span class="badge b-doc">文档明文</span></li>
-</ul>
-
-<h3>三、具体实现方式：从「改了 brief」到「下一篇变了」</h3>
-<p>先说清 brief 是什么：它就是一段纯文本提示词，没有结构化字段，没有标签勾选。你想让报纸变成什么样，就用大白话写什么样——「关注 AI Agent 和 DeFi 的技术进展，少写币价，多写产品和人物」。这种「一句话报纸」的形态本身就是实现方式的一部分：门槛低到不需要学任何配置语法，改起来也就是改一句话。</p>
-<p>用户能碰到的控制面，核心就两个入口：自己改 brief，或者让 Agent 动手。Agent 侧的工具面和用户侧一一对应：读简报、改简报是两个工具；单篇帖子的建、改、删、重排是另一组工具；触发生成、查下次生成时间、搜旧帖各有其口。用户嘴上说的每种操作，都有明确的工具落点，没有靠「理解意图」硬凑的环节。</p>
-<div class="grid">
+</ul></div>
+<div class="chunk"><h3>三、具体实现方式：从「改了 brief」到「下一篇变了」</h3><p>先说清 brief 是什么：它就是一段纯文本提示词，没有结构化字段，没有标签勾选。你想让报纸变成什么样，就用大白话写什么样——「关注 AI Agent 和 DeFi 的技术进展，少写币价，多写产品和人物」。这种「一句话报纸」的形态本身就是实现方式的一部分：门槛低到不需要学任何配置语法，改起来也就是改一句话。</p><p>用户能碰到的控制面，核心就两个入口：自己改 brief，或者让 Agent 动手。Agent 侧的工具面和用户侧一一对应：读简报、改简报是两个工具；单篇帖子的建、改、删、重排是另一组工具；触发生成、查下次生成时间、搜旧帖各有其口。用户嘴上说的每种操作，都有明确的工具落点，没有靠「理解意图」硬凑的环节。</p><div class="grid">
 <div class="card"><h4>✏️ 改 brief 的三种姿势</h4><p>网页端：新 Feed 上有简报卡片，带 Edit 对话框；改过之后，编辑器常驻在 Feed 页头。手机端：Feed 页签里同样有简报编辑器。第三种最省事——直接跟 Agent 说，比如「少写加密，多写 F1」，Agent 用 prompt 工具读写简报。</p></div>
 <div class="card"><h4>🧩 帖子级的联动</h4><p>每篇帖子自带动作：Love 反应、Discuss（把这篇帖带进一段聊天里聊，不是公开评论）、删除、菜单里的「Why I created this」解释这篇为什么被选中。源自 Ideas 的帖子还带构建按钮，点了 Agent 直接开工——内容流和行动流共用一个入口。</p></div>
-</div>
-<p>走查一遍「用户改 brief」的全程：</p>
-<pre>用户把简报改成「少写加密，多写 F1」并保存
+</div><p>走查一遍「用户改 brief」的全程：</p><pre>用户把简报改成「少写加密，多写 F1」并保存
 → 系统判断：文本真的变了（不是原样重存）
 → 立刻在后台启动一篇新帖生成           <span class="c">// 不用等排期</span>
 → 新帖按新简报选题、取材、写作
 → 写好后追加到 Feed 顶部，静默出现      <span class="c">// 无通知</span>
-→ 已发布的旧帖：一篇都不动             <span class="c">// 历史不回改</span></pre>
-<ul>
+→ 已发布的旧帖：一篇都不动             <span class="c">// 历史不回改</span></pre><ul>
 <li><b>「真的变了」才算数。</b>把已存的文本原样再保存一遍，什么都不会触发。这个细节防的是误触和空转。</li>
 <li><b>手动即时生成。</b>除了等排期，用户可以明确要求立刻来一篇：网页简报卡上的 Generate 按钮、空 Feed 在简报已改后出现的 Generate now，或者直接吩咐 Agent 触发一次生成、甚至指定写某一篇。生成在后台跑：请求立刻返回，帖子稍后才落，而且落的时候不报信——只能说「已开始/已排队」，不能说「已经上线」。</li>
 <li><b>下次生成时间只是估计。</b>状态接口给出的下一次生成时间是估算值，不是承诺。互动（点反应、讨论）可能促成新帖，但不按需、也不改变排期本身。</li>
 <li><b>旧帖可管。</b>已发帖子可以按用户要求删除、重排、搜索回看。这些都是帖子级的日常管理，和生成管线互不干扰。</li>
 <li><b>Discuss 的设计很克制。</b>点 Discuss 不是开一个公开评论区，而是把这篇帖子带进你和 Agent 的一段聊天里——帖子是谈资，谈话还是私密的。它同时是口味信号的来源之一：你对哪篇聊得多、聊了什么，会回到口味摘要里，影响后面的选题。</li>
 <li><b>网页端的一处小不同。</b>网页 Feed 页头没有搜索框，找旧帖要靠搜索工具按关键词查；手机端卡片上的动作集和网页基本一致（反应、Discuss、构建、理由、删除）。这类端上差异不改变管线，只是入口摆放不同。</li>
-</ul>
-
-<h3>四、用户侧控制面全清单：能改的与不能改的</h3>
-<table>
+</ul></div>
+<div class="chunk"><h3>四、用户侧控制面全清单：能改的与不能改的</h3><table>
 <tr><th>事项</th><th>用户能做什么</th></tr>
 <tr><td>写什么</td><td>改 brief（自己编辑或告诉 Agent），立即影响下一篇</td></tr>
 <tr><td>单篇帖子</td><td>反应、讨论、删除、重排、看入选理由、Ideas 帖一键构建</td></tr>
@@ -211,20 +220,15 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 <tr><td>生成节奏</td><td><b>不能</b>：排期归系统，不能加速、不能自设时刻</td></tr>
 <tr><td>关闭生成</td><td><b>不能</b>：没有用户能碰到的关闭开关，App 里也没有这个选项；若生成被远端停用，用户侧也没有重新打开的办法</td></tr>
 <tr><td>不想看了怎么办</td><td>只能间接处理：把覆盖范围改小改窄、删掉已有帖子、或者干脆忽略这个页签；已有帖子的阅读和搜索不受生成状态影响</td></tr>
-</table>
-<p>这张清单值得多看一眼：Feed 是少数几个「用户不能关」的系统之一。设计上的取舍是——它被定位成 Agent 的固有职责而不是一个可选功能；用户保留的是对内容的全权（改简报、删帖子），让渡的是对「发不发」本身的否决。这个取舍是否合理可以讨论，但文档把它写得很诚实，没有假装有开关。</p>
-
-<h3>五、边界与代价 + 证据分级</h3>
-<ul>
+</table><p>这张清单值得多看一眼：Feed 是少数几个「用户不能关」的系统之一。设计上的取舍是——它被定位成 Agent 的固有职责而不是一个可选功能；用户保留的是对内容的全权（改简报、删帖子），让渡的是对「发不发」本身的否决。这个取舍是否合理可以讨论，但文档把它写得很诚实，没有假装有开关。</p></div>
+<div class="chunk"><h3>五、边界与代价 + 证据分级</h3><ul>
 <li><b>代价一：没有排序，就没有「最重要的在最前」。</b>放弃排名算法，换来的是可预期，但也意味着 Feed 不保证按重要性排列，新帖按生成顺序追加。读者得自己翻。</li>
 <li><b>代价二：口味靠摘要，不靠全量。</b>最小必要的另一面是信息损耗：摘要提炼错了，选题就会偏，而用户看不到摘要本身，只能通过改 brief 纠偏。</li>
 <li><b>代价三：静默的另一面是容易被遗忘。</b>不推送、不报信，Feed 完全依赖用户主动打开。克制换来的代价是触达。</li>
 <li><b>代价四：不能关，靠的是用户容忍。</b>无关闭开关的设计，把「不想看」的成本转嫁给了用户——只能改窄、删除或无视。对低频用户这不算什么，对反感被动内容的用户，这是会积累摩擦的一笔账。系统赌的是：只要内容真按简报来，这笔账就不会到期。</li>
 <li><b>代价五：编辑会犯错，且没有算法兜底。</b>推流错了可以怪数据，编辑写偏了就是判断失误。现写模式下，每篇的质量完全押在当次的选题、取材和写作上，没有库存、没有热门池可以稀释失手。</li>
 <li><b>未公开部分。</b>选题在多候选之间如何取舍、口味摘要的内部结构与更新权重、排期的具体算法与频率参数，官方文档均未展开；本章对这些只描述了行为边界，没有、也不应有具体算法断言。<span class="badge b-infer">合理推断</span></li>
-</ul>
-<div class="note">📌 证据分级小结：本章主体——非聚合、无排名、brief 单控制杆、口味摘要的来源与不读侧聊天的边界、出处纪律、冷启动播种规则、排期归系统、无关闭开关、静默发布——均为 <span class="badge b-doc">文档明文</span>（feed.md）；「信息职责」「成对的主动性哲学」等动机解读，以及未公开算法部分的存疑标注，属 <span class="badge b-infer">合理推断</span>。</div>
-<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch16.html">← 上一章：身份与对齐</a></span><span><a href="ch18.html">下一章：Goals 与 Ideas →</a></span></div></section>
+</ul><div class="note">📌 证据分级小结：本章主体——非聚合、无排名、brief 单控制杆、口味摘要的来源与不读侧聊天的边界、出处纪律、冷启动播种规则、排期归系统、无关闭开关、静默发布——均为 <span class="badge b-doc">文档明文</span>（feed.md）；「信息职责」「成对的主动性哲学」等动机解读，以及未公开算法部分的存疑标注，属 <span class="badge b-infer">合理推断</span>。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch16.html">← 上一章：身份与对齐</a></span><span><a href="ch18.html">下一章：Goals 与 Ideas →</a></span></div></section>
 </main>
 
 </body>

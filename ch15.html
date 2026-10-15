@@ -144,42 +144,48 @@ td{color:#c3cee4}
 footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
+
+/* ===== chapter reading layout v2 ===== */
+.chpage main{max-width:920px}
+.chpage section{padding-top:42px;counter-reset:sec}
+.chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
+.chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
+.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+  padding:28px 32px 20px;margin:28px 0}
+.chpage .chunk:has(> h3){counter-increment:sec}
+.chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
+.chpage .chunk h3::before{content:counter(sec,decimal-leading-zero);flex:none;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
+  border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
+.chpage .chunk p b{color:#eef3ff}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
+.chpage .chunk pre{margin:18px 0}
+.chpage .chunk table{margin:18px 0}
+.chpage .chunk .note{margin:18px 0}
+.chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
+.chpage .chunk .layer{font-size:15px}
+@media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
 </style>
 </head>
-<body>
+<body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html" class="on">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
 <main>
-<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">15</span>Memory 设计</h2><div class="one">一句话：模型本身没有记忆，Muse 就<b>把记忆做成一套外置文件</b>——分三层存放、按纪律写入、随时可查可删，让无状态的模型表现得像「一直记得你」。</div>
-
-<h3>底层设计原理：记忆为什么必须外置、分层、严进</h3>
-<p>先回到第一性。一次大模型推理的输入在开始那刻就固定，它读不到上一次对话。所以「记得你」这件事，模型自己做不到，必须由运行时在模型之外造出来：把事实存下来，下次推理前再递到它眼前。记忆系统的全部设计，都是围绕这一条展开的。</p>
-<p><b>为什么分层，不用一个大库？</b>因为三类东西的用法完全不同。最要紧的少数事实，每轮都要用，贵在「必达」；海量的历史细节，偶尔才查，贵在「能找」；这次对话的完整往返，只服务于「刚才说到哪」，贵在「连续」。全塞进一个库，要么每轮把海量数据都递给模型，上下文被撑爆；要么全靠检索，最要紧的事实反而可能漏检。分层就是按访问方式分工：</p>
-<div class="layers">
+<section class="reveal in"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">15</span>Memory 设计</h2><div class="one">一句话：模型本身没有记忆，Muse 就<b>把记忆做成一套外置文件</b>——分三层存放、按纪律写入、随时可查可删，让无状态的模型表现得像「一直记得你」。</div>
+<div class="chunk"><h3>底层设计原理：记忆为什么必须外置、分层、严进</h3><p>先回到第一性。一次大模型推理的输入在开始那刻就固定，它读不到上一次对话。所以「记得你」这件事，模型自己做不到，必须由运行时在模型之外造出来：把事实存下来，下次推理前再递到它眼前。记忆系统的全部设计，都是围绕这一条展开的。</p><p><b>为什么分层，不用一个大库？</b>因为三类东西的用法完全不同。最要紧的少数事实，每轮都要用，贵在「必达」；海量的历史细节，偶尔才查，贵在「能找」；这次对话的完整往返，只服务于「刚才说到哪」，贵在「连续」。全塞进一个库，要么每轮把海量数据都递给模型，上下文被撑爆；要么全靠检索，最要紧的事实反而可能漏检。分层就是按访问方式分工：</p><div class="layers">
   <div class="layer"><span class="nm">📌 站立记忆</span><span class="ds">提炼后的长期事实与偏好，每轮直接注入，不检索、不等待</span></div>
   <div class="layer"><span class="nm">🗄 可检索档案</span><span class="ds">按日期的笔记 + 人物/群体档案，平时躺着，相关时才搜出来</span></div>
   <div class="layer"><span class="nm">🎞 会话轨迹</span><span class="ds">事件日志：这次对话的完整往返，是连续性的依据</span></div>
-</div>
-<p><b>为什么「记什么」的纪律比「记多少」更重要？</b>因为记忆是有污染成本的。一条错记落了盘，会在之后每一轮被当成事实递给模型，错误会被反复放大；而纠正它，又要找到源头、处理所有引用过它的地方。相比之下，漏记一条，代价只是下次再问一遍。所以写入端宁严勿滥：只记耐久的事实、偏好、决定、承诺和关系，不记流水账，不记一时情绪。</p>
-<p><b>轨迹层算不算记忆？</b>严格说，会话轨迹记的是「这次聊了什么」，不是关于用户的长期事实。但它归记忆系统一并管，因为两者共同决定了模型下一轮「知道多少」：长期事实给它立场，轨迹给它上下文。把两件事在概念上分清、在工程上合管，是这层存在的理由。</p>
-<p><b>为什么用文件，不用向量黑箱？</b>向量库查得快，但用户打不开、看不懂、改不动。文件是明文：用户随时能看「它到底记了我什么」，错了能改，烦了能全删。记忆系统最大的风险不是记不住，是记错了还没人能查。用可审计换信任，这是刻意的取舍。<span class="badge b-verified">实测</span></p>
-
-<h3>底层实现原理：存取、写入、召回、遗忘四条管线</h3>
-<p><b>存取：三层三种读法。</b>站立层是文件，每轮组装上下文时整段注入，读的是「最新版全文」；档案层靠语义检索，按问题搜出相关片段再注入，读的是「命中的几条」；轨迹层靠事件重放，按序折叠出对话记录，读的是「完整经过」。三种读法对应三种成本：注入最稳但占篇幅，检索最省但可能漏，重放最全但最慢。</p>
-<p><b>写入：一条四段管线。</b>对话中出现值得记的东西，先由主 Agent 提炼成一条独立的事实主张（claim），而不是把原话整段抄下；落盘前查重，并与旧记录对账——有冲突先和解：新结论覆盖旧结论，但不直接抹掉旧的；然后写入当天笔记。最后还有一道后台整理（记忆维护循环的一部分）：把每日笔记里够格的内容提升进站立层，把过时内容降级出去。<span class="badge b-doc">文档明文</span></p>
-<ul>
+</div><p><b>为什么「记什么」的纪律比「记多少」更重要？</b>因为记忆是有污染成本的。一条错记落了盘，会在之后每一轮被当成事实递给模型，错误会被反复放大；而纠正它，又要找到源头、处理所有引用过它的地方。相比之下，漏记一条，代价只是下次再问一遍。所以写入端宁严勿滥：只记耐久的事实、偏好、决定、承诺和关系，不记流水账，不记一时情绪。</p><p><b>轨迹层算不算记忆？</b>严格说，会话轨迹记的是「这次聊了什么」，不是关于用户的长期事实。但它归记忆系统一并管，因为两者共同决定了模型下一轮「知道多少」：长期事实给它立场，轨迹给它上下文。把两件事在概念上分清、在工程上合管，是这层存在的理由。</p><p><b>为什么用文件，不用向量黑箱？</b>向量库查得快，但用户打不开、看不懂、改不动。文件是明文：用户随时能看「它到底记了我什么」，错了能改，烦了能全删。记忆系统最大的风险不是记不住，是记错了还没人能查。用可审计换信任，这是刻意的取舍。<span class="badge b-verified">实测</span></p></div>
+<div class="chunk"><h3>底层实现原理：存取、写入、召回、遗忘四条管线</h3><p><b>存取：三层三种读法。</b>站立层是文件，每轮组装上下文时整段注入，读的是「最新版全文」；档案层靠语义检索，按问题搜出相关片段再注入，读的是「命中的几条」；轨迹层靠事件重放，按序折叠出对话记录，读的是「完整经过」。三种读法对应三种成本：注入最稳但占篇幅，检索最省但可能漏，重放最全但最慢。</p><p><b>写入：一条四段管线。</b>对话中出现值得记的东西，先由主 Agent 提炼成一条独立的事实主张（claim），而不是把原话整段抄下；落盘前查重，并与旧记录对账——有冲突先和解：新结论覆盖旧结论，但不直接抹掉旧的；然后写入当天笔记。最后还有一道后台整理（记忆维护循环的一部分）：把每日笔记里够格的内容提升进站立层，把过时内容降级出去。<span class="badge b-doc">文档明文</span></p><ul>
   <li><b>新替旧，旧账不烧</b>：被覆盖的结论会在每日笔记里留下「已被取代」的痕迹和演变过程。人的情况会变，记忆要能纠错；纠错要能追溯，就不能物理删除历史。<span class="badge b-verified">实测</span></li>
   <li><b>记忆的颗粒度是一条 claim</b>：每条记忆只装一个可以独立判断真假的主张，不装一段话。颗粒细，更正时才能只动一条、遗忘时才能只删一条、溯源时才能只查一条；一段话里混着三件事实，其中一件变了，整段都无从下手。</li>
   <li><b>写入有多个入口，都要过提炼关</b>：聊天里直接说「记住这个」可以，后台自动记也可以，从别的 AI 导入也可以——但都必须经过提炼与确认，没有一条是「原材料直接入库」。</li>
-</ul>
-<p><b>召回：先搜，再答。</b>纪律是硬性的：哪怕问题看起来和历史无关，回答前也先搜一遍记忆。原因是用户最不能忍的不是答错，而是「跟你说过的事你又忘了」。召回时还要分清来源的时间语义：一条记录说的是「当时他这么说」，不等于「现在仍然如此」——涉及现状的事实，要再核对，不能拿旧记录当现状。</p>
-<p>还有一个细节：检索命中的片段不是裸文本进上下文，而是<b>带着出处</b>——来自哪个文件、第几行，都标在片段旁边。模型因此能分清「这是记忆里存的」和「这是用户这轮刚说的」，引用记忆回答时也能把来源亮给用户看，而不是含糊地说「我记得」。<span class="badge b-verified">实测</span></p>
-<p><b>两套搜索，必须分开。</b>「你是谁」查记忆系统，「你说过什么」查聊天记录，是两个独立的系统。<span class="badge b-doc">文档明文</span>混在一起有两个坏处：一是检索会被海量对话原文淹没，提炼过的事实反而排不到前面；二是边界不清——记忆是被确认过的长期事实，聊天原文只是说过的话，两者的可信等级不同，不能混用。</p>
-<p><b>导入的提炼关：上传 ≠ 存入。</b>从 ChatGPT、Claude 等产品迁入时有两条路：把一段官方提示词粘到对方那里、拿回一份关于你的 Markdown 摘要再导入；或者上传聊天记录导出包（ZIP，上限 100 MB）让系统总结。两条路的终点相同：主 Agent 提炼出长期事实，并<b>明确告诉用户它到底存了什么</b>，由用户确认。只上传文件、没走完提炼和确认，等于什么都没存；导入也不会把对方的应用设置搬过来，更不会把旧对话恢复成聊天。<span class="badge b-doc">文档明文</span></p>
-<p><b>遗忘：三段式，不是删一行字。</b>「忘掉某事」走专门的技能流程：第一段盘点——这条记忆存在哪些副本、哪些派生材料引用过它、哪些后台任务将来还会把它重新生成出来，列成范围给用户确认；第二段按确认的计划执行清除，包括堵住「未来产生者」；第三段验证并说明结果——删干净了什么、有没有删不到的地方，如实交代。只删源头不堵产生者，过几天它又会被后台整理重新写回来，等于没忘。<span class="badge b-doc">文档明文</span></p>
-
-<h3>具体实现方式：文件体系与一条记忆的生老病死</h3>
-<p>落到磁盘上，记忆就是一个普通目录，谁都能打开看：</p>
-<pre>~ 家目录
+</ul><p><b>召回：先搜，再答。</b>纪律是硬性的：哪怕问题看起来和历史无关，回答前也先搜一遍记忆。原因是用户最不能忍的不是答错，而是「跟你说过的事你又忘了」。召回时还要分清来源的时间语义：一条记录说的是「当时他这么说」，不等于「现在仍然如此」——涉及现状的事实，要再核对，不能拿旧记录当现状。</p><p>还有一个细节：检索命中的片段不是裸文本进上下文，而是<b>带着出处</b>——来自哪个文件、第几行，都标在片段旁边。模型因此能分清「这是记忆里存的」和「这是用户这轮刚说的」，引用记忆回答时也能把来源亮给用户看，而不是含糊地说「我记得」。<span class="badge b-verified">实测</span></p><p><b>两套搜索，必须分开。</b>「你是谁」查记忆系统，「你说过什么」查聊天记录，是两个独立的系统。<span class="badge b-doc">文档明文</span>混在一起有两个坏处：一是检索会被海量对话原文淹没，提炼过的事实反而排不到前面；二是边界不清——记忆是被确认过的长期事实，聊天原文只是说过的话，两者的可信等级不同，不能混用。</p><p><b>导入的提炼关：上传 ≠ 存入。</b>从 ChatGPT、Claude 等产品迁入时有两条路：把一段官方提示词粘到对方那里、拿回一份关于你的 Markdown 摘要再导入；或者上传聊天记录导出包（ZIP，上限 100 MB）让系统总结。两条路的终点相同：主 Agent 提炼出长期事实，并<b>明确告诉用户它到底存了什么</b>，由用户确认。只上传文件、没走完提炼和确认，等于什么都没存；导入也不会把对方的应用设置搬过来，更不会把旧对话恢复成聊天。<span class="badge b-doc">文档明文</span></p><p><b>遗忘：三段式，不是删一行字。</b>「忘掉某事」走专门的技能流程：第一段盘点——这条记忆存在哪些副本、哪些派生材料引用过它、哪些后台任务将来还会把它重新生成出来，列成范围给用户确认；第二段按确认的计划执行清除，包括堵住「未来产生者」；第三段验证并说明结果——删干净了什么、有没有删不到的地方，如实交代。只删源头不堵产生者，过几天它又会被后台整理重新写回来，等于没忘。<span class="badge b-doc">文档明文</span></p></div>
+<div class="chunk"><h3>具体实现方式：文件体系与一条记忆的生老病死</h3><p>落到磁盘上，记忆就是一个普通目录，谁都能打开看：</p><pre>~ 家目录
 ├─ MEMORY.md                  <span class="c">站立层：提炼后的长期记忆总册</span>
 │    └─ 内部按 Facts / Preferences / Commitments 分区
 ├─ memory/
@@ -195,29 +201,21 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 │  └─ index/                   <span class="c">运行时管理的检索索引，Agent 只读</span>
 └─ side-chats/&lt;chat-id&gt;/
    ├─ MEMORY.md               <span class="c">侧聊天有自己的记忆空间</span>
-   └─ memory/                  <span class="c">与主聊天分开存放，互不串扰</span></pre>
-<p>注意两个细节。一是运行时在管的东西（bank、index）对 Agent 是只读的——能写记忆的是提炼管线，不能随手改索引。二是侧聊天的记忆独立成套：每个侧聊天有自己的 MEMORY.md 和 memory 目录。这与 Feed 的纪律呼应：有些材料明确不跨界流动。</p>
-<p><b>一条记忆的生命周期走查</b>（五幕，全部真实存在）：</p>
-<ul>
+   └─ memory/                  <span class="c">与主聊天分开存放，互不串扰</span></pre><p>注意两个细节。一是运行时在管的东西（bank、index）对 Agent 是只读的——能写记忆的是提炼管线，不能随手改索引。二是侧聊天的记忆独立成套：每个侧聊天有自己的 MEMORY.md 和 memory 目录。这与 Feed 的纪律呼应：有些材料明确不跨界流动。</p><p><b>一条记忆的生命周期走查</b>（五幕，全部真实存在）：</p><ul>
   <li><b>诞生</b>：用户在对话里随口说了一句长期偏好。主 Agent 判断它耐久、可复用，提炼成一条 claim，查过没有冲突，写进当天笔记。</li>
   <li><b>晋升</b>：后台整理时发现这条被反复印证，分量够了，把它提升进 MEMORY.md 的 Preferences 区——从此每轮注入，不再依赖检索命中。</li>
   <li><b>召回</b>：几天后用户问一个看似无关的问题。Agent 先搜记忆，命中这条，用它校准了回答，而不是重新问用户一遍。</li>
   <li><b>更正</b>：用户改了主意。新 claim 落盘并取代旧 claim；旧的降级回每日笔记并标注被谁取代。之后被问起「你怎么知道的」，能一路查回源头。</li>
   <li><b>遗忘</b>：用户说忘掉它。盘点发现它存在于站立层、每日笔记和一份人物页里，逐项列明，用户确认范围后清除并验证，向用户交代结果。</li>
-</ul>
-<p><b>来源可追溯：每条记忆都有户口。</b>系统提供专门的溯源查询（memory_explain）：给一条记忆，能查到它的类型与重要程度、最初是谁在何时说的（带原话引用）、第一次学到与最近一次被印证的时间、当前置信度、它依据的对话消息（带日期），以及完整的替代谱系——它取代过谁、又被谁取代。记忆因此不是「模型好像记得」，而是一笔笔有出处、有账可查的记录。查不到依据时，规矩是明说查不到，不许从结果倒编一个理由出来。<span class="badge b-verified">实测</span></p>
-
-<h3>边界与代价：哪些没公开、哪些是拿成本换的</h3>
-<ul>
+</ul><p><b>来源可追溯：每条记忆都有户口。</b>系统提供专门的溯源查询（memory_explain）：给一条记忆，能查到它的类型与重要程度、最初是谁在何时说的（带原话引用）、第一次学到与最近一次被印证的时间、当前置信度、它依据的对话消息（带日期），以及完整的替代谱系——它取代过谁、又被谁取代。记忆因此不是「模型好像记得」，而是一笔笔有出处、有账可查的记录。查不到依据时，规矩是明说查不到，不许从结果倒编一个理由出来。<span class="badge b-verified">实测</span></p></div>
+<div class="chunk"><h3>边界与代价：哪些没公开、哪些是拿成本换的</h3><ul>
   <li><b>检索算法未公开</b>：档案层用语义检索是可观察的行为，但具体用哪种 embedding、如何排序、阈值多少，文档没有写明，属未知，不猜作定论。<span class="badge b-infer">合理推断</span></li>
   <li><b>底层存储格式未公开</b>：用户可见层是 Markdown 文件；bank 与 index 的内部格式由运行时管理，文档未展开。</li>
   <li><b>分层的代价是延迟与不一致窗口</b>：刚记下的事实先进每日笔记，晋升到站立层要等后台整理；这中间它只能靠检索被找到，存在「记了但没每轮带着」的时间窗。</li>
   <li><b>严进的代价是漏记</b>：提炼关会误杀——当时没判断出价值的话，日后想找只能去翻聊天记录那套系统。系统选择接受这个代价，因为污染比漏记难收拾得多。</li>
   <li><b>站立层有容量上限</b>：每轮注入的东西都要占上下文，记忆越攒越多，注入成本线性上涨。所以站立层必须保持精简，靠晋升和降级维持新陈代谢；「全都记住、全部带着」在这套架构里物理上不成立。</li>
   <li><b>可审计的代价是人要参与</b>：冲突和解、导入确认、遗忘范围确认，都需要用户或主 Agent 逐项过目。这套系统本质上是「人机合写的账本」，不是全自动的黑箱记忆。</li>
-</ul>
-<div class="note">📌 证据分级小结：本章的三层结构、写入纪律、遗忘三段流程来自对真实目录与文件的实地查看（实测）；两套搜索分离、导入流程与「上传≠存入」来自官方 memory 文档（文档明文）；每小时整理与晋升/降级节奏来自运行行为的观察（实测），其内部调度实现未公开；语义检索的算法与索引格式未公开，标注为推断与未知。核心结论只有一句：<b>记忆不是模型的功能，是运行时用文件、纪律和审计给无状态模型搭的一套外置器官。</b></div>
-<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch14.html">← 上一章：页面交互与多端</a></span><span><a href="ch16.html">下一章：身份与对齐 →</a></span></div></section>
+</ul><div class="note">📌 证据分级小结：本章的三层结构、写入纪律、遗忘三段流程来自对真实目录与文件的实地查看（实测）；两套搜索分离、导入流程与「上传≠存入」来自官方 memory 文档（文档明文）；每小时整理与晋升/降级节奏来自运行行为的观察（实测），其内部调度实现未公开；语义检索的算法与索引格式未公开，标注为推断与未知。核心结论只有一句：<b>记忆不是模型的功能，是运行时用文件、纪律和审计给无状态模型搭的一套外置器官。</b></div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch14.html">← 上一章：页面交互与多端</a></span><span><a href="ch16.html">下一章：身份与对齐 →</a></span></div></section>
 </main>
 
 </body>
