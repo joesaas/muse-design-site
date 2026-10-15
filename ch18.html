@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>18 Goals 与 Ideas · Muse 核心设计全解</title>
+<style>
+:root{
+  --bg:#04060d; --panel:#0a0f1e; --panel2:#0d1526; --line:#1c2a4a;
+  --txt:#dbe4f5; --dim:#8494b3; --faint:#5b6b8c;
+  --cyan:#22d3ee; --violet:#a78bfa; --green:#34d399; --amber:#fbbf24; --red:#f87171; --pink:#f472b6;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;font-size:16px;
+  background-image:linear-gradient(rgba(34,211,238,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.035) 1px,transparent 1px);
+  background-size:44px 44px;}
+a{color:var(--cyan);text-decoration:none}
+::selection{background:rgba(34,211,238,.3)}
+
+/* ---------- nav ---------- */
+nav{position:fixed;left:0;top:0;bottom:0;width:248px;background:rgba(6,10,20,.92);backdrop-filter:blur(8px);
+  border-right:1px solid var(--line);padding:22px 14px;overflow-y:auto;z-index:50}
+nav .logo{font-family:var(--mono);font-size:19px;color:#fff;letter-spacing:.5px}
+nav .logo b{color:var(--cyan)}
+nav .sub{font-size:12px;color:var(--faint);margin:2px 0 18px}
+nav .part{font-size:11px;color:var(--violet);letter-spacing:2px;margin:16px 6px 6px;font-family:var(--mono)}
+nav a{display:block;color:var(--dim);font-size:13.5px;padding:5px 8px;border-radius:6px}
+nav a:hover{color:#fff;background:rgba(34,211,238,.08)}
+nav a.on{color:var(--cyan);background:rgba(34,211,238,.1)}
+main{margin-left:248px;padding:0 34px 90px;max-width:1240px}
+@media(max-width:860px){nav{display:none}main{margin-left:0;padding:0 16px 70px}}
+
+/* ---------- hero ---------- */
+.hero{min-height:88vh;display:flex;flex-direction:column;justify-content:center;padding:60px 10px 30px}
+.hero .kicker{font-family:var(--mono);color:var(--cyan);font-size:13px;letter-spacing:3px}
+.hero h1{font-size:clamp(34px,5.4vw,58px);line-height:1.22;color:#fff;margin:16px 0 8px;font-weight:800}
+.hero h1 .grad{background:linear-gradient(92deg,var(--cyan),var(--violet),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{color:var(--dim);font-size:17.5px;max-width:720px}
+.hero .stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+.hero .stat{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 18px;min-width:130px}
+.hero .stat b{display:block;font-size:22px;color:#fff;font-family:var(--mono)}
+.hero .stat span{font-size:12.5px;color:var(--faint)}
+.hero .scroll{margin-top:44px;color:var(--faint);font-size:13px;font-family:var(--mono);animation:bob 2.2s infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ---------- sections ---------- */
+section{padding:64px 10px 8px;scroll-margin-top:20px}
+.part-head{font-family:var(--mono);color:var(--violet);font-size:13px;letter-spacing:3px}
+h2{font-size:clamp(24px,3.4vw,34px);color:#fff;margin:6px 0 4px;font-weight:800}
+h2 .no{color:var(--cyan);font-family:var(--mono);font-size:.72em;margin-right:10px}
+.one{font-size:17.5px;color:#fff;background:linear-gradient(90deg,rgba(34,211,238,.12),transparent);
+  border-left:3px solid var(--cyan);padding:10px 16px;border-radius:0 10px 10px 0;margin:14px 0 18px}
+.one b{color:var(--cyan)}
+p{margin:10px 0;color:#c3cee4}
+.dim{color:var(--dim)} .small{font-size:13.5px}
+h3{color:#fff;font-size:19px;margin:26px 0 8px}
+h3::before{content:'▸ ';color:var(--cyan)}
+ul{margin:8px 0 8px 20px;color:#c3cee4}
+li{margin:5px 0}
+b,strong{color:#eef3ff}
+code{font-family:var(--mono);font-size:.88em;background:rgba(34,211,238,.1);color:#a5f3fc;padding:1px 6px;border-radius:5px}
+pre{background:#060b16;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;
+  font-family:var(--mono);font-size:13.5px;line-height:1.65;color:#b7c9e8;margin:12px 0}
+pre .c{color:#54678c}
+.badge{display:inline-block;font-size:11.5px;font-family:var(--mono);padding:2px 9px;border-radius:99px;vertical-align:2px;margin-left:8px}
+.b-verified{color:var(--green);border:1px solid rgba(52,211,153,.5);background:rgba(52,211,153,.08)}
+.b-doc{color:var(--cyan);border:1px solid rgba(34,211,238,.5);background:rgba(34,211,238,.08)}
+.b-infer{color:var(--amber);border:1px solid rgba(251,191,36,.5);background:rgba(251,191,36,.08)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:14px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card h4{color:#fff;font-size:16px;margin-bottom:5px}
+.card h4 .ic{margin-right:7px}
+.card p,.card li{font-size:14.5px;color:#b9c6de}
+.card ul{margin-left:17px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:#fff;font-weight:600}
+td{color:#c3cee4}
+.note{border:1px dashed rgba(167,139,250,.45);background:rgba(167,139,250,.06);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:14.5px;color:#cfc6f5}
+.warn{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.06);color:#f3e3bb}
+
+/* ---------- diagrams ---------- */
+.layers{margin:16px 0}
+.layer{border:1px solid var(--line);border-radius:12px;padding:12px 18px;margin:7px 0;background:var(--panel);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;transition:.25s;cursor:default}
+.layer:hover{border-color:var(--cyan);transform:translateX(4px)}
+.layer .nm{color:#fff;font-weight:700}
+.layer .ds{color:var(--dim);font-size:13.5px;text-align:right}
+.flowbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+.fstep{display:flex;gap:12px;align-items:flex-start;padding:8px 10px;border-radius:10px;transition:.3s}
+.fstep .dot{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--faint);color:var(--faint);
+  font-family:var(--mono);font-size:12.5px;display:flex;align-items:center;justify-content:center;margin-top:2px;background:#060b16}
+.fstep .tx b{color:#fff}
+.fstep .tx span{color:var(--dim);font-size:14px;display:block}
+.farrow{margin-left:22px;color:var(--faint);font-family:var(--mono);font-size:12px}
+.fstep.lit{background:rgba(34,211,238,.09)}
+.fstep.lit .dot{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 14px rgba(34,211,238,.5)}
+.fstep.async.lit{background:rgba(251,191,36,.08)}
+.fstep.async.lit .dot{border-color:var(--amber);color:var(--amber);box-shadow:0 0 14px rgba(251,191,36,.45)}
+.tag{font-family:var(--mono);font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--faint);color:var(--dim);white-space:nowrap}
+.tag.sync{border-color:rgba(34,211,238,.55);color:var(--cyan)}
+.tag.async{border-color:rgba(251,191,36,.55);color:var(--amber)}
+.btn{font-family:inherit;font-size:14.5px;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;
+  border:1px solid var(--cyan);background:rgba(34,211,238,.12);color:#cffafe;transition:.2s}
+.btn:hover{background:rgba(34,211,238,.25)}
+.btn.ghost{border-color:var(--line);background:transparent;color:var(--dim)}
+.btn.ok{border-color:rgba(52,211,153,.6);background:rgba(52,211,153,.12);color:#bbf7d0}
+.btn.no{border-color:rgba(248,113,113,.6);background:rgba(248,113,113,.1);color:#fecaca}
+.btn:disabled{opacity:.4;cursor:default}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.switch{display:inline-flex;align-items:center;gap:8px;color:var(--dim);font-size:14px;cursor:pointer;user-select:none}
+.switch input{accent-color:var(--amber);width:17px;height:17px}
+.simlog{font-family:var(--mono);font-size:13px;background:#060b16;border:1px solid var(--line);border-radius:10px;
+  padding:12px 16px;min-height:86px;color:#9fd8e8;margin-top:10px;white-space:pre-wrap}
+.simlog .a{color:var(--amber)} .simlog .g{color:var(--green)} .simlog .v{color:var(--violet)}
+
+/* fanout */
+.fan{position:relative;margin:10px 0}
+.fan .hub{text-align:center}
+.fan .hub span{display:inline-block;border:1px solid var(--violet);color:#e9e2ff;background:rgba(167,139,250,.1);
+  border-radius:12px;padding:9px 22px;font-weight:700}
+.workers{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px;min-height:118px}
+.worker{width:148px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);
+  text-align:center;font-size:13.5px;color:var(--dim);opacity:0;transform:translateY(-14px) scale(.92);transition:.45s}
+.worker.show{opacity:1;transform:none}
+.worker .st{font-family:var(--mono);font-size:12px;margin-top:6px;color:var(--amber)}
+.worker.done{border-color:rgba(52,211,153,.6)} .worker.done .st{color:var(--green)}
+.worker b{color:#fff;display:block;font-size:14.5px}
+
+/* context builder */
+.ctxlayer{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;
+  padding:9px 14px;margin:6px 0;background:var(--panel);cursor:pointer;transition:.2s;font-size:14.5px}
+.ctxlayer.off{opacity:.38}
+.ctxlayer .sz{font-family:var(--mono);color:var(--cyan);font-size:13px}
+.ctxbar{height:14px;border-radius:8px;background:#0a1120;border:1px solid var(--line);overflow:hidden;margin:12px 0 4px}
+.ctxbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width .5s}
+
+/* event timeline */
+.evt{font-family:var(--mono);font-size:13px;border-left:2px solid var(--line);margin:8px 0 8px 8px;padding:7px 14px;color:#b7c9e8;animation:ein .4s}
+.evt b{color:#fff}.evt .pair{color:var(--violet)}
+@keyframes ein{from{opacity:0;transform:translateX(-8px)}}
+footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
+.reveal{opacity:0;transform:translateY(16px);transition:.6s}
+.reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html" class="on">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
+<main>
+<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">18</span>Goals 与 Ideas</h2><div class="one">一句话：Goals 管<b>你已经认下的长期方向</b>，做成一本只增不改的账本；Ideas 管<b>它替你想的新点子</b>，摆成一排有保质期的货架。两件合起来，回答的是个人 Agent 最难的一道题——它到底该多主动。</div>
+
+<h3>底层设计原理：主动性是一道光谱，不是一个开关</h3>
+<p>个人 Agent 有个天生的矛盾。太被动，它只是个问答机；太主动，它就替你做主。Muse 的解法不是选一头，而是把主动性切成三层，每层的主动程度和控制权安排都不一样：</p>
+<table>
+<tr><th>层</th><th>谁定方向</th><th>Agent 能做什么</th><th>控制权留在哪</th></tr>
+<tr><td><b>目标层</b>（Goals）</td><td>用户</td><td>记账、提醒、研习、写简报</td><td>方向完全归用户，Agent 不许改目标本身</td></tr>
+<tr><td><b>建议层</b>（Ideas）</td><td>Agent 提案</td><td>想点子、摆上货架</td><td>开工权归用户，点一下才动手</td></tr>
+<tr><td><b>执行层</b>（见第 06 章）</td><td>Agent 拟动作</td><td>真正产生副作用</td><td>否决权归用户，审批不过就停</td></tr>
+</table>
+<p>三层拼起来就是一条规矩：<b>越接近真实世界，闸门越紧。</b>想点子不要钱，所以 Ideas 可以放开想；记账没有副作用，所以 Goals 可以自动记；真要动手花钱发消息，就进审批。主动性每升一档，控制权就多留一手——这是整套设计的主轴。</p>
+
+<h3>为什么 Goals 是账本，不是待办清单</h3>
+<p>待办清单记的是未来：做完一条，划掉一条，历史归零。账本记的是过去：每一笔都留着，不许涂改。</p>
+<p>长期目标的价值恰恰在历史，不在清单。一个练手艺的目标，练了三个月，中间断过两次、换过一次方法、某周突然开窍——这些起伏才是下次判断「还值不值得继续」「该怎么帮」的依据。清单划掉就没了，账本翻开全在。所以 Goals 的核心动作不是「打勾」，是「记一笔」：每次进展追加一条带日期的条目，目标的历史就是这样一笔笔攒出来的。<span class="badge b-doc">文档明文</span></p>
+<p>推论也很直接：账本一旦能改，信任就没了。所以进展条目只追加、不回改；记错了，正确做法是再记一笔更正，而不是回去涂掉原条目。</p>
+
+<h3>为什么状态只有两档：简单性本身就是设计目标</h3>
+<p>目标的状态只有两个：进行中、已完成。没有暂停，没有搁置，没有延期。<span class="badge b-doc">文档明文</span></p>
+<p>这不是偷懒，是刻意的取舍。状态每多一档，所有用到状态的地方都要跟着多一条分支：推送要不要发、简报要不要写、界面怎么显示、恢复时怎么算。两档状态下，这些问题全都一句话能答完。系统宁可让「暂停」这种真实需求绕路走，也不肯让状态机膨胀：</p>
+<ul>
+<li><b>只是不想被打扰</b>：静音这个目标的主动推送，状态还是进行中。</li>
+<li><b>真的歇一阵</b>：记一笔进展，写明在休整，账本里留痕。</li>
+<li><b>彻底放下再说</b>：先标记完成，以后想捡再重新打开。</li>
+</ul>
+<p>三条出路分别对应三种「暂停」，都不需要新状态。代价是用户得学一下这三条路怎么分——设计把复杂度从系统里挪到了说明书里，这是自觉的选择。</p>
+
+<h3>为什么 Ideas 要剥夺 Agent 的删除权</h3>
+<p>Ideas 有一条很反直觉的规矩：<b>Agent 没有删除或忽略卡片的工具。</b>卡片只能由用户长按关掉，或者到期自动下架。Agent 连「这张卡过时了，我帮你清掉」都做不到。<span class="badge b-doc">文档明文</span></p>
+<p>原因在于提案者的身份。Agent 既是点子的提出者，如果再兼任货架的清道夫，用户就永远分不清：这张卡不见了，是过期了、被我关了、还是它自己觉得不好悄悄撤了？货架上少了什么，必须有且只有一个解释来源。所以宁可让货架偶尔显得乱一点，也要保住<b>可解释性</b>：每张卡的去向，要么是用户亲手关的，要么是到期规则拿走的，没有第三种可能。</p>
+<p>同一条逻辑也管着过期时间：约两周自动下架。<span class="badge b-doc">文档明文</span>有限货架逼着建议保持新鲜，也让「想法不见了」有一个默认答案——多半是老化，不是被谁动了手脚。</p>
+
+<h3>底层实现原理：Goals 的数据模型</h3>
+<p>拆开看，一个目标由四部分组成：</p>
+<ul>
+<li><b>目标本体</b>：标题和描述，可改；状态两档，进行中或已完成。</li>
+<li><b>子目标</b>：只许嵌一层，目标下可以有子目标，子目标下不能再有。防止目标树长成迷宫。在界面点「加子目标」不是弹表单，而是发一条聊天消息，由 Agent 在对话里建。<span class="badge b-doc">文档明文</span></li>
+<li><b>进展账本</b>：带日期的条目序列，只追加。目标的「详情」本质上就是这本账。</li>
+<li><b>简报信（briefings）</b>：后台进程写给目标的信，渲染成 Letter，附在目标页上，另附一句短说明。它不是 Agent 随叫随写的：节奏由系统控制，不能按需生成，也不能承诺几点送到；目标可能暂时还没有简报。用户可以单独删掉某封简报。</li>
+</ul>
+<p>最容易被误解的一点：<b>目标本身不干活。</b>目标不会自己查资料、自己推进、自己完成任务。真正让目标「动起来」的，只有绑在它身上的定时任务（cron）——到点触发一个完整的 Agent 任务去干活，干完把进展记回账本。目标是账，cron 是手，两者分工写得很死。<span class="badge b-doc">文档明文</span></p>
+
+<h3>底层实现原理：Ideas 的生命周期</h3>
+<p>一张卡片的一生分五段：</p>
+<ul>
+<li><b>策展生成</b>：候选点子由后台的想法策展循环产出（第 16 章提过，它按可行性、与用户的契合度、新颖度打分排序）。细节在那章，这里只接结果。</li>
+<li><b>上架</b>：入选的点子变成卡片，进 Ideas 页签。部分点子还会以帖子的形式出现在 Feed 里——内容流和行动流共用同一个入口。</li>
+<li><b>一键构建</b>：卡片自带构建动作，网页上写着「Let's do it」。点了，Agent 就照着卡片把东西做出来。建议和交付之间不隔第二次沟通。</li>
+<li><b>构建回路</b>：构建不是发出去就完事——它就是一次正常的 Agent 任务，过程和结果回到对话里，用户能看、能改、能追加。平台还有差异：卡片发进聊天后，Android 上可以原地运行并显示实时进度，iPhone 上点开是详情页、不原地运行；Feed 里的点子帖则在所有平台都带同一个构建按钮。<span class="badge b-doc">文档明文</span></li>
+<li><b>下架</b>：只有两条路——用户长按关掉，或约两周到期自动退休。Agent 全程没有手。</li>
+</ul>
+
+<h3>底层实现原理：目标研习后台</h3>
+<p>目标还有一个专属的后台循环：每日夜间为每个进行中的目标查资料、整理新进展、更新简报素材，并给出推进提醒。它甚至会主动建议用户「暗示过但没明说」的目标——比如你连着几周在聊一件事却从没立项，它会把这件事提名成一个候选新目标，等你点头。<span class="badge b-infer">合理推断</span></p>
+<p>这一节只交代它与 Goals 的接口：研习的产出有三个落点——写进简报信、变成一条提醒、在目标页附上新材料。循环本身的调度、打分与克制规则属于后台系统，见第 11 章和第 16 章，这里不重复。</p>
+
+<h3>具体实现方式：目标工作区的真实结构</h3>
+<p>落到文件层面，每个目标在 Agent 的工作区里有一个自己的目录。用户给它看的文件、它产出的简报、它的内部状态，物理分开放：</p>
+<pre>workspace/goals/&lt;目标 slug&gt;/
+├─ GOAL.md          <span class="c"># 目标本体：标题、描述、状态、创建与更新时间</span>
+├─ files/           <span class="c"># 给用户看的交付物，进目标页、进 Library</span>
+├─ briefs/          <span class="c"># 后台研习产出的简报信，按日期落盘</span>
+└─ hidden_files/    <span class="c"># 内部状态：检查记录、水位线、已读清单，用户不可见</span></pre>
+<p>这套分工和全站的文件哲学一致（第 10 章）：交付物和内部账目必须分家。用户在目标页看到的是 files 和 briefs；hidden_files 里是后台循环的草稿纸——比如上次研习查到哪了、哪些材料已经处理过。恢复时先读这里，就不会把办过的事重办一遍。<span class="badge b-verified">实测</span></p>
+
+<h3>具体实现方式：走查一次「目标被推进」</h3>
+<p>设一个普通目标：把一门新手艺练到能独立完成作品。全程走一遍：</p>
+<ul>
+<li><b>第 1 步，用户记一笔。</b>用户在聊天里说「这周练完了第三个模块，卡在收尾手法上」。Agent 把它落成一条带日期的进展条目，追加进账本。注意：记的是事实和卡点，不是感想流水账。</li>
+<li><b>第 2 步，账本更新。</b>目标的详情页多了一条历史。状态仍是进行中，什么都没被划掉——账本只长个，不瘦身。</li>
+<li><b>第 3 步，后台研习。</b>当晚的研习循环读到新条目，围绕「收尾手法」去查资料、找教程，把有用的整理成素材，记下处理水位，避免下次重复查同一批。</li>
+<li><b>第 4 步，简报信到达。</b>到了系统的节奏点，一封简报信附到目标页：一句短说明加上正文——这周的进展小结、卡点的解法链接、下一步建议。用户点开目标就能看到。</li>
+<li><b>第 5 步，用户决策。</b>用户看完简报，决定照建议继续练。这一步如果想让目标自己往前跑，他还可以给目标绑一个定时任务，比如每周日晚自动汇总本周练习记录——从这一刻起，「推进」才有了机械的手。</li>
+</ul>
+<p>整条链里，Agent 做了四件事：记账、研习、写信、提醒。没有一件事是它替用户「练」了手艺。目标层的本分就是如此：<b>它负责让方向不被遗忘，不负责替你走路。</b></p>
+
+<h3>具体实现方式：走查一张 Ideas 卡片的一生</h3>
+<ul>
+<li><b>出现。</b>后台策展从近期对话里嗅到一个机会——比如你总在手工拼某种报表——生成候选，打分过线，变成卡片上了 Ideas 页，文案写清「我能替你做一个自动拼报表的工具」。</li>
+<li><b>被点中。</b>你点「Let's do it」。构建当场启动，按卡片描述把工具做出来，交付回到对话里，你试用、提修改，它接着改——卡片到此完成使命。</li>
+<li><b>或者被关掉。</b>你觉得没用，长按把它关掉。这是你的手，账记得很清楚。</li>
+<li><b>或者过期。</b>你一直没理它。约两周后它自动下架。哪天你想起来问「那个报表的点子呢」，答案是：老化退休了，不是被谁删了。要是还想要，重新让它想一个就行。</li>
+</ul>
+<div class="note">📌 删除目标的规矩单独说清：删目标是<b>连带清除</b>——子目标和全部历史一并删掉，界面会先要一次确认。正因如此，官方口径是：目标做完或放弃，都应该<b>标记完成</b>，而不是删除。删除只留给「建错了」这一种情况。标记完成的目标账本还在，随时能翻、能重开；删掉的就什么都不剩了。<span class="badge b-doc">文档明文</span></div>
+
+<h3>边界与代价</h3>
+<ul>
+<li><b>两档状态的代价</b>：没有暂停，长期休眠的目标会一直以「进行中」的面目存在，列表可能越攒越长。缓解靠静音和标记完成，但都要用户动手。</li>
+<li><b>简报节奏不可控</b>：简报信什么时候来，由系统说了算，用户不能催、Agent 不能承诺。急脾气的人会觉得它「不听话」——这是把调度权收归系统的必然后果。</li>
+<li><b>账本靠记账纪律</b>：进展记得勤不勤，直接决定目标页有没有价值。用户三周不汇报，账本就是三周的空白，研习也巧妇难为无米之炊。</li>
+<li><b>两周期限可能误伤</b>：点子过期是按时间一刀切，不看内容价值。偶尔的好点子会被时间拿走，只能重新生成。</li>
+<li><b>主动建议的边界</b>：研习会提名用户没明说的目标。提名是建议层的事，点头才算数；它要是越过这条线直接建目标，就破坏了三层光谱的第一层。</li>
+</ul>
+<p><b>证据分级小结</b>：本章的状态两档、嵌套一层、进展账本、简报由后台生成且节奏归系统、目标本身不干活、删除连带清除、Ideas 无 Agent 删除权与两周过期、平台构建差异，均为官方文档明文<span class="badge b-doc">文档明文</span>；目标工作区的目录结构来自当前运行环境实证<span class="badge b-verified">实测</span>；简报与策展的生成算法、打分权重、研习的触发细节，官方未公开，文中相关表述为与文档和实测一致的推断<span class="badge b-infer">合理推断</span>。</p>
+<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch17.html">← 上一章：Feed 设计</a></span><span><a href="ch19.html">下一章：一次真实交互的全程解剖 →</a></span></div></section>
+</main>
+
+</body>
+</html>
