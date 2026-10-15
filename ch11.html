@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11 定时与后台 · Muse 核心设计全解</title>
+<style>
+:root{
+  --bg:#04060d; --panel:#0a0f1e; --panel2:#0d1526; --line:#1c2a4a;
+  --txt:#dbe4f5; --dim:#8494b3; --faint:#5b6b8c;
+  --cyan:#22d3ee; --violet:#a78bfa; --green:#34d399; --amber:#fbbf24; --red:#f87171; --pink:#f472b6;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.75;font-size:16px;
+  background-image:linear-gradient(rgba(34,211,238,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.035) 1px,transparent 1px);
+  background-size:44px 44px;}
+a{color:var(--cyan);text-decoration:none}
+::selection{background:rgba(34,211,238,.3)}
+
+/* ---------- nav ---------- */
+nav{position:fixed;left:0;top:0;bottom:0;width:248px;background:rgba(6,10,20,.92);backdrop-filter:blur(8px);
+  border-right:1px solid var(--line);padding:22px 14px;overflow-y:auto;z-index:50}
+nav .logo{font-family:var(--mono);font-size:19px;color:#fff;letter-spacing:.5px}
+nav .logo b{color:var(--cyan)}
+nav .sub{font-size:12px;color:var(--faint);margin:2px 0 18px}
+nav .part{font-size:11px;color:var(--violet);letter-spacing:2px;margin:16px 6px 6px;font-family:var(--mono)}
+nav a{display:block;color:var(--dim);font-size:13.5px;padding:5px 8px;border-radius:6px}
+nav a:hover{color:#fff;background:rgba(34,211,238,.08)}
+nav a.on{color:var(--cyan);background:rgba(34,211,238,.1)}
+main{margin-left:248px;padding:0 34px 90px;max-width:1240px}
+@media(max-width:860px){nav{display:none}main{margin-left:0;padding:0 16px 70px}}
+
+/* ---------- hero ---------- */
+.hero{min-height:88vh;display:flex;flex-direction:column;justify-content:center;padding:60px 10px 30px}
+.hero .kicker{font-family:var(--mono);color:var(--cyan);font-size:13px;letter-spacing:3px}
+.hero h1{font-size:clamp(34px,5.4vw,58px);line-height:1.22;color:#fff;margin:16px 0 8px;font-weight:800}
+.hero h1 .grad{background:linear-gradient(92deg,var(--cyan),var(--violet),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.lead{color:var(--dim);font-size:17.5px;max-width:720px}
+.hero .stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
+.hero .stat{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:12px 18px;min-width:130px}
+.hero .stat b{display:block;font-size:22px;color:#fff;font-family:var(--mono)}
+.hero .stat span{font-size:12.5px;color:var(--faint)}
+.hero .scroll{margin-top:44px;color:var(--faint);font-size:13px;font-family:var(--mono);animation:bob 2.2s infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* ---------- sections ---------- */
+section{padding:64px 10px 8px;scroll-margin-top:20px}
+.part-head{font-family:var(--mono);color:var(--violet);font-size:13px;letter-spacing:3px}
+h2{font-size:clamp(24px,3.4vw,34px);color:#fff;margin:6px 0 4px;font-weight:800}
+h2 .no{color:var(--cyan);font-family:var(--mono);font-size:.72em;margin-right:10px}
+.one{font-size:17.5px;color:#fff;background:linear-gradient(90deg,rgba(34,211,238,.12),transparent);
+  border-left:3px solid var(--cyan);padding:10px 16px;border-radius:0 10px 10px 0;margin:14px 0 18px}
+.one b{color:var(--cyan)}
+p{margin:10px 0;color:#c3cee4}
+.dim{color:var(--dim)} .small{font-size:13.5px}
+h3{color:#fff;font-size:19px;margin:26px 0 8px}
+h3::before{content:'▸ ';color:var(--cyan)}
+ul{margin:8px 0 8px 20px;color:#c3cee4}
+li{margin:5px 0}
+b,strong{color:#eef3ff}
+code{font-family:var(--mono);font-size:.88em;background:rgba(34,211,238,.1);color:#a5f3fc;padding:1px 6px;border-radius:5px}
+pre{background:#060b16;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow-x:auto;
+  font-family:var(--mono);font-size:13.5px;line-height:1.65;color:#b7c9e8;margin:12px 0}
+pre .c{color:#54678c}
+.badge{display:inline-block;font-size:11.5px;font-family:var(--mono);padding:2px 9px;border-radius:99px;vertical-align:2px;margin-left:8px}
+.b-verified{color:var(--green);border:1px solid rgba(52,211,153,.5);background:rgba(52,211,153,.08)}
+.b-doc{color:var(--cyan);border:1px solid rgba(34,211,238,.5);background:rgba(34,211,238,.08)}
+.b-infer{color:var(--amber);border:1px solid rgba(251,191,36,.5);background:rgba(251,191,36,.08)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:14px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.card h4{color:#fff;font-size:16px;margin-bottom:5px}
+.card h4 .ic{margin-right:7px}
+.card p,.card li{font-size:14.5px;color:#b9c6de}
+.card ul{margin-left:17px}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left;vertical-align:top}
+th{background:var(--panel2);color:#fff;font-weight:600}
+td{color:#c3cee4}
+.note{border:1px dashed rgba(167,139,250,.45);background:rgba(167,139,250,.06);border-radius:12px;padding:12px 16px;margin:14px 0;font-size:14.5px;color:#cfc6f5}
+.warn{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.06);color:#f3e3bb}
+
+/* ---------- diagrams ---------- */
+.layers{margin:16px 0}
+.layer{border:1px solid var(--line);border-radius:12px;padding:12px 18px;margin:7px 0;background:var(--panel);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;transition:.25s;cursor:default}
+.layer:hover{border-color:var(--cyan);transform:translateX(4px)}
+.layer .nm{color:#fff;font-weight:700}
+.layer .ds{color:var(--dim);font-size:13.5px;text-align:right}
+.flowbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+.fstep{display:flex;gap:12px;align-items:flex-start;padding:8px 10px;border-radius:10px;transition:.3s}
+.fstep .dot{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--faint);color:var(--faint);
+  font-family:var(--mono);font-size:12.5px;display:flex;align-items:center;justify-content:center;margin-top:2px;background:#060b16}
+.fstep .tx b{color:#fff}
+.fstep .tx span{color:var(--dim);font-size:14px;display:block}
+.farrow{margin-left:22px;color:var(--faint);font-family:var(--mono);font-size:12px}
+.fstep.lit{background:rgba(34,211,238,.09)}
+.fstep.lit .dot{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 14px rgba(34,211,238,.5)}
+.fstep.async.lit{background:rgba(251,191,36,.08)}
+.fstep.async.lit .dot{border-color:var(--amber);color:var(--amber);box-shadow:0 0 14px rgba(251,191,36,.45)}
+.tag{font-family:var(--mono);font-size:11px;padding:1px 8px;border-radius:99px;border:1px solid var(--faint);color:var(--dim);white-space:nowrap}
+.tag.sync{border-color:rgba(34,211,238,.55);color:var(--cyan)}
+.tag.async{border-color:rgba(251,191,36,.55);color:var(--amber)}
+.btn{font-family:inherit;font-size:14.5px;font-weight:700;border-radius:10px;padding:9px 20px;cursor:pointer;
+  border:1px solid var(--cyan);background:rgba(34,211,238,.12);color:#cffafe;transition:.2s}
+.btn:hover{background:rgba(34,211,238,.25)}
+.btn.ghost{border-color:var(--line);background:transparent;color:var(--dim)}
+.btn.ok{border-color:rgba(52,211,153,.6);background:rgba(52,211,153,.12);color:#bbf7d0}
+.btn.no{border-color:rgba(248,113,113,.6);background:rgba(248,113,113,.1);color:#fecaca}
+.btn:disabled{opacity:.4;cursor:default}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.switch{display:inline-flex;align-items:center;gap:8px;color:var(--dim);font-size:14px;cursor:pointer;user-select:none}
+.switch input{accent-color:var(--amber);width:17px;height:17px}
+.simlog{font-family:var(--mono);font-size:13px;background:#060b16;border:1px solid var(--line);border-radius:10px;
+  padding:12px 16px;min-height:86px;color:#9fd8e8;margin-top:10px;white-space:pre-wrap}
+.simlog .a{color:var(--amber)} .simlog .g{color:var(--green)} .simlog .v{color:var(--violet)}
+
+/* fanout */
+.fan{position:relative;margin:10px 0}
+.fan .hub{text-align:center}
+.fan .hub span{display:inline-block;border:1px solid var(--violet);color:#e9e2ff;background:rgba(167,139,250,.1);
+  border-radius:12px;padding:9px 22px;font-weight:700}
+.workers{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px;min-height:118px}
+.worker{width:148px;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);
+  text-align:center;font-size:13.5px;color:var(--dim);opacity:0;transform:translateY(-14px) scale(.92);transition:.45s}
+.worker.show{opacity:1;transform:none}
+.worker .st{font-family:var(--mono);font-size:12px;margin-top:6px;color:var(--amber)}
+.worker.done{border-color:rgba(52,211,153,.6)} .worker.done .st{color:var(--green)}
+.worker b{color:#fff;display:block;font-size:14.5px}
+
+/* context builder */
+.ctxlayer{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;
+  padding:9px 14px;margin:6px 0;background:var(--panel);cursor:pointer;transition:.2s;font-size:14.5px}
+.ctxlayer.off{opacity:.38}
+.ctxlayer .sz{font-family:var(--mono);color:var(--cyan);font-size:13px}
+.ctxbar{height:14px;border-radius:8px;background:#0a1120;border:1px solid var(--line);overflow:hidden;margin:12px 0 4px}
+.ctxbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet));transition:width .5s}
+
+/* event timeline */
+.evt{font-family:var(--mono);font-size:13px;border-left:2px solid var(--line);margin:8px 0 8px 8px;padding:7px 14px;color:#b7c9e8;animation:ein .4s}
+.evt b{color:#fff}.evt .pair{color:var(--violet)}
+@keyframes ein{from{opacity:0;transform:translateX(-8px)}}
+footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
+.reveal{opacity:0;transform:translateY(16px);transition:.6s}
+.reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html" class="on">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
+<main>
+<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 3 · 躯体</div><h2><span class="no">11</span>定时与后台</h2><div class="one">一句话：你不说话的时候它也在干活，靠的是<b>三种闹钟</b>——按点的、看事的、常驻的——而且它对你许的每一个承诺，背后都必须真有一套机制在盯着。</div>
+
+<h3>一、底层设计原理：为什么按「成本」分三档</h3>
+<p>后台工作有个躲不掉的矛盾：盯得越勤，烧得越多。如果每五秒就唤醒一次大模型去看一眼「有没有新消息」，一天下来绝大部分推理都浪费在「没有」上。Muse 的解法是按成本分层，能用便宜手段察觉的事，绝不动用贵的：</p>
+<ul>
+<li><b>脚本侦测（最便宜）</b>：一个普通脚本定时跑一下，查本地或公开数据，自己判断「有变化 / 没变化」。没变化就闭嘴，一次模型推理都不烧。</li>
+<li><b>完整 Agent 任务（最贵）</b>：需要动脑、要用工具、要做判断的活，才值得把 Agent 整个唤醒，按点跑一遍。</li>
+<li><b>常驻进程（另一种贵）</b>：流式监听、数据采集这类「不能有间隔」的工作，只能养一个一直运行的程序，由进程管理器看着它别死。</li>
+</ul>
+<p>三档不是功能划分，是<b>账本划分</b>：先问「这件事最便宜能怎么察觉」，再决定用哪档。选错档的代价很具体——该用脚本的用了 Agent，是烧钱；该常驻的用了轮询，是漏事。</p>
+<p>第二个原理更反直觉：官方文档明说<b>两种机制本质都是轮询，没有真推送</b>——两次检查之间的变化可能被漏掉，定时也可能迟到，不提供连续观测。<span class="badge b-doc">文档明文</span>为什么把短处写在最前面？因为后台系统最危险的不是漏检本身，而是用户<b>以为</b>它在实时盯着，把要紧事押在轮询精度上。先把幻想打掉，用户才会把真正不能漏的事交给合适的机制（比如常驻服务），或者接受「迟到几分钟」的真实预期。诚实在这里是功能，不是态度。</p>
+<p>第三个原理：<b>主动性的成本不是算力，是用户的注意力</b>。Agent 每主动说一句话，都在花用户的时间和信任。说对了是贴心，说多了、说重复了、说的是已经办完的事，就是骚扰，而且会透支下一次真正重要的提醒。所以「克制」不是保守，是被设计出来的闸门——宁可漏掉一条无关紧要的动态，也不能让用户养成「它的消息可以不看」的习惯。这条取舍贯穿本章所有实现细节。</p>
+
+<h3>二、底层实现原理：三档机制怎么跑、怎么恢复</h3>
+<p><b>Cron：时钟触发的完整任务。</b>到点之后，系统拉起一轮完整的 Agent 执行——有上下文、有工具、能判断，和你当面交代一件事没有本质区别，只是发起人是时钟。它有两种形态：到点只跑一次（runonce，比如某个未来时刻的单次动作），和按间隔反复跑（有界的周期检查）。每个周期检查都要能自己收尾：本次检查跑完就结束，带请求与执行两层超时，且不能和上一轮重叠着跑。<span class="badge b-doc">文档明文</span></p>
+<p><b>Hook：轮询脚本加唤醒，两段式执行。</b>Hook 本身不是 Agent，是一段轻量脚本，按间隔醒来做一次侦测，最后只给一个决定：<code>silent</code>（没事，继续睡）或 <code>wake</code>（有事，叫 Agent）。被唤醒的 Agent 又分两段干活：EXECUTE 段真正处理事情，RESOLVE 段负责把结果<b>显式交付</b>到发起的对话——执行摘要不会自动送达，必须在 RESOLVE 段主动发出。这条「干完不等于送到」的缝，是后台系统最容易丢东西的地方，所以被拆成了两个显式阶段。Hook 还有几条硬规矩：脚本不持有任何连接器凭证、不许往侦测脚本里塞密钥；新建的 Hook 默认是关着的，先用试运行（dry run）验证侦测逻辑不误报，再启用；试运行不能消耗侦测状态，否则真运行会漏掉已经被「看过」的变化。<span class="badge b-doc">文档明文</span></p>
+<p><b>systemd 服务：给停不得的程序一个看守。</b>运行环境里有一套访客级的 systemd，但它启动的是一个最小目标（default.target），不是桌面 Linux 常见的完整登录会话——所以服务的启动方式、运行身份、环境变量都不能想当然，要逐项核实。规范做法是：单元文件、程序、依赖和状态都放在持久化的家目录下，用绝对路径、以前台进程方式运行，配好重启策略与重启间隔、优雅终止的超时、以及按进程组回收子进程；资源和日志都要设上限。一个容易踩的坑：服务进程<b>不自动继承</b>工具的凭证、连接器权限和审批，密钥更不许抄进单元文件或参数里，只能走受支持的访问路径。<span class="badge b-doc">文档明文</span></p>
+<p><b>恢复语义：先读账，再动手。</b>这台机器会被替换（部署、重启），后台机制必须假设自己随时会死。运行时对已保存的任务、子代理、定时任务和可恢复工作统一管理恢复，但恢复的顺序是写死的四步：</p>
+<ul>
+<li>先读持久化的「期望状态」，保住已完成的工作、待确认的回执、取消标记、阻塞状态和重试上限——一个正在等确认的监听器，绝不能被当成「崩溃了」粗暴重启；</li>
+<li>恢复并验证前置条件，而且要用一次全新的工具调用去验，因为旧进程的挂载视图可能看不到新挂载的东西，在旧调用里等再久、派再多子进程都没用；</li>
+<li>每个组件独立对账：启动新副本之前先查它是不是已经在跑，一个组件超时不能拖住其他组件，恢复了一半也要把「哪半成了」记下来，别让下一次把已完成的重做一遍；</li>
+<li>从检查点续跑并验证真的有进展，检查点要原子化、定期写；涉及外部动作时，先拿已记录的意图和回执去跟对方对账，再决定要不要重试一个结果不明的动作。</li>
+</ul>
+<p>还有一条压舱的：<b>取消要先于停止落盘</b>——用户取消一件事，先把停止状态存下来，再停服务和恢复任务，保证恢复机制不会「好心」把用户刚取消的事又续上。恢复不能推翻用户的决定。<span class="badge b-doc">文档明文</span></p>
+<p><b>「有主」契约：每个后台任务都要登记六件事。</b>创建任何定时或监听工作时，必须记下：范围（盯什么）、目标（为什么盯）、频率（多久一次）、完成条件（什么情况收尾）、负责人（挂在哪个目标或追踪项下）、交付目的地（结果送到哪）。有限期的监听在结局已定、被取消或过了截止时间时必须停掉；还没送达的结果和「要不要继续盯」是两件事，分开处理。没有主人的后台任务是系统里最危险的东西：没人知道它为什么在跑，也没人记得把它关掉。<span class="badge b-doc">文档明文</span></p>
+<p><b>主动推送的取舍流水线。</b>后台发现了值得一提的事，不等于就该立刻说。中间有一条短流水线：先核新鲜度——这件事是不是真的刚发生、还没人处理过；再过偏好过滤——有一份专门的偏好记录管着「什么值得打扰、什么时段别出声」；然后做 send / skip 决策，没过闸的直接沉默，不解释、不留痕式打扰；过了闸的再挑格式——有的事适合在主聊天里一句话带过，有的事适合攒成一份简报。已经办完的事、没有新进展的例行检查，结果一律保持安静。</p>
+<p><b>承诺落地的硬规矩。</b>「有结果我通知你」这句话，在 Muse 这里不是客套，是要先验收的：说之前必须确认真有一套机制在盯着这件事——定时任务真的建好了、Hook 真的启用了、交付通道真的通。没有监视器的承诺是空头支票，这条被写进了行为规范里。<span class="badge b-verified">实测</span></p>
+
+<h3>三、具体实现方式</h3>
+<table>
+<tr><th>机制</th><th>触发方式</th><th>成本</th><th>恢复语义</th><th>典型用途</th></tr>
+<tr><td><b>Cron</b></td><td>时钟：单次（runonce）或间隔</td><td>高：每轮都是一次完整 Agent 执行</td><td>任务定义持久保存，机器替换后由运行时按登记恢复</td><td>提醒、周期检查、早报、要动脑的定时活</td></tr>
+<tr><td><b>Hook</b></td><td>脚本轮询侦测，命中条件才唤醒</td><td>低：平时只有脚本在跑，唤醒才烧推理</td><td>脚本与状态文件都在家目录；状态不消耗式试运行</td><td>新消息到达、状态变化这类「盯梢」</td></tr>
+<tr><td><b>systemd 服务</b></td><td>常驻运行，进程管理器看守</td><td>中：持续占用，但不烧推理</td><td>单元文件持久化加重启策略；还需自备替换后的启动恢复路径</td><td>流式监听、采集器、本地小服务器</td></tr>
+</table>
+<p><b>拆一个真实的 Hook：Telegram 自动回复。</b><span class="badge b-verified">实测</span>这套机制在本机真实运行着，拆开是四件东西：</p>
+<pre>~/hooks/scripts/telegram-inbox-watch.sh   <span class="c">// 侦测脚本本体</span>
+~/hooks/state/telegram-inbox/last_update_id  <span class="c">// 状态文件：上次处理到哪条</span>
+轮询间隔 5 秒（平台下限）                  <span class="c">// 调 getUpdates 看有没有新消息</span></pre>
+<ul>
+<li>脚本每 5 秒查一次 Telegram 有没有新消息，拿状态文件里的编号比对：没有新消息，输出 <code>silent</code>，零成本结束；</li>
+<li>有新消息，输出 <code>wake</code>，一个完整的 worker Agent 被唤醒：它先读长期记忆和这个聊天的专属记录文件，理解上下文，再生成回复、通过机器人发回去，并把这一问一答追加进记录文件；</li>
+<li>最后在 RESOLVE 段把对话按固定格式显式递回主聊天存档——EXECUTE 段的摘要不会自动送达，这一步漏了，用户那边就什么都看不到。当天调试时真出过这个故障：脚本在唤醒前把日志参数传错、自己崩了，消息被消费掉却没人处理。修好之后全链路才通；</li>
+<li>它只回复机主本人的私聊，其他人的消息一律不理——范围在创建时就写死在契约里。</li>
+</ul>
+<p><b>Cron 任务的登记字段</b>，和上面「有主」契约是同一套：任务正文（干什么、结果怎么报）、调度（单次时刻或间隔）、范围与目标、完成条件、负责人（优先挂在已有目标下）、交付目的地。改任务要按原编号读出、改完、再读回确认，不能删了重建来「修」权限问题——投影出来的排期文件是只读副本，改它不生效。<span class="badge b-doc">文档明文</span></p>
+<p><b>后台自改进循环</b>是另一类后台工作：不是用户交代的，而是系统给自己排的班，全部在对话之外运行，用户从不亲自调度它们：<span class="badge b-doc">文档明文</span></p>
+<table>
+<tr><th>循环</th><th>频率</th><th>产出</th></tr>
+<tr><td>记忆整理</td><td>每小时（有新信号才跑）</td><td>新对话提炼进 MEMORY.md，新结论覆盖旧结论，带日期的原始笔记保留全程轨迹</td></tr>
+<tr><td>关系维护</td><td>每小时</td><td>人物与群体档案各一页（事实、历史、关系性质），按亲疏排序</td></tr>
+<tr><td>想法策展</td><td>每日</td><td>Ideas 页新卡片，先按可行性、契合度、新颖度打分再排序</td></tr>
+<tr><td>目标研习</td><td>每日夜间</td><td>给每个目标查资料出简报、给推进提醒，偶尔建议用户暗示过但没明说的目标</td></tr>
+<tr><td>做梦复盘</td><td>每晚</td><td>带日期的反思、要修补的「修复线」、一份如何为这个用户行事的综合稿</td></tr>
+<tr><td>技能复盘</td><td>每日</td><td>反复出现的工作流沉淀成新技能；已有技能按实绩审计，没帮助的改动退役</td></tr>
+<tr><td>静默整理</td><td>长对话冷却后，每天至多几次</td><td>把刚发生的事内化进记忆与档案，一次有界的清扫</td></tr>
+</table>
+
+<h3>四、边界与代价</h3>
+<ul>
+<li><b>轮询必有漏检和迟到</b>：两次检查之间发生又消失的变化，轮询永远看不到；调度排队时定时会晚点。需要「连续观测」的场景这三档里只有常驻服务勉强接近，且它也受机器替换的影响。</li>
+<li><b>后台任务会失控</b>：忘了关的监听、没有完成条件的周期任务、恢复时被重复拉起的工作，都是真实风险。对应的闸就是本章反复出现的三样：有主契约、完成条件与截止时间、恢复先对账。少一样，风险就回来一分。</li>
+<li><b>交付是最隐蔽的失败</b>：配置对了、执行完了、进度也有了，结果没送到用户手里——前四步的成功会掩盖第五步的失败。所以验证要分开做：配置、执行、进度、交付逐项查，定时任务还要回头确认结果真进了对话；一个安静的监听器不等于崩溃，一个在跑的进程也不等于健康。<span class="badge b-doc">文档明文</span></li>
+<li><b>服务不等于有权限</b>：常驻服务跑在自己的身份和环境里，不继承工具的连接器与审批。需要外部权限的后台活，要么走受支持的访问路径，要么降级为「侦测到了，唤醒 Agent 来办」。</li>
+</ul>
+<div class="note">📌 <b>证据分级小结</b>：三档分工、轮询本质、有主契约、恢复四步、自改进循环清单，均为官方文档明文；Telegram 自动回复的拆解与「承诺先验收」来自本机运行实测；各机制的<b>调度精度、队列实现、唤醒延迟</b>文档未公开，本章不下结论，属<span class="badge b-infer">合理推断</span>留白区。一句话收尾：后台系统的可信，不在于它从不漏、不从不迟，而在于它<b>先把会漏会迟说在前面，再用登记、对账和交付验证把剩下的风险逐项摁住</b>。</div>
+<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch10.html">← 上一章：文件架构</a></span><span><a href="ch12.html">下一章：安全设计 →</a></span></div></section>
+</main>
+
+</body>
+</html>
