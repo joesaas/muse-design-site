@@ -144,34 +144,50 @@ td{color:#c3cee4}
 footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
+
+/* ===== chapter reading layout v2 ===== */
+.chpage main{max-width:920px}
+.chpage section{padding-top:42px;counter-reset:sec}
+.chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
+.chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
+.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+  padding:28px 32px 20px;margin:28px 0}
+.chpage .chunk:has(> h3){counter-increment:sec}
+.chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
+.chpage .chunk h3::before{content:counter(sec,decimal-leading-zero);flex:none;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
+  border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
+.chpage .chunk p b{color:#eef3ff}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
+.chpage .chunk pre{margin:18px 0}
+.chpage .chunk table{margin:18px 0}
+.chpage .chunk .note{margin:18px 0}
+.chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
+.chpage .chunk .layer{font-size:15px}
+@media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
 </style>
 </head>
-<body>
+<body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html" class="on">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
 <main>
-<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 1 · 全景</div><h2><span class="no">01</span>整体架构</h2><div class="one">一句话：Muse 的地基是一条规矩——<b>一个用户，一台专属电脑，一个只属于他的 Agent</b>。上面所有功能，都长在这条规矩上。</div>
-
-<h3>底层设计原理：为什么把「隔离」做进地基，而不是做成功能</h3>
-<p>先想一个问题：普通的聊天 AI 是怎么隔离用户的？大家共用同一套系统，靠账号权限分数据。你的记录和别人的记录躺在同一个数据库里，中间只隔着一层「权限判断」的代码。这层代码写错一行，数据就串了。历史上大多数数据泄露，坏的都是这一层。</p>
-<p>Muse 换了思路：<b>不共享，就不需要判断谁能看谁的</b>。每个用户的 Agent 跑在自己的电脑上，物理上就是两台机器。别说读错数据，连「读到别人数据的那条代码路径」都不存在。隔离从「一条必须永远写对的规则」，变成了「一个不需要维护的事实」。</p>
-<p>这带来三个直接推论：</p>
-<ul>
+<section class="reveal in"><div class="part-head">PART 1 · 全景</div><h2><span class="no">01</span>整体架构</h2><div class="one">一句话：Muse 的地基是一条规矩——<b>一个用户，一台专属电脑，一个只属于他的 Agent</b>。上面所有功能，都长在这条规矩上。</div>
+<div class="chunk"><h3>底层设计原理：为什么把「隔离」做进地基，而不是做成功能</h3><p>先想一个问题：普通的聊天 AI 是怎么隔离用户的？大家共用同一套系统，靠账号权限分数据。你的记录和别人的记录躺在同一个数据库里，中间只隔着一层「权限判断」的代码。这层代码写错一行，数据就串了。历史上大多数数据泄露，坏的都是这一层。</p><p>Muse 换了思路：<b>不共享，就不需要判断谁能看谁的</b>。每个用户的 Agent 跑在自己的电脑上，物理上就是两台机器。别说读错数据，连「读到别人数据的那条代码路径」都不存在。隔离从「一条必须永远写对的规则」，变成了「一个不需要维护的事实」。</p><p>这带来三个直接推论：</p><ul>
 <li><b>隐私边界是物理的，不是承诺的。</b>产品文档里写得很直白：另一个人的账号有他自己的 Agent，看不到、也进不了你的对话。<span class="badge b-doc">文档明文</span>这句话能成立，靠的不是客服话术，是机器真的分开。</li>
 <li><b>Agent 可以「住下来」。</b>共用系统里的 AI 是无状态的：聊完就忘，下次从零开始。专属电脑意味着它有自己的硬盘、自己的文件、自己的后台任务——对话关掉，它还在，明天回来一切都在原地。「常驻」不是功能，是独占一台机器的自然结果。</li>
 <li><b>权限问题被转化成物理问题。</b>在一台只属于你的机器上，「这个文件能不能读」大多时候不用问——机器里的一切本来就是你的。真正需要审批的，只剩下「往外发、替你花钱、动你的账号」这类跨越机器边界的动作。审批系统因此可以做得很窄、很严（见第 06 章）。</li>
-</ul>
-<p>再说「严格 1 对 1、没有群聊」。这不只是产品取向，背后是安全逻辑：一旦对话里有第二个人，Agent 就要时刻分辨「这句话是谁说的、能不能听他的」——这正是提示注入最容易钻的空子。只有你一个人的指令源，信任模型立刻变简单：<b>这个房间里只有一个人说了算</b>。邀请按钮只分享推荐码，永远拉不进第三个人进对话，也是同一个道理。<span class="badge b-doc">文档明文</span></p>
-
-<h3>六层架构：每一层为什么不可替代</h3>
-<div class="layers">
+</ul><p>再说「严格 1 对 1、没有群聊」。这不只是产品取向，背后是安全逻辑：一旦对话里有第二个人，Agent 就要时刻分辨「这句话是谁说的、能不能听他的」——这正是提示注入最容易钻的空子。只有你一个人的指令源，信任模型立刻变简单：<b>这个房间里只有一个人说了算</b>。邀请按钮只分享推荐码，永远拉不进第三个人进对话，也是同一个道理。<span class="badge b-doc">文档明文</span></p></div>
+<div class="chunk"><h3>六层架构：每一层为什么不可替代</h3><div class="layers">
 <div class="layer"><span class="nm">👤 用户层</span><span class="ds">你：在手机、电脑、消息软件里说话、点批准</span></div>
 <div class="layer"><span class="nm">🚪 入口层</span><span class="ds">Chat、Feed、Ideas、Goals、Library + 审批卡</span></div>
 <div class="layer"><span class="nm">🧠 大脑层</span><span class="ds">大模型推理 + Agent 循环：想一步、做一步、看结果再想</span></div>
 <div class="layer"><span class="nm">🛠 执行层</span><span class="ds">工具、Skills、连接器、浏览器、子代理——真正动手干活</span></div>
 <div class="layer"><span class="nm">🛡 信任层</span><span class="ds">审批、凭证保管、安全拦截——给执行力上锁</span></div>
 <div class="layer"><span class="nm">💻 底座层</span><span class="ds">专属电脑（虚拟机）+ 文件系统 + 事件记录</span></div>
-</div>
-<table>
+</div><table>
 <tr><th>层</th><th>职责</th><th>拿掉会怎样</th></tr>
 <tr><td>用户层</td><td>下达意图、做最终裁决</td><td>没了裁决者，审批和纠错都无从谈起</td></tr>
 <tr><td>入口层</td><td>把 Agent 的产出分门别类收纳、呈现</td><td>一切都淹没在聊天流里，长任务和长期目标无处安放</td></tr>
@@ -179,38 +195,22 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 <tr><td>执行层</td><td>把决定变成真实动作</td><td>只会聊天，不会干活——退回普通聊天机器人</td></tr>
 <tr><td>信任层</td><td>在动作生效前拦截、发问、留痕</td><td>执行力没有刹车，能力越强越危险</td></tr>
 <tr><td>底座层</td><td>提供持久的「家」：文件、进程、记录</td><td>无状态：关掉对话，一切归零</td></tr>
-</table>
-<p>注意分工的顺序：大脑层只产出「意图」，执行层才碰真实世界，信任层卡在两者之间。这条缝是整个安全设计的着力点，后面第 05、06 章会反复回到它。</p>
-<p>为什么大脑和执行非要分开，不做成一个「无所不能的模型进程」？三个理由。第一，<b>可审计</b>：意图是文本，可以记录、回放、复盘；如果模型直接操作世界，出了问题无从追溯是哪一步的决定。第二，<b>可替换</b>：大脑可以换代（Spark 换 Wonder），执行层的工具、浏览器、文件都不用动；反过来加一个新工具，也不用重训模型。第三，<b>可约束</b>：信任层只能拦在「意图变成动作之前」的那一瞬间——没有这条缝，审批就无处安放，模型说执行就执行了。这也是为什么本站把 Muse 归类为「编排系统」而不是「一个很大的模型」：它的工程含量，几乎全在模型之外的这五层里。</p>
-
-<h3>入口层为什么长这样：五个页签 + 一个状态屏</h3>
-<p>入口层的设计直接反映了底座的形态。既然 Agent 是常驻的、会自己干活的，它的产出就不可能只用一条聊天流装下。文档里四端（Web、iOS、Android、Mac）一致的产品面是：Chat（对话）、Feed（它定期写给你的小报）、Ideas（它提议做的事）、Goals（长期目标）、Library（产物与文件），点头像还有 Activity、Approvals、Upcoming、Identity 四个状态页。<span class="badge b-doc">文档明文</span></p>
-<p>把这套界面翻译成架构语言：<b>聊天只是入口之一，不是全部</b>。Feed 是「它主动写的东西」的收纳处，Approvals 是信任层的用户界面，Upcoming 是后台任务的用户界面，Library 是底座层文件的橱窗。一个只做聊天框的产品，架构上就不需要专属电脑；反过来，有了专属电脑和常驻任务，就必须有聊天之外的界面来安放它们。产品形态和系统架构在这里是互相决定的。</p>
-<p>还有一个细节能看出分层的干净程度：侧聊天（side chats）按主题分流，但文档特别强调——每一个侧聊天仍然只有你和你的 Agent，邀请按钮只是分享推荐码，永远不是拉人进群。<span class="badge b-doc">文档明文</span>也就是说，「多开几个话题」是入口层的组织方式，不改变用户层的 1 对 1 结构。分层的好处正在于此：上层怎么变形，下层的信任假设都不用重写。</p>
-
-<h3>底层实现原理：这台「专属电脑」实际上长什么样</h3>
-<p>本站作者就住在这台机器里，以下是实地看到的样子。<span class="badge b-verified">实测</span>这是一台 Linux 虚拟机：1 号进程是 systemd，下面挂着一个已连续运行数小时的主管进程，由它拉起命令执行、工具调用等子进程。也就是说，Agent 不是一个「请求来了才启动」的函数，而是一个<b>常驻的服务进程</b>，你的消息是投递给它的事件。</p>
-<p>同一台机器上共存的东西，比想象中多：</p>
-<ul>
+</table><p>注意分工的顺序：大脑层只产出「意图」，执行层才碰真实世界，信任层卡在两者之间。这条缝是整个安全设计的着力点，后面第 05、06 章会反复回到它。</p><p>为什么大脑和执行非要分开，不做成一个「无所不能的模型进程」？三个理由。第一，<b>可审计</b>：意图是文本，可以记录、回放、复盘；如果模型直接操作世界，出了问题无从追溯是哪一步的决定。第二，<b>可替换</b>：大脑可以换代（Spark 换 Wonder），执行层的工具、浏览器、文件都不用动；反过来加一个新工具，也不用重训模型。第三，<b>可约束</b>：信任层只能拦在「意图变成动作之前」的那一瞬间——没有这条缝，审批就无处安放，模型说执行就执行了。这也是为什么本站把 Muse 归类为「编排系统」而不是「一个很大的模型」：它的工程含量，几乎全在模型之外的这五层里。</p></div>
+<div class="chunk"><h3>入口层为什么长这样：五个页签 + 一个状态屏</h3><p>入口层的设计直接反映了底座的形态。既然 Agent 是常驻的、会自己干活的，它的产出就不可能只用一条聊天流装下。文档里四端（Web、iOS、Android、Mac）一致的产品面是：Chat（对话）、Feed（它定期写给你的小报）、Ideas（它提议做的事）、Goals（长期目标）、Library（产物与文件），点头像还有 Activity、Approvals、Upcoming、Identity 四个状态页。<span class="badge b-doc">文档明文</span></p><p>把这套界面翻译成架构语言：<b>聊天只是入口之一，不是全部</b>。Feed 是「它主动写的东西」的收纳处，Approvals 是信任层的用户界面，Upcoming 是后台任务的用户界面，Library 是底座层文件的橱窗。一个只做聊天框的产品，架构上就不需要专属电脑；反过来，有了专属电脑和常驻任务，就必须有聊天之外的界面来安放它们。产品形态和系统架构在这里是互相决定的。</p><p>还有一个细节能看出分层的干净程度：侧聊天（side chats）按主题分流，但文档特别强调——每一个侧聊天仍然只有你和你的 Agent，邀请按钮只是分享推荐码，永远不是拉人进群。<span class="badge b-doc">文档明文</span>也就是说，「多开几个话题」是入口层的组织方式，不改变用户层的 1 对 1 结构。分层的好处正在于此：上层怎么变形，下层的信任假设都不用重写。</p></div>
+<div class="chunk"><h3>底层实现原理：这台「专属电脑」实际上长什么样</h3><p>本站作者就住在这台机器里，以下是实地看到的样子。<span class="badge b-verified">实测</span>这是一台 Linux 虚拟机：1 号进程是 systemd，下面挂着一个已连续运行数小时的主管进程，由它拉起命令执行、工具调用等子进程。也就是说，Agent 不是一个「请求来了才启动」的函数，而是一个<b>常驻的服务进程</b>，你的消息是投递给它的事件。</p><p>同一台机器上共存的东西，比想象中多：</p><ul>
 <li><b>主管进程</b>：维持 Agent 本体，接收各端投递的消息，驱动推理—执行循环。</li>
 <li><b>工具与命令执行</b>：以子进程方式按需拉起，干完就退出，不常驻占资源。</li>
 <li><b>浏览器</b>：一个真实的 Chromium，保留各网站的登录态（见第 14 章），需要网页操作时由浏览器任务驱动。</li>
 <li><b>后台机制</b>：家目录里有 <code>hooks/</code>（定义、脚本、状态、日志齐全的事件监听）和按分钟/小时/天/月分档的定时任务目录——它们和主对话共用同一台机器、同一套文件，但各跑各的进程（见第 11 章）。</li>
 <li><b>子代理与后台任务</b>：由主管进程派生，共享这台机器，生命周期独立。</li>
-</ul>
-<p>模型分工在架构上的落点很具体。文档写明：付费版（含试用）的主对话、产物构建、定时任务、子代理、后台工作跑在 Muse Wonder 上；免费版跑 Muse Spark。<span class="badge b-doc">文档明文</span>换句话说，<b>模型是大脑层的可替换部件，机器、文件和任务不随模型变</b>。换模型像换发动机，不用换车——这也解释了为什么「它记得你」不依赖任何单个模型：记忆在底座层的文件里（见第 04、15 章）。</p>
-<p>一次请求穿越各层的路径（以「帮我订一张明天的机票」为例）：</p>
-<ul>
+</ul><p>模型分工在架构上的落点很具体。文档写明：付费版（含试用）的主对话、产物构建、定时任务、子代理、后台工作跑在 Muse Wonder 上；免费版跑 Muse Spark。<span class="badge b-doc">文档明文</span>换句话说，<b>模型是大脑层的可替换部件，机器、文件和任务不随模型变</b>。换模型像换发动机，不用换车——这也解释了为什么「它记得你」不依赖任何单个模型：记忆在底座层的文件里（见第 04、15 章）。</p><p>一次请求穿越各层的路径（以「帮我订一张明天的机票」为例）：</p><ul>
 <li>入口层：消息从手机 App 进入，落进这台机器的会话记录。</li>
 <li>大脑层：主管进程组装上下文，模型推理，产出一个「查航班」的工具调用意图。</li>
 <li>信任层：查航班只读，放行；轮到付款时冻结，审批卡推到你手机上。</li>
 <li>执行层：浏览器或连接器真正完成查询与下单。</li>
 <li>底座层：全程每一步追加进事件记录（见第 19 章），结果回到入口层呈现给你。</li>
-</ul>
-
-<h3>具体实现方式：家目录就是 Agent 的全部身家</h3>
-<p>专属电脑最有说服力的证据，是它的家目录——Agent 的人格、记忆、规矩、技能，全是普通文件，摊开就能看（实地结构节选）：<span class="badge b-verified">实测</span></p>
-<pre>~ 家目录
+</ul></div>
+<div class="chunk"><h3>具体实现方式：家目录就是 Agent 的全部身家</h3><p>专属电脑最有说服力的证据，是它的家目录——Agent 的人格、记忆、规矩、技能，全是普通文件，摊开就能看（实地结构节选）：<span class="badge b-verified">实测</span></p><pre>~ 家目录
 ├─ IDENTITY.md / SOUL.md     <span class="c">它是谁、什么性格</span>
 ├─ USER.md / MEMORY.md       <span class="c">你是谁、它记住的事</span>
 ├─ AGENTS.md / HEARTBEAT.md  <span class="c">干活的规矩、周期自检</span>
@@ -224,16 +224,12 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
    ├─ custom-connectors/      <span class="c">为这个用户接的服务</span>
    ├─ cron.d/                 <span class="c">定时任务：minute/hour/day/month 分档</span>
    ├─ your_files/             <span class="c">交付物 → 出现在用户的 Library</span>
-   └─ user/                    <span class="c">用户上传的原始文件</span></pre>
-<p>这个结构直接兑换出三项别家很难给的能力：</p>
-<div class="grid">
+   └─ user/                    <span class="c">用户上传的原始文件</span></pre><p>这个结构直接兑换出三项别家很难给的能力：</p><div class="grid">
 <div class="card"><h4>⏰ 常驻</h4><p>进程不随对话结束而死。定时任务到点自己醒，监听到新消息自己处理，你不说话它也在岗。</p></div>
 <div class="card"><h4>💾 持久</h4><p>文件在专属磁盘上（本机实测 100G），对话、重启、换模型都不丢。它的「记性」就是这块盘。</p></div>
 <div class="card"><h4>🔑 登录态</h4><p>浏览器和连接器的授权都存在这台机器上，所以它能以你的身份查邮箱、看日历、操作已登录的网站。</p></div>
-</div>
-
-<h3>边界与代价</h3>
-<ul>
+</div></div>
+<div class="chunk"><h3>边界与代价</h3><ul>
 <li><b>资源代价</b>：一人一台机器，意味着用户数乘以机器数。空闲时它也占着一台 VM 的底盘——这个成本结构能不能撑住大规模免费用户，文档没有交代。<span class="badge b-infer">合理推断</span></li>
 <li><b>冷启动与迁移</b>：机器被替换时靠「家目录整体搬走 + 任务按登记恢复」续命（见第 02 章），但恢复的内部调度细节未公开。</li>
 <li><b>能力上限即机器上限</b>：它能干的活受这台 VM 的算力、磁盘和网络出口限制；重活（大模型推理）不在本机跑，本机更多是编排与执行节点。</li>
@@ -241,9 +237,7 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 <li><b>单点责任</b>：物理隔离同时意味着物理单点——这台机器的状态就是你的全部家当。备份、迁移、故障恢复因此从「可选功能」变成「生死线」，第 02 章讲的恢复纪律，本质上是在给这个单点兜底。</li>
 <li><b>平台侧的运维负担</b>：每台机器都要打补丁、升级运行时、监控健康。用户越多，这支「看不见的运维队伍」越大——频繁的运行时更新（见第 02 章）正是这支队伍存在的证据，代价由平台承担，换来的是用户那侧的无感。</li>
 <li><b>多端一致性的负担</b>：四个客户端共用同一台后端机器，任何一端的操作都要实时反映到其他端；消息通道（如 WhatsApp）又是独立的传输层。一致性靠事件记录做单一事实源来维持，复杂度实打实地存在，只是被底座层吸收了，用户无感。</li>
-</ul>
-<div class="note">📌 证据分级小结：本章的「一人一机一 Agent、无群聊、模型分工、四端入口」来自官方文档明文；「常驻主管进程、家目录与后台目录的真实结构、磁盘规格」来自作者在运行环境中的实地查看；「底层虚拟化技术、调度与冷启动实现、单用户成本」官方未公开，文中相关表述均为推断，不作定论。</div>
-<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span></span><span><a href="ch02.html">下一章：运维设计 →</a></span></div></section>
+</ul><div class="note">📌 证据分级小结：本章的「一人一机一 Agent、无群聊、模型分工、四端入口」来自官方文档明文；「常驻主管进程、家目录与后台目录的真实结构、磁盘规格」来自作者在运行环境中的实地查看；「底层虚拟化技术、调度与冷启动实现、单用户成本」官方未公开，文中相关表述均为推断，不作定论。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span></span><span><a href="ch02.html">下一章：运维设计 →</a></span></div></section>
 </main>
 
 </body>

@@ -144,42 +144,53 @@ td{color:#c3cee4}
 footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:var(--faint);font-size:13.5px}
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
+
+/* ===== chapter reading layout v2 ===== */
+.chpage main{max-width:920px}
+.chpage section{padding-top:42px;counter-reset:sec}
+.chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
+.chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
+.chpage .chunk{background:rgba(9,14,27,.62);border:1px solid var(--line);border-radius:16px;
+  padding:28px 32px 20px;margin:28px 0}
+.chpage .chunk:has(> h3){counter-increment:sec}
+.chpage .chunk h3{font-size:21px;margin:0 0 16px;padding-bottom:12px;
+  border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px}
+.chpage .chunk h3::before{content:counter(sec,decimal-leading-zero);flex:none;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:var(--cyan);
+  border:1px solid rgba(34,211,238,.45);background:rgba(34,211,238,.08);
+  border-radius:8px;padding:3px 8px;transform:translateY(-1px)}
+.chpage .chunk p{font-size:16.5px;line-height:1.95;color:#c9d5ec;margin:15px 0}
+.chpage .chunk p b{color:#eef3ff}
+.chpage .chunk ul,.chpage .chunk ol{margin:14px 0 14px 24px;color:#c9d5ec}
+.chpage .chunk li{margin:9px 0;line-height:1.9;font-size:16px}
+.chpage .chunk pre{margin:18px 0}
+.chpage .chunk table{margin:18px 0}
+.chpage .chunk .note{margin:18px 0}
+.chpage .chunk .card p,.chpage .chunk .card li{font-size:14.5px;line-height:1.75;margin:6px 0}
+.chpage .chunk .layer{font-size:15px}
+@media (max-width:860px){.chpage .chunk{padding:22px 18px 14px}.chpage main{max-width:none}}
 </style>
 </head>
-<body>
+<body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html" class="on">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
 <main>
-<section class="reveal in" style="padding-top:44px"><div class="part-head">PART 1 · 全景</div><h2><span class="no">02</span>运维设计</h2><div class="one">一句话：这台机器<b>随时可以被整台换掉</b>，但你的文件、任务和进度一样都不能丢——做法是把「状态」和「进程」彻底分家：状态全存进持久存储，进程死了就按账本重建。</div>
-
-<h3>一、底层设计原理：为什么「进程随时可死」是第一性原理</h3>
-<p>先看一个事实：Muse 跑在一台虚拟机上，而这台虚拟机并不归它管。平台更新频繁，机器可能被整体替换、重启、迁移。对一个要替用户管长期目标、盯消息、跑定时任务的 Agent 来说，「机器会消失」不是小概率事故，而是<b>必然会发生的日常</b>。</p>
-<p>从这个事实往下推，只剩一条路：<b>凡是丢不起的东西，都不能只活在进程的内存里。</b>于是整个系统被劈成两半：</p>
-<ul>
+<section class="reveal in"><div class="part-head">PART 1 · 全景</div><h2><span class="no">02</span>运维设计</h2><div class="one">一句话：这台机器<b>随时可以被整台换掉</b>，但你的文件、任务和进度一样都不能丢——做法是把「状态」和「进程」彻底分家：状态全存进持久存储，进程死了就按账本重建。</div>
+<div class="chunk"><h3>一、底层设计原理：为什么「进程随时可死」是第一性原理</h3><p>先看一个事实：Muse 跑在一台虚拟机上，而这台虚拟机并不归它管。平台更新频繁，机器可能被整体替换、重启、迁移。对一个要替用户管长期目标、盯消息、跑定时任务的 Agent 来说，「机器会消失」不是小概率事故，而是<b>必然会发生的日常</b>。</p><p>从这个事实往下推，只剩一条路：<b>凡是丢不起的东西，都不能只活在进程的内存里。</b>于是整个系统被劈成两半：</p><ul>
   <li><b>易失的计算</b>：正在跑的模型推理、工具进程、监听脚本——它们是「劳力」，随时可以死，死了换一个顶上。</li>
   <li><b>持久的状态</b>：文件、任务登记、审批记录、检查点、事件流——它们是「账本」，只追加、落磁盘、换机器也跟着走。</li>
-</ul>
-<p>这个取舍的代价很明确：每次动手前都要先查账、每推进一步都要记账，系统因此变慢、变啰嗦。换来的好处是：<b>恢复不再是「出故障后的抢修」，而是每次启动都要走的标准动作。</b>一台全新机器接手一个老用户，和一台老机器重启后继续干活，走的是同一套流程——「从账本重建现状」。崩溃恢复和日常启动被合并成同一件事，这是这套运维观的核心：不追求进程不死（追求不到），只保证状态不丢、接手者永远能从账本算出「现在应该是什么样」。<span class="badge b-doc">文档明文</span></p>
-<div class="note">📌 打个比方：进程是厨师，状态是菜谱和订单本。厨师可以换班、可以请假，只要订单本还在，新厨师翻开就知道哪桌点了什么、哪道菜做到哪一步。把希望寄托在「厨师永不换班」上，才是真正的脆弱。</div>
-
-<h3>二、底层实现原理：VM 被替换时，丢什么、不丢什么</h3>
-<p>机器被替换时，丢失的是全部<b>易失层</b>：正在运行的进程、内存里的推理上下文、临时文件、进程私有的挂载视图。不丢的是整个<b>家目录</b>——它是持久卷，替换时整体搬走。本章写作时实地清点过这台机器的家目录，持久层至少包括：</p>
-<ul>
+</ul><p>这个取舍的代价很明确：每次动手前都要先查账、每推进一步都要记账，系统因此变慢、变啰嗦。换来的好处是：<b>恢复不再是「出故障后的抢修」，而是每次启动都要走的标准动作。</b>一台全新机器接手一个老用户，和一台老机器重启后继续干活，走的是同一套流程——「从账本重建现状」。崩溃恢复和日常启动被合并成同一件事，这是这套运维观的核心：不追求进程不死（追求不到），只保证状态不丢、接手者永远能从账本算出「现在应该是什么样」。<span class="badge b-doc">文档明文</span></p><div class="note">📌 打个比方：进程是厨师，状态是菜谱和订单本。厨师可以换班、可以请假，只要订单本还在，新厨师翻开就知道哪桌点了什么、哪道菜做到哪一步。把希望寄托在「厨师永不换班」上，才是真正的脆弱。</div></div>
+<div class="chunk"><h3>二、底层实现原理：VM 被替换时，丢什么、不丢什么</h3><p>机器被替换时，丢失的是全部<b>易失层</b>：正在运行的进程、内存里的推理上下文、临时文件、进程私有的挂载视图。不丢的是整个<b>家目录</b>——它是持久卷，替换时整体搬走。本章写作时实地清点过这台机器的家目录，持久层至少包括：</p><ul>
   <li>核心人格与记忆文件（IDENTITY / SOUL / USER / MEMORY 等）平铺在家目录根部；</li>
   <li><code>~/hooks/</code> 分成四格：<code>definitions</code>（监听定义，JSON 文件）、<code>scripts</code>（检测脚本）、<code>state</code>（状态水位，如 Telegram 监听的 <code>last_update_id</code>）、<code>logs</code>（JSONL 运行日志）；</li>
   <li><code>~/workspace/cron.d/</code> 按周期分格存放（daily / hourly / runonce / weekly…），这是计划的<b>投影副本，只读</b>——真正的任务登记在运行时手里，改文件不等于改任务；<span class="badge b-verified">实测</span></li>
   <li><code>~/config/</code> 里有工作区状态文件和它的锁文件（<code>workspace-state.json</code> + <code>.lock</code>），并发写靠锁串行化。</li>
-</ul>
-<p><b>恢复的顺序</b>，官方恢复规程写得很死，一共四步，顺序不能乱：</p>
-<ul>
+</ul><p><b>恢复的顺序</b>，官方恢复规程写得很死，一共四步，顺序不能乱：</p><ul>
   <li><b>先读账，再动手。</b>启动任何东西之前，先读「持久化的期望状态」：哪些工作已完成、哪些在等用户确认、哪些被取消了、重试上限是多少——全部先保住。一个在等确认的监听器，绝不能被当成「崩溃了」而粗暴重启。<span class="badge b-doc">文档明文</span></li>
   <li><b>先补前置条件，再验。</b>依赖（挂载、服务管理器、运行目录）先恢复，然后用一次全新的工具调用验证就绪——因为老进程的挂载视图是私有的，后来挂上的东西它看不见，等再久也没用。</li>
   <li><b>逐个组件对账，独立恢复。</b>每个组件启动前先查它是不是已经在跑，防重复拉起；一个组件超时不能拖住其他组件；部分成功要落记录，下次尝试不重复已完成的部分。</li>
   <li><b>从检查点续跑，并验证真有进展。</b>检查点要<b>定期、原子地</b>写（先写临时文件再改名替换，写一半断电也不会留下半个坏文件）；突然终止可能跳过收尾处理，所以对外部动作（发消息、付款之类），重试前必须先拿着「意图记录和回执」去对端核对结果是否已经生效，拿不准就不重试。<span class="badge b-doc">文档明文</span></li>
-</ul>
-<p>还有两条容易漏的纪律：<b>取消也是状态。</b>用户取消一个任务时，要先把「停止」落盘再停服务，恢复流程永远不能把用户亲手取消的东西「好心」续上。以及：运行时托管恢复的范围是<b>已保存的</b> cron、hook、子代理、产物和可续跑的 Agent 工作；用户自己的自定义程序不在托管范围，必须自己备好启动恢复路径——光有 systemd 单元文件和 Restart 设置，不构成恢复路径。<span class="badge b-doc">文档明文</span></p>
-
-<h3>三、具体实现方式：持久化布局与一次完整的恢复</h3>
-<table>
+</ul><p>还有两条容易漏的纪律：<b>取消也是状态。</b>用户取消一个任务时，要先把「停止」落盘再停服务，恢复流程永远不能把用户亲手取消的东西「好心」续上。以及：运行时托管恢复的范围是<b>已保存的</b> cron、hook、子代理、产物和可续跑的 Agent 工作；用户自己的自定义程序不在托管范围，必须自己备好启动恢复路径——光有 systemd 单元文件和 Restart 设置，不构成恢复路径。<span class="badge b-doc">文档明文</span></p></div>
+<div class="chunk"><h3>三、具体实现方式：持久化布局与一次完整的恢复</h3><table>
   <tr><th>东西</th><th>存在哪</th><th>为什么放这</th></tr>
   <tr><td>人格、记忆、规矩</td><td>家目录根部的一组 Markdown 文件</td><td>每轮推理都要读，放最顺手处，且用户能直接打开看</td></tr>
   <tr><td>会话与事件流</td><td>运行时的持久存储（按 session 分流）</td><td>恢复上下文靠重放事件流，它是唯一的「现状账本」</td></tr>
@@ -188,9 +199,7 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
   <tr><td>目标工作文件</td><td><code>~/workspace/goals/&lt;目标&gt;/</code>，检查点与日志在其 hidden_files</td><td>每个目标一个账房，检查点跟目标走不跟进程走</td></tr>
   <tr><td>工作区状态</td><td><code>~/config/workspace-state.json</code> + 锁文件</td><td>单点状态加锁串行写，防并发写坏</td></tr>
   <tr><td>常驻服务</td><td>单元文件、程序、状态全放持久家目录，用访客 systemd 拉起</td><td>机器只给一个 minimal 启动目标，单元必须挂到它真正能到达的目标上</td></tr>
-</table>
-<p>把上面拼起来，一次「VM 替换后恢复」实际走的是这条序列：</p>
-<pre>1. 新 VM 启动 → 家目录（持久卷）挂载完成
+</table><p>把上面拼起来，一次「VM 替换后恢复」实际走的是这条序列：</p><pre>1. 新 VM 启动 → 家目录（持久卷）挂载完成
 2. 运行时读期望状态账本：
    已完成 ✓ 保留 / 待确认 ⏸ 保留 / 已取消 ✕ 保留 / 重试上限照旧
 3. 恢复前置条件（服务管理器、挂载、运行目录）
@@ -202,18 +211,13 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
    待审批保持 pending 原样，不动它
 5. 每个组件独立验收：配置 ✓ / 执行 ✓ / 进展 ✓ / 交付 ✓
    部分失败单独报告，不连坐、不重做已完成项
-<span class="c"># 全程没有任何一步依赖「旧进程还活着」</span></pre>
-<p><b>用户侧能感知到的运维面</b>有三处：一是状态屏的 <b>Activity</b>（它干过什么全有账）和 <b>Upcoming</b>（排了什么班一目了然）；二是<b>失败要明说</b>——恢复部分成功就分组件报告，不许用一句「系统异常」糊过去，安静的监听器也不等于崩溃，要分开归因；三是<b>交付单独验收</b>——任务跑完不算完，结果真的回到发起的那个对话才算完，文档把这条单列成验证项。<span class="badge b-doc">文档明文</span></p>
-
-<h3>四、边界与代价</h3>
-<ul>
+<span class="c"># 全程没有任何一步依赖「旧进程还活着」</span></pre><p><b>用户侧能感知到的运维面</b>有三处：一是状态屏的 <b>Activity</b>（它干过什么全有账）和 <b>Upcoming</b>（排了什么班一目了然）；二是<b>失败要明说</b>——恢复部分成功就分组件报告，不许用一句「系统异常」糊过去，安静的监听器也不等于崩溃，要分开归因；三是<b>交付单独验收</b>——任务跑完不算完，结果真的回到发起的那个对话才算完，文档把这条单列成验证项。<span class="badge b-doc">文档明文</span></p></div>
+<div class="chunk"><h3>四、边界与代价</h3><ul>
   <li><b>轮询有时间窗。</b>cron 和 hook 本质都是轮询，两次检查之间的变化可能漏掉、定时可能迟到——恢复得再完美，也买不来「连续观测」。重要的事不能押在轮询精度上。<span class="badge b-doc">文档明文</span></li>
   <li><b>恢复有先后，不是瞬间全量。</b>组件逐个对账，大任务从检查点续跑要时间；恢复任务本身也有间隔重试，它提供的是「再试一次」，不是「截止时间前必好」的承诺。</li>
   <li><b>恢复不了的东西要认。</b>没落盘的进程内状态、没写检查点就断电的中间结果、自定义程序自己没备的恢复路径——都救不回来。所以纪律是前置的：状态先行落盘，而不是事后指望打捞。</li>
   <li><b>未公开的部分。</b>运行时内部用什么调度器排 cron、账本的确切存储引擎、替换时的编排顺序细节，官方文档没有展开，本章不猜；能确证的只有恢复规程、托管范围和本机可见的落盘形态。</li>
-</ul>
-<div class="note">📌 <b>证据分级小结</b>：恢复四步规程、托管恢复范围、检查点原子写、取消先落盘、「跑完≠送达」四段验证——出自官方运维文档，属<span class="badge b-doc">文档明文</span>；家目录的持久化布局、hooks 四格、cron.d 只读投影、状态文件加锁——写作时在本机实地清点，属<span class="badge b-verified">实测</span>；运行时内部的调度与存储实现未公开，相关表述属<span class="badge b-infer">合理推断</span>，不作定论。</div>
-<div style="display:flex;justify-content:space-between;gap:12px;margin-top:54px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch01.html">← 上一章：整体架构</a></span><span><a href="ch03.html">下一章：LLM 设计 →</a></span></div></section>
+</ul><div class="note">📌 <b>证据分级小结</b>：恢复四步规程、托管恢复范围、检查点原子写、取消先落盘、「跑完≠送达」四段验证——出自官方运维文档，属<span class="badge b-doc">文档明文</span>；家目录的持久化布局、hooks 四格、cron.d 只读投影、状态文件加锁——写作时在本机实地清点，属<span class="badge b-verified">实测</span>；运行时内部的调度与存储实现未公开，相关表述属<span class="badge b-infer">合理推断</span>，不作定论。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch01.html">← 上一章：整体架构</a></span><span><a href="ch03.html">下一章：LLM 设计 →</a></span></div></section>
 </main>
 
 </body>
