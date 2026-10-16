@@ -226,12 +226,38 @@ body.chpage{
 /* ===== v3.2 补漏：全局 b,strong 规则是近白色 #eef3ff，段落之外的粗体（表格首列、列表领起）全隐形 ===== */
 .chpage b,.chpage strong{color:#12151a}
 .chpage .one b{color:#0e7490}
+
+/* ===== 通用交互图（点节点 → 右侧面板：背景/目标/实现机制） ===== */
+.chpage .chunk:has(.figx){width:calc(100% + 460px);padding:20px 18px 14px}
+@media (max-width:1400px){.chpage .chunk:has(.figx){width:auto}}
+.figx{display:flex;gap:18px;align-items:flex-start}
+.fig-main{flex:1;min-width:0}
+.fig-cap{font-size:13px;color:var(--dim);margin:0 2px 8px;font-family:var(--mono)}
+.figx svg{width:100%;height:auto;display:block}
+.figx .fnode{cursor:pointer}
+.figx .fnode rect{fill:#ffffff;stroke:#d8d2bf;stroke-width:1.2}
+.figx .fnode:hover rect{stroke:#0e7490}
+.figx .fnode.on rect{stroke:#0e7490;stroke-width:2.6;fill:#eef5f4}
+.figx .ft{font-size:15px;font-weight:700;fill:#16191e}
+.figx .fs{font-size:10.5px;fill:#8b929c}
+.figx .farr{stroke:#a8b0bc;stroke-width:1.6;fill:none}
+.figx .floop{fill:none;stroke:#6d5fc0;stroke-width:1.6;stroke-dasharray:5 4}
+.figx .fl{font-family:var(--mono);font-size:11px;fill:#5b636e}
+.figx .fcol{font-size:14px;font-weight:700;fill:#0e7490}
+.fig-side{width:348px;flex:none;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;
+  background:#fbf9f4;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+@media (max-width:1400px){.figx{flex-direction:column}.fig-side{width:auto;position:static;max-height:none}}
+.fig-side-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.fig-side-head .fp{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+.fig-side h4{font-size:16.5px;color:#16191e;margin:2px 0 4px}
+.fig-sec h5{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:#8b929c;margin:12px 0 3px}
+.fig-sec p{font-size:14px;line-height:1.8;color:#3a4048;margin:0}
 </style>
 </head>
 <body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart closed"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart closed"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart closed"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a></div></div><div class="navpart"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html" class="on">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
-<section class="reveal in"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">15</span>Memory 设计</h2><div class="one">一句话：模型本身没有记忆，Muse 就<b>把记忆做成一套外置文件</b>——分三层存放、按纪律写入、随时可查可删，让无状态的模型表现得像「一直记得你」。</div>
+<section <section class="chunk"><div class="figx"><div class="fig-main"><div class="fig-cap">一条记忆的一生 · 点任意模块，右侧看详细设计</div><svg viewBox="0 0 800 508" role="img"><defs><marker id="fm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a8b0bc"/></marker></defs><g class="fnode" data-i="0"><rect x="165" y="4" width="470" height="54" rx="11"/><text class="ft" x="181" y="29.0">记忆产生</text><text class="fs" x="181" y="46.0">对话里冒出耐久事实</text></g><line class="farr" x1="400" y1="60" x2="400" y2="86" marker-end="url(#fm)"/><g class="fnode" data-i="1"><rect x="165" y="88" width="470" height="54" rx="11"/><text class="ft" x="181" y="113.0">提炼成 claim</text><text class="fs" x="181" y="130.0">一条只装一个主张</text></g><line class="farr" x1="400" y1="144" x2="400" y2="170" marker-end="url(#fm)"/><g class="fnode" data-i="2"><rect x="165" y="172" width="470" height="54" rx="11"/><text class="ft" x="181" y="197.0">落盘存档</text><text class="fs" x="181" y="214.0">写进当天笔记与档案</text></g><line class="farr" x1="400" y1="228" x2="400" y2="254" marker-end="url(#fm)"/><g class="fnode" data-i="3"><rect x="165" y="256" width="470" height="54" rx="11"/><text class="ft" x="181" y="281.0">晋升站立层</text><text class="fs" x="181" y="298.0">够格的每轮直接注入</text></g><line class="farr" x1="400" y1="312" x2="400" y2="338" marker-end="url(#fm)"/><g class="fnode" data-i="4"><rect x="165" y="340" width="470" height="54" rx="11"/><text class="ft" x="181" y="365.0">召回使用</text><text class="fs" x="181" y="382.0">答前先搜、带出处注入</text></g><line class="farr" x1="400" y1="396" x2="400" y2="422" marker-end="url(#fm)"/><g class="fnode" data-i="5"><rect x="165" y="424" width="470" height="54" rx="11"/><text class="ft" x="181" y="449.0">修正与遗忘</text><text class="fs" x="181" y="466.0">新替旧留痕、遗忘三段式</text></g></svg></div><aside class="fig-side"><div class="fig-side-head"><span class="fig-prog fp">导览</span><span class="badge fig-ev" style="display:none"></span></div><h4 class="fig-t">一条记忆的一生</h4><div class="fig-sec"><h5>背景</h5><p class="fig-bg">模型没有记忆，运行时用文件给它外置一套：严进、留痕、带出处，随时可查可删。</p></div><div class="fig-sec"><h5>目标</h5><p class="fig-goal">点图中任意模块，这里会给出它要达成的目标。</p></div><div class="fig-sec"><h5>实现机制</h5><p class="fig-mech">以及它具体是怎么实现的——都提炼自本章正文，图下原文有完整展开。</p></div></aside><script type="application/json" class="fig-data">{"edges": [{"from": "origin", "to": "claim"}, {"from": "claim", "to": "archive"}, {"from": "archive", "to": "standing"}, {"from": "standing", "to": "recall"}, {"from": "recall", "to": "forget"}], "intro": "模型没有记忆，运行时用文件给它外置一套：严进、留痕、带出处，随时可查可删。", "nodes": [{"bg": "一次推理读不到上一次对话，「记得你」只能由运行时在模型之外造出来，先得判断什么值得留。", "ev": "verified", "goal": "只捞耐久、可复用的内容：事实、偏好、决定、承诺和关系，不记流水账与一时情绪。", "id": "origin", "mech": "主 Agent 在对话中识别耐久信息；写入端宁严勿滥——漏记的代价只是再问一遍，错记落盘后会被每一轮当事实放大。", "s": "对话里冒出耐久事实", "t": "记忆产生"}, {"bg": "把原话整段抄进库，一段里混着三件事实，其中一件变了就整段无从下手，更正与溯源都做不了。", "ev": "doc", "goal": "把记忆切成可独立判断真假的最小颗粒，之后只动一条、只删一条、只查一条。", "id": "claim", "mech": "提炼成一条 claim 后落盘前查重、与旧记录对账：有冲突先和解，新结论覆盖旧结论，但旧的留痕不烧；聊天直说、后台自动记、外部导入都要过这道提炼关。", "s": "一条只装一个主张", "t": "提炼成 claim"}, {"bg": "记忆要可审计：用户能打开看它到底记了什么，错了能改、烦了能删，向量黑箱做不到这一点。", "ev": "verified", "goal": "落成明文文件体系：每日笔记存演变，人物与群体档案存关系，索引只供检索。", "id": "archive", "mech": "写入 memory/<日期>.md（一天一册、只追加）；人物进 people/、群体进 groups/，一人一页配总索引；bank 与 index 由运行时维护，对 Agent 只读。", "s": "写进当天笔记与档案", "t": "落盘存档"}, {"bg": "最要紧的少数事实每轮都要用、贵在必达，若全靠检索命中，反而可能在关键时刻漏检。", "ev": "verified", "goal": "反复印证、分量够的事实进站立层，每轮组装上下文时整段递到模型眼前。", "id": "standing", "mech": "后台整理（记忆维护循环）把每日笔记里够格的内容提升进 MEMORY.md（按 Facts / Preferences / Commitments 分区），过时内容降级出去，维持站立层精简。", "s": "够格的每轮直接注入", "t": "晋升站立层"}, {"bg": "用户最不能忍的不是答错，而是「跟你说过的事你又忘了」；裸文本进上下文还会让模型分不清新旧来源。", "ev": "verified", "goal": "回答前必先搜记忆，用命中的事实校准回答，并能把来源亮给用户看。", "id": "recall", "mech": "档案层语义检索命中的片段带着出处（哪个文件、第几行）注入，模型分得清「记忆里存的」与「这轮刚说的」；涉及现状的记录要再核对时间语义，不能拿旧记录当现状。召回只读不回写存档。", "s": "答前先搜、带出处注入", "t": "召回使用"}, {"bg": "人的情况会变，记忆必须能纠错且可追溯；只删源头不堵产生者，过几天又会被后台整理重新写回来。", "ev": "doc", "goal": "更正有谱系可查，遗忘删得干净且如实交代，没有删不到的地方被瞒着。", "id": "forget", "mech": "更正走新 claim 取代旧 claim，旧的降级留痕，memory_explain 可查类型、出处原话、置信度与完整替代谱系；遗忘走三段：盘点全部副本与未来产生者 → 按用户确认的范围清除 → 验证并说明结果。", "s": "新替旧留痕、遗忘三段式", "t": "修正与遗忘"}], "title": "一条记忆的一生", "type": "flow"}</script></div></section>class="reveal in"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">15</span>Memory 设计</h2><div class="one">一句话：模型本身没有记忆，Muse 就<b>把记忆做成一套外置文件</b>——分三层存放、按纪律写入、随时可查可删，让无状态的模型表现得像「一直记得你」。</div>
 <div class="chunk"><h3>底层设计原理：记忆为什么必须外置、分层、严进</h3><p>先回到第一性。一次大模型推理的输入在开始那刻就固定，它读不到上一次对话。所以「记得你」这件事，模型自己做不到，必须由运行时在模型之外造出来：把事实存下来，下次推理前再递到它眼前。记忆系统的全部设计，都是围绕这一条展开的。</p><p><b>为什么分层，不用一个大库？</b>因为三类东西的用法完全不同。最要紧的少数事实，每轮都要用，贵在「必达」；海量的历史细节，偶尔才查，贵在「能找」；这次对话的完整往返，只服务于「刚才说到哪」，贵在「连续」。全塞进一个库，要么每轮把海量数据都递给模型，上下文被撑爆；要么全靠检索，最要紧的事实反而可能漏检。分层就是按访问方式分工：</p><div class="layers">
   <div class="layer"><span class="nm">📌 站立记忆</span><span class="ds">提炼后的长期事实与偏好，每轮直接注入，不检索、不等待</span></div>
   <div class="layer"><span class="nm">🗄 可检索档案</span><span class="ds">按日期的笔记 + 人物/群体档案，平时躺着，相关时才搜出来</span></div>
@@ -275,6 +301,24 @@ body.chpage{
 </ul><div class="note">📌 证据分级小结：本章的三层结构、写入纪律、遗忘三段流程来自对真实目录与文件的实地查看（实测）；两套搜索分离、导入流程与「上传≠存入」来自官方 memory 文档（文档明文）；每小时整理与晋升/降级节奏来自运行行为的观察（实测），其内部调度实现未公开；语义检索的算法与索引格式未公开，标注为推断与未知。核心结论只有一句：<b>记忆不是模型的功能，是运行时用文件、纪律和审计给无状态模型搭的一套外置器官。</b></div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch14.html">← 上一章：页面交互与多端</a></span><span><a href="ch16.html">下一章：身份与对齐 →</a></span></div></section>
 </main>
 <script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
-
+<script>
+document.querySelectorAll('.figx').forEach(function(fx){
+  var data; try{ data = JSON.parse(fx.querySelector('.fig-data').textContent); }catch(e){ return; }
+  var T = fx.querySelector('.fig-t'), B = fx.querySelector('.fig-bg'), G = fx.querySelector('.fig-goal'),
+      M = fx.querySelector('.fig-mech'), P = fx.querySelector('.fig-prog'), E = fx.querySelector('.fig-ev');
+  var EVM = {verified:['实测','b-verified'], doc:['文档明文','b-doc'], infer:['合理推断','b-infer']};
+  fx.querySelectorAll('.fnode').forEach(function(g){
+    g.addEventListener('click', function(){
+      fx.querySelectorAll('.fnode').forEach(function(x){ x.classList.remove('on'); });
+      g.classList.add('on');
+      var nd = data.nodes[parseInt(g.getAttribute('data-i'), 10)];
+      T.textContent = nd.t; B.textContent = nd.bg; G.textContent = nd.goal; M.textContent = nd.mech;
+      P.textContent = '已选模块';
+      var ev = EVM[nd.ev] || EVM.infer;
+      E.textContent = ev[0]; E.className = 'badge fig-ev ' + ev[1]; E.style.display = '';
+    });
+  });
+});
+</script>
 </body>
 </html>
