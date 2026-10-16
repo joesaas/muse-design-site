@@ -154,7 +154,8 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 nav > .part,.navpart .part{font-size:13.5px;font-weight:700;letter-spacing:1.5px}
 
 /* ===== chapter reading layout v2 ===== */
-.chpage main{max-width:1200px}
+.chpage main{max-width:none}
+.chpage main section{max-width:1200px;margin:0 auto}
 .chpage .chunk p,.chpage .chunk li{max-width:880px}
 .chpage section{padding-top:42px;counter-reset:sec}
 .chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
@@ -231,14 +232,18 @@ body.chpage{
 
 /* ===== ch19 全景交互图 v2：左右布局 / 同步实线·异步虚线 / 紧凑 ===== */
 body.chpage{overflow-x:clip}
+.chpage main section{max-width:1560px}
 .chpage .chunk:has(.ixd){padding:16px}
-.ixd{display:flex;flex-direction:column;gap:14px;align-items:stretch}
+.ixd{display:flex;gap:18px;align-items:flex-start}
 .ixd-main{flex:1;min-width:0}
-.ixd-side{width:auto;position:static;
-  background:#fbf9f4;border:1px solid var(--line);border-radius:12px;padding:14px 16px;
-  columns:2;column-gap:26px}
-.ixd-side-head{column-span:all}
-.ixd-side h4,.ixd-side p,.ixd-side pre{break-inside:avoid}
+.ixd-side{width:348px;flex:none;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;
+  background:#fbf9f4;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+@media (max-width:1500px){
+  .ixd{flex-direction:column;align-items:stretch}
+  .ixd-side{width:auto;position:static;max-height:none;overflow:visible;columns:2;column-gap:26px}
+  .ixd-side-head{column-span:all}
+  .ixd-side h4,.ixd-side p,.ixd-side pre{break-inside:avoid}
+}
 @media (max-width:1240px){.ixd-side{columns:1}}
 .ixd svg{width:100%;height:auto;display:block}
 .ixd .ix-lane rect{fill:#ffffff;stroke:#e3ddcd}
