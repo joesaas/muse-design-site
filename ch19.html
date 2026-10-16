@@ -218,6 +218,47 @@ body.chpage{
 /* ===== v3.2 补漏：全局 b,strong 规则是近白色 #eef3ff，段落之外的粗体（表格首列、列表领起）全隐形 ===== */
 .chpage b,.chpage strong{color:#12151a}
 .chpage .one b{color:#0e7490}
+
+
+/* ===== ch19 全景交互图 ===== */
+body.chpage{overflow-x:clip}
+.chpage .chunk:has(.ixd){width:calc(100% + 240px);padding:22px 16px 14px}
+@media (max-width:1280px){.chpage .chunk:has(.ixd){width:auto}}
+.ixd svg{width:100%;height:auto;display:block}
+.ixd .ix-lane rect{fill:#ffffff;stroke:#e3ddcd}
+.ixd .ix-lane-name{font-size:15px;font-weight:700;fill:#16191e}
+.ixd .ix-lane-sub{font-size:10px;fill:#8b929c}
+.ixd .ix-life{stroke:#ddd6c4;stroke-width:1;stroke-dasharray:3 5}
+.ixd .ixs{cursor:pointer}
+.ixd .ixs line{stroke:#a8b0bc;stroke-width:1.6}
+.ixd .ixs .ix-lab{font-family:var(--mono);font-size:11px;fill:#5b636e;paint-order:stroke;stroke:#fffdf8;stroke-width:3px}
+.ixd .ixs .ixn{fill:#ffffff;stroke:#a8b0bc;stroke-width:1.4}
+.ixd .ixs .ixn-t{font-family:var(--mono);font-size:10px;font-weight:700;fill:#5b636e}
+.ixd .ixs .ix-dot{fill:#a8b0bc}
+.ixd .ixs[data-k="in"] .ixn{stroke:#0e7490}.ixd .ixs[data-k="in"] .ix-dot{fill:#0e7490}
+.ixd .ixs[data-k="llm"] .ixn{stroke:#6d5fc0}.ixd .ixs[data-k="llm"] .ix-dot{fill:#6d5fc0}
+.ixd .ixs[data-k="appr"] .ixn{stroke:#b45309}.ixd .ixs[data-k="appr"] .ix-dot{fill:#b45309}
+.ixd .ixs[data-k="exec"] .ixn{stroke:#15803d}.ixd .ixs[data-k="exec"] .ix-dot{fill:#15803d}
+.ixd .ixs[data-k="store"] .ixn{stroke:#64748b}.ixd .ixs[data-k="store"] .ix-dot{fill:#64748b}
+.ixd .ixs.on line{stroke-width:3}
+.ixd .ixs.on[data-k="in"] line{stroke:#0e7490}.ixd .ixs.on[data-k="in"] .ixn{fill:#0e7490}
+.ixd .ixs.on[data-k="llm"] line{stroke:#6d5fc0}.ixd .ixs.on[data-k="llm"] .ixn{fill:#6d5fc0}
+.ixd .ixs.on[data-k="appr"] line{stroke:#b45309}.ixd .ixs.on[data-k="appr"] .ixn{fill:#b45309}
+.ixd .ixs.on[data-k="exec"] line{stroke:#15803d}.ixd .ixs.on[data-k="exec"] .ixn{fill:#15803d}
+.ixd .ixs.on[data-k="store"] line{stroke:#64748b}.ixd .ixs.on[data-k="store"] .ixn{fill:#64748b}
+.ixd .ixs.on .ixn-t{fill:#ffffff}
+.ixd .ixs.on .ix-lab{fill:#12151a;font-weight:700}
+.ixd-legend{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--dim);margin:0 2px 6px}
+.ixd-legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.ixd-legend .ixd-hint{margin-left:auto;color:var(--faint)}
+.ixd-bar{display:flex;gap:10px;align-items:center;margin:12px 2px 2px}
+.ixd-bar button{font:inherit;font-size:13.5px;border:1px solid #0e7490;color:#0e7490;background:transparent;border-radius:8px;padding:5px 14px;cursor:pointer}
+.ixd-bar button:hover{background:rgba(14,116,144,.08)}
+.ixd-bar #ixd-prog{font-size:13px;color:var(--dim);font-family:var(--mono)}
+.ixd-cap{border-top:1px dashed var(--line);margin-top:10px;padding:12px 4px 2px}
+.ixd-cap h4{font-size:16px;color:#16191e;margin:0 0 4px}
+.ixd-cap p{font-size:14.5px;line-height:1.8;color:#3a4048;margin:5px 0}
+.ixd-cap .x{font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#0d5a72;background:#f3f0e7;border-radius:8px;padding:8px 12px}
 </style>
 </head>
 <body class="chpage">
@@ -225,6 +266,7 @@ body.chpage{
 <main>
 <section class="reveal in"><div class="part-head">PART 6 · 实证</div><h2><span class="no">19</span>一次真实交互的全程解剖</h2><div class="one">一句话：这一章不讲道理，只验尸——把一条<b>真实导出的轨迹</b>摊开，一条命令 <code>rm -rf stale_cache.txt</code> 从被拦下到被执行完，十条事件逐字段看完。<span class="badge b-verified">实测</span></div>
 <div class="chunk"><p>先交代这份材料的出身。它是官方 Cookbook 随附的轨迹导出（导出器自报 <code>Muse Code 0.1.0</code>，<code>redaction: "raw"</code>，即未脱敏原文）。整条会话的元数据是：<code>session_id</code> 为 c7dfaecc…，<code>trajectory_id</code> 为 trajectory_c7dfaecc…，<code>root_session_id</code> 与 session_id 相同（说明它就是根会话，不是子代理派生的）；共 <b>2 个 turn、230 个 step</b>；<code>accepted_spawns</code> 为空数组（没派过子代理）；<code>session_end</code> 是 <code>{exit_reason: "clean", uptime_ms: 153580}</code>——正常结束，存活约 153 秒。另有一处如实记录：<code>saw_history_gap: true</code>，导出自己承认这条轨迹的历史存在缺口，所以下面只解剖证据完整的那一段。</p><p>我们看的切片是 <b>step 190–199</b>，对应事件流序号 <b>seq 193–202</b>，共十条记录。一条高危命令的完整一生：被请求、被等待、被裁决、被接纳、被调度、被声明、被执行，全在里面。</p></div>
+<div class="chunk"><h3>全景交互图：一次交互里所有组件怎么配合</h3><div class="ixd"><div class="ixd-legend"><span><i style="background:#0e7490"></i>用户通道</span><span><i style="background:#6d5fc0"></i>模型推理</span><span><i style="background:#b45309"></i>审批链（本章解剖段）</span><span><i style="background:#15803d"></i>执行</span><span><i style="background:#64748b"></i>落盘存档</span><span class="ixd-hint">点任意箭头跳步，或按播放逐步看</span></div><svg viewBox="0 0 1216 1010" role="img" aria-label="一次完整交互的组件时序图"><defs><marker id="ixar-in" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0e7490"/></marker><marker id="ixar-llm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6d5fc0"/></marker><marker id="ixar-appr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b45309"/></marker><marker id="ixar-exec" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker><marker id="ixar-store" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs><line class="ix-life" x1="76" y1="70" x2="76" y2="998"/><line class="ix-life" x1="228" y1="70" x2="228" y2="998"/><line class="ix-life" x1="380" y1="70" x2="380" y2="998"/><line class="ix-life" x1="532" y1="70" x2="532" y2="998"/><line class="ix-life" x1="684" y1="70" x2="684" y2="998"/><line class="ix-life" x1="836" y1="70" x2="836" y2="998"/><line class="ix-life" x1="988" y1="70" x2="988" y2="998"/><line class="ix-life" x1="1140" y1="70" x2="1140" y2="998"/><g class="ix-lane"><rect x="6" y="10" width="140" height="52" rx="10"/><text class="ix-lane-name" x="76" y="34" text-anchor="middle">用户</text><text class="ix-lane-sub" x="76" y="51" text-anchor="middle">提出需求 · 行使裁决</text></g><g class="ix-lane"><rect x="158" y="10" width="140" height="52" rx="10"/><text class="ix-lane-name" x="228" y="34" text-anchor="middle">前端 UI</text><text class="ix-lane-sub" x="228" y="51" text-anchor="middle">渲染事件流 · 回写裁决</text></g><g class="ix-lane"><rect x="310" y="10" width="140" height="52" rx="10"/><text class="ix-lane-name" x="380" y="34" text-anchor="middle">Harness</text><text class="ix-lane-sub" x="380" y="51" text-anchor="middle">组装上下文 · 调度循环</text></g><g class="ix-lane"><rect x="462" y="10" width="140" height="52" rx="10"/><text class="ix-lane-name" x="532" y="34" text-anchor="middle">LLM</text><text class="ix-lane-sub" x="532" y="51" text-anchor="middle">只推理 · 产出即交卷</text></g><g class="ix-lane"><rect x="614" y="10" width="140" height="52" rx="10"/><text class="ix-lane-name" x="684" y="34" text-anchor="middle">Sentinel</text><text class="ix-lane-sub" x="684" y="51" text-anchor="middle">预判三分 · 冻结高风险</text></g><g class="ix-lane"><rect x="766" y="10" width="140" height="52" rx="10"/><text class="ix-lane-name" x="836" y="34" text-anchor="middle">Broker</text><text class="ix-lane-sub" x="836" y="51" text-anchor="middle">校验裁决 · 执行与回注</text></g><g class="ix-lane"><rect x="918" y="10" width="140" height="52" rx="10"/><text class="ix-lane-name" x="988" y="34" text-anchor="middle">工具</text><text class="ix-lane-sub" x="988" y="51" text-anchor="middle">真实世界 · 照实返回</text></g><g class="ix-lane"><rect x="1070" y="10" width="140" height="52" rx="10"/><text class="ix-lane-name" x="1140" y="34" text-anchor="middle">事件流</text><text class="ix-lane-sub" x="1140" y="51" text-anchor="middle">append-only 存档</text></g><g class="ixs" data-k="in" data-step="1"><line x1="76" y1="108" x2="228" y2="108" marker-end="url(#ixar-in)"/><text class="ix-lab" x="152.0" y="100" text-anchor="middle">输入一句话</text><circle class="ixn" cx="76" cy="108" r="10"/><text class="ixn-t" x="76" y="111.5" text-anchor="middle">1</text><circle class="ix-dot" cx="228" cy="108" r="3.5"/></g><g class="ixs" data-k="in" data-step="2"><line x1="228" y1="170" x2="380" y2="170" marker-end="url(#ixar-in)"/><text class="ix-lab" x="304.0" y="162" text-anchor="middle">提交消息</text><circle class="ixn" cx="228" cy="170" r="10"/><text class="ixn-t" x="228" y="173.5" text-anchor="middle">2</text><circle class="ix-dot" cx="380" cy="170" r="3.5"/></g><g class="ixs" data-k="store" data-step="3"><line x1="380" y1="232" x2="1140" y2="232" marker-end="url(#ixar-store)"/><text class="ix-lab" x="760.0" y="224" text-anchor="middle">落盘 · 组装上下文</text><circle class="ixn" cx="380" cy="232" r="10"/><text class="ixn-t" x="380" y="235.5" text-anchor="middle">3</text><circle class="ix-dot" cx="1140" cy="232" r="3.5"/></g><g class="ixs" data-k="llm" data-step="4"><line x1="380" y1="294" x2="532" y2="294" marker-end="url(#ixar-llm)"/><text class="ix-lab" x="456.0" y="286" text-anchor="middle">发起推理</text><circle class="ixn" cx="380" cy="294" r="10"/><text class="ixn-t" x="380" y="297.5" text-anchor="middle">4</text><circle class="ix-dot" cx="532" cy="294" r="3.5"/></g><g class="ixs" data-k="llm" data-step="5"><line x1="532" y1="356" x2="380" y2="356" marker-end="url(#ixar-llm)"/><text class="ix-lab" x="456.0" y="348" text-anchor="middle">产出 tool_call</text><circle class="ixn" cx="532" cy="356" r="10"/><text class="ixn-t" x="532" y="359.5" text-anchor="middle">5</text><circle class="ix-dot" cx="380" cy="356" r="3.5"/></g><g class="ixs" data-k="appr" data-step="6"><line x1="380" y1="418" x2="684" y2="418" marker-end="url(#ixar-appr)"/><text class="ix-lab" x="532.0" y="410" text-anchor="middle">策略预判 → 冻结</text><circle class="ixn" cx="380" cy="418" r="10"/><text class="ixn-t" x="380" y="421.5" text-anchor="middle">6</text><circle class="ix-dot" cx="684" cy="418" r="3.5"/></g><g class="ixs" data-k="appr" data-step="7"><line x1="684" y1="480" x2="1140" y2="480" marker-end="url(#ixar-appr)"/><text class="ix-lab" x="912.0" y="472" text-anchor="middle">写审批记录 seq 193</text><circle class="ixn" cx="684" cy="480" r="10"/><text class="ixn-t" x="684" y="483.5" text-anchor="middle">7</text><circle class="ix-dot" cx="1140" cy="480" r="3.5"/></g><g class="ixs" data-k="appr" data-step="8"><line x1="1140" y1="542" x2="228" y2="542" marker-end="url(#ixar-appr)"/><text class="ix-lab" x="684.0" y="534" text-anchor="middle">推送审批卡</text><circle class="ixn" cx="1140" cy="542" r="10"/><text class="ixn-t" x="1140" y="545.5" text-anchor="middle">8</text><circle class="ix-dot" cx="228" cy="542" r="3.5"/></g><g class="ixs" data-k="appr" data-step="9"><line x1="76" y1="604" x2="228" y2="604" marker-end="url(#ixar-appr)"/><text class="ix-lab" x="152.0" y="596" text-anchor="middle">点击批准</text><circle class="ixn" cx="76" cy="604" r="10"/><text class="ixn-t" x="76" y="607.5" text-anchor="middle">9</text><circle class="ix-dot" cx="228" cy="604" r="3.5"/></g><g class="ixs" data-k="appr" data-step="10"><line x1="228" y1="666" x2="836" y2="666" marker-end="url(#ixar-appr)"/><text class="ix-lab" x="532.0" y="658" text-anchor="middle">回写裁决 seq 195/196</text><circle class="ixn" cx="228" cy="666" r="10"/><text class="ixn-t" x="228" y="669.5" text-anchor="middle">10</text><circle class="ix-dot" cx="836" cy="666" r="3.5"/></g><g class="ixs" data-k="exec" data-step="11"><line x1="836" y1="728" x2="988" y2="728" marker-end="url(#ixar-exec)"/><text class="ix-lab" x="912.0" y="720" text-anchor="middle">调度并执行 seq 198–202</text><circle class="ixn" cx="836" cy="728" r="10"/><text class="ixn-t" x="836" y="731.5" text-anchor="middle">11</text><circle class="ix-dot" cx="988" cy="728" r="3.5"/></g><g class="ixs" data-k="exec" data-step="12"><line x1="988" y1="790" x2="836" y2="790" marker-end="url(#ixar-exec)"/><text class="ix-lab" x="912.0" y="782" text-anchor="middle">返回真实结果</text><circle class="ixn" cx="988" cy="790" r="10"/><text class="ixn-t" x="988" y="793.5" text-anchor="middle">12</text><circle class="ix-dot" cx="836" cy="790" r="3.5"/></g><g class="ixs" data-k="store" data-step="13"><line x1="836" y1="852" x2="1140" y2="852" marker-end="url(#ixar-store)"/><text class="ix-lab" x="988.0" y="844" text-anchor="middle">落盘 tool_result</text><circle class="ixn" cx="836" cy="852" r="10"/><text class="ixn-t" x="836" y="855.5" text-anchor="middle">13</text><circle class="ix-dot" cx="1140" cy="852" r="3.5"/></g><g class="ixs" data-k="llm" data-step="14"><line x1="380" y1="914" x2="532" y2="914" marker-end="url(#ixar-llm)"/><text class="ix-lab" x="456.0" y="906" text-anchor="middle">再推理 → 答复文本</text><circle class="ixn" cx="380" cy="914" r="10"/><text class="ixn-t" x="380" y="917.5" text-anchor="middle">14</text><circle class="ix-dot" cx="532" cy="914" r="3.5"/></g><g class="ixs" data-k="in" data-step="15"><line x1="380" y1="976" x2="228" y2="976" marker-end="url(#ixar-in)"/><text class="ix-lab" x="304.0" y="968" text-anchor="middle">答复上屏</text><circle class="ixn" cx="380" cy="976" r="10"/><text class="ixn-t" x="380" y="979.5" text-anchor="middle">15</text><circle class="ix-dot" cx="228" cy="976" r="3.5"/></g></svg><div class="ixd-bar"><button type="button" id="ixd-prev">← 上一步</button><button type="button" id="ixd-play">▶ 播放</button><button type="button" id="ixd-next">下一步 →</button><span id="ixd-prog">全景 · 共 15 步</span></div><div class="ixd-cap"><h4 id="ixd-cap-t">先看图，再验尸</h4><p id="ixd-cap-d">这张图是一次带审批的完整交互：左边是人和界面，中间是大脑和守门人，右边是干活的手和记账的本子。下面逐 seq 的解剖，只对应图中第 6–13 步那段琥珀色的审批链。</p><p class="x" id="ixd-cap-x">读法：箭头 = 一次交接，标注的是技术事件名；逐步播放时，这里会给出每一步的大白话与技术注记。</p></div></div></div>
 <div class="chunk"><h3>第 0 步 · 信封：十条记录共用的外壳</h3><pre>envelope: {
   schema_version: 1,
   id: "9bf5c543-…",               <span class="c">// 本条记录自己的 UUID，每条都不同</span>
@@ -347,6 +389,60 @@ payload: { kind: "tool_batch_effect", run_id: "002a75f8-…",
 </table><p>把十条记录按配对关系收一遍，会看到三种不同的「成对」：第一种是<b>生命周期配对</b>——approval_wait 的 started（194）与 terminal（197）是一对，tool_batch 的 started（202）在切片内只有开始、终结在切片之外；凡是 effect，都有头有尾，找「悬挂未关」的对象就是找只有头的那一半。第二种是<b>阶段配对</b>——裁决的 resolved（195）与 applied（196）是一对，前者是单段结论、后者是汇总生效，中间不许跳过：没有 applied，resolved 只是一份草稿。第三种是<b>子系统交接</b>——approval 家族（193、195、196）把棒交给 task 家族（198–201），交接点是 accepted；两个家族共用同一套 ID，所以交接不丢线头。整条链的可靠性不来自某一条记录写得多全，而来自这三种配对都没有断。</p></div>
 <div class="chunk"><h3>切片之外：诚实边界</h3><p>最后说清这章没看到什么。<b>切片之前</b>：用户的原始输入、运行时组装上下文的那一刻、模型推理产出这个 tool_call 的记录，都在 seq 193 之前，不在这份导出里。第 1 步的 raw_args 是从 requested 事件里读到的原文，这是实测；但「模型当时读到的上下文长什么样」只能按字段反推：turn_count 是 2、step 已经走到 190，说明这是第二轮对话里很靠后的一步，前面有 189 个 step 的历史——历史的具体内容不在切片内。<span class="badge b-infer">合理推断</span></p><p><b>切片之后</b>：seq 202 只是 tool_batch 的 started。命令的实际输出、退出码、工具结果如何回注上下文、模型读到结果后说了什么、最终答复的文本，都不在这十条里。会话层面只知 session_end 是 clean 收尾、总存活约 153 秒。把这些空白明说出来，和把字段讲透同样重要：这份切片能证明的，是「一次高危调用从发起到执行门口，每一步都被记录、被配对、被钉死证据」；它不能证明执行结果本身。</p><p>还有两处元数据层面的保留。其一，<code>saw_history_gap: true</code> 是会话自己声明的——这条轨迹在导出视角下历史并不完整，所以本文所有结论只对 seq 193–202 这段证据完整的区间负责，不外推到整条会话。其二，<code>is_copied_context: false</code> 说明这条会话不是从别的会话拷贝上下文起步的，是一条原生的根轨迹（与 root_session_id 等于 session_id 互相印证）；这保证了我们看到的审批链不是从某次分叉里继承来的半截状态。至于导出文件头里的 <code>redaction: "raw"</code>，它保证了字段是原文而非脱敏改写——本章引用的每个值，都与文件里的字节一致。</p><div class="note">📌 与第 06 章的分工：06 讲审批机制为什么这样设计；这一章是同一件事的验尸报告。06 里说的每一句——状态外置、事件配对、批准绑内容、防重复执行——都能在上面十条记录里找到对应的字段落点。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch18.html">← 上一章：Goals 与 Ideas</a></span><span></span></div></section>
 </main>
-
+<script>(function () {
+  var STEPS = [
+    { t: '第 1 步 · 用户开口', d: '用户在界面里输入一句话：「删掉 stale_cache.txt」。这是整条链的起点——后面所有动作都是为这句话服务的。', x: 'UI 采集输入，组装成一条 user 消息交给 Harness，本轮 turn 开始。' },
+    { t: '第 2 步 · 消息进入运行时', d: '前端不直接找模型，而是把消息交给 Harness——它才是这一轮的总调度：管上下文、管调用、管顺序。', x: 'Harness 接管本轮。此后模型只负责推理，流程控制全在 Harness 手里。' },
+    { t: '第 3 步 · 先落盘，再组装上下文', d: '消息先写进事件流存档，然后 Harness 把「桌面」收拾好：历史对话的投影 + 长期站立的规则与记忆，拼成本轮要给模型看的全部内容。', x: 'user 事件 append 到事件流（存档无损）；上下文 = transcript 投影 + 站立上下文，现取现拼。' },
+    { t: '第 4 步 · 发起推理', d: 'Harness 把组装好的上下文和可用工具清单一起发给 LLM。这是一次无状态调用：模型不记得任何事，它对世界的全部认知就是这次发过去的内容。', x: '请求 = messages + tools 定义。模型无会话状态，连续性靠事件流与投影，不靠模型记忆。' },
+    { t: '第 5 步 · 模型交卷：tool_call', d: '模型没有直接删文件，它只是产出一个意图：一张写着「我要执行 rm -rf stale_cache.txt」的工单。工单一出，本轮推理立刻结束。', x: 'tool_call{ name: exec, args: {argv: [rm, -rf, stale_cache.txt]} }。产出即交卷——模型不知道接下来会不会被批准。' },
+    { t: '第 6 步 · Sentinel 预判：冻结', d: '工单在派发前先过守门人。每个动作分三档：放行、拒绝、冻结发问。rm -rf 是不可逆的高风险动作，命中冻结档——先停下来问人。', x: '策略网关预判三分：allow / deny / freeze。本步是审批链的入口，下面逐 seq 解剖的就是这一段。' },
+    { t: '第 7 步 · 审批成为一条记录', d: '冻结不是把程序卡住，而是把「要干什么」写成一条正式记录存进事件流。线程可以死、进程可以换，记录在，审批就在。', x: 'seq 193 approval_requested：approval_subject 拆成 stages（逐段 argv + 工作目录），pending_action_id 是这条申请的主键。' },
+    { t: '第 8 步 · 审批卡推到用户面前', d: '前端一直订阅着事件流，看到审批事件就渲染成卡片。用户要批的就是记录里写死的内容，不是模型嘴上说的版本。', x: 'seq 194 approval_wait.effect.started：「等待」本身也是一个 effect，有自己的生命周期与终结事件。' },
+    { t: '第 9 步 · 用户裁决', d: '用户点下批准。这次批准只认这一条记录、这一个内容、这一次——下次同样的命令，还要再批。', x: '裁决粒度 allow_once：批准绑定内容，命令被改动一个参数，批准自动失效。' },
+    { t: '第 10 步 · 裁决回写并生效', d: '裁决回到执行侧后不是立刻算数：先逐项核对——批的是不是冻结的那几段、证据齐不齐、有没有被篡改——全对上，才正式生效。', x: 'seq 195 stage_requirement_resolved（裁决形成）→ seq 196 decision_applied（校验后应用）。形成与应用拆成两条事件，就是为了这道校验。' },
+    { t: '第 11 步 · Broker 调度并执行', d: '到这里命令才真正被执行。执行前还要走完受理、调度、声明意图三步，全程留痕，为的是防重复执行、可追溯。', x: 'seq 198 task accepted → 199 scheduled（idempotency_key 由 tool_call_id 派生，防重复）→ 200 side_effect_intent（副作用预登记）→ 201 started → 202 tool_batch 启动，然后真正执行。' },
+    { t: '第 12 步 · 真实结果返回', d: '命令跑完，退出码和输出回到 Broker。这些来自真实世界：成功就是成功，失败就是失败，模型无权想象。', x: '结果必真：回注的必须是外部世界的真实返回，杜绝用「应该是成功了」填充。' },
+    { t: '第 13 步 · 结果落盘，往返闭合', d: '结果写回事件流，并按编号和第 5 步那张工单配成一对。工单有了回执，这一轮的账才算平。', x: 'tool_result 按 tool_call_id 配对落盘。每个 tool_call 有且仅有一个 tool_result，未闭合的往返是循环的死点。' },
+    { t: '第 14 步 · 带着结果再推理', d: 'Harness 发起全新一轮推理：模型这次读到的上下文里，已经包含刚才的执行结果。它据此判断：任务完成了，给用户答复。', x: '新一轮推理 = 投影后的 transcript（含新落盘的 tool_result）。若模型还要调工具，整条链从第 5 步再走一圈。' },
+    { t: '第 15 步 · 答复上屏', d: '答复经 Harness 推回前端，渲染成用户看到的那段话。用户看到的始终是这条链的终点投影，不是模型的内部状态。', x: '流式推送渲染。至此一次完整交互结束：15 次交接，模型只出现在其中 3 步——能等的、能查的、能存的，都不在模型里。' }
+  ];
+  var groups = Array.prototype.slice.call(document.querySelectorAll('.ixs'));
+  var capT = document.getElementById('ixd-cap-t');
+  var capD = document.getElementById('ixd-cap-d');
+  var capX = document.getElementById('ixd-cap-x');
+  var prog = document.getElementById('ixd-prog');
+  var btnPlay = document.getElementById('ixd-play');
+  if (!groups.length || !capT) return;
+  var cur = 0, timer = null;
+  function show(n) {
+    cur = n;
+    groups.forEach(function (g, i) { g.classList.toggle('on', i === n - 1); });
+    if (n >= 1) {
+      var s = STEPS[n - 1];
+      capT.textContent = s.t; capD.textContent = s.d; capX.textContent = s.x;
+      prog.textContent = '第 ' + n + ' / 15 步';
+    }
+  }
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; btnPlay.textContent = '▶ 播放'; }
+  }
+  function play() {
+    if (timer) { stop(); return; }
+    if (cur >= 15) show(1); else if (cur === 0) show(1);
+    btnPlay.textContent = '❚❚ 暂停';
+    timer = setInterval(function () {
+      if (cur >= 15) { stop(); return; }
+      show(cur + 1);
+    }, 1900);
+  }
+  document.getElementById('ixd-next').addEventListener('click', function () { stop(); show(Math.min(15, cur + 1)); });
+  document.getElementById('ixd-prev').addEventListener('click', function () { stop(); show(Math.max(1, cur - 1)); });
+  btnPlay.addEventListener('click', play);
+  groups.forEach(function (g) {
+    g.addEventListener('click', function () { stop(); show(parseInt(g.getAttribute('data-step'), 10)); });
+  });
+})();
+</script>
 </body>
 </html>
