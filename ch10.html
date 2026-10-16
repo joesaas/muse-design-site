@@ -226,12 +226,38 @@ body.chpage{
 /* ===== v3.2 补漏：全局 b,strong 规则是近白色 #eef3ff，段落之外的粗体（表格首列、列表领起）全隐形 ===== */
 .chpage b,.chpage strong{color:#12151a}
 .chpage .one b{color:#0e7490}
+
+/* ===== 通用交互图（点节点 → 右侧面板：背景/目标/实现机制） ===== */
+.chpage .chunk:has(.figx){width:calc(100% + 460px);padding:20px 18px 14px}
+@media (max-width:1400px){.chpage .chunk:has(.figx){width:auto}}
+.figx{display:flex;gap:18px;align-items:flex-start}
+.fig-main{flex:1;min-width:0}
+.fig-cap{font-size:13px;color:var(--dim);margin:0 2px 8px;font-family:var(--mono)}
+.figx svg{width:100%;height:auto;display:block}
+.figx .fnode{cursor:pointer}
+.figx .fnode rect{fill:#ffffff;stroke:#d8d2bf;stroke-width:1.2}
+.figx .fnode:hover rect{stroke:#0e7490}
+.figx .fnode.on rect{stroke:#0e7490;stroke-width:2.6;fill:#eef5f4}
+.figx .ft{font-size:15px;font-weight:700;fill:#16191e}
+.figx .fs{font-size:10.5px;fill:#8b929c}
+.figx .farr{stroke:#a8b0bc;stroke-width:1.6;fill:none}
+.figx .floop{fill:none;stroke:#6d5fc0;stroke-width:1.6;stroke-dasharray:5 4}
+.figx .fl{font-family:var(--mono);font-size:11px;fill:#5b636e}
+.figx .fcol{font-size:14px;font-weight:700;fill:#0e7490}
+.fig-side{width:348px;flex:none;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;
+  background:#fbf9f4;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+@media (max-width:1400px){.figx{flex-direction:column}.fig-side{width:auto;position:static;max-height:none}}
+.fig-side-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.fig-side-head .fp{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+.fig-side h4{font-size:16.5px;color:#16191e;margin:2px 0 4px}
+.fig-sec h5{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:#8b929c;margin:12px 0 3px}
+.fig-sec p{font-size:14px;line-height:1.8;color:#3a4048;margin:0}
 </style>
 </head>
 <body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart closed"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html" class="on">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart closed"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a></div></div><div class="navpart closed"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
-<section class="reveal in"><div class="part-head">PART 3 · 躯体</div><h2><span class="no">10</span>文件架构</h2><div class="one">一句话：Muse 的一切都<b>落成文件</b>——人格是文件、记忆是文件、技能是文件、目标是文件夹。文件就躺在它自己的电脑里，你能打开、能看懂、能改、能删。</div>
+<section <section class="chunk"><div class="figx"><div class="fig-main"><div class="fig-cap">家目录全景 · 点任意模块，右侧看详细设计</div><svg viewBox="0 0 800 304" role="img"><defs><marker id="fm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a8b0bc"/></marker></defs><g class="fnode" data-i="0"><rect x="338" y="4" width="124" height="54" rx="11"/><text class="ft" x="354" y="29.0">家目录 ~</text><text class="fs" x="354" y="46.0">一切都落成文件</text></g><g class="fnode" data-i="1"><rect x="-5" y="104" width="124" height="54" rx="11"/><text class="ft" x="11" y="129.0">核心文件组</text><text class="fs" x="11" y="146.0">每轮全量注入</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 57.0 81.0 L 57.0 102"/><g class="fnode" data-i="2"><rect x="93" y="104" width="124" height="54" rx="11"/><text class="ft" x="109" y="129.0">记忆树</text><text class="fs" x="109" y="146.0">日记·bank·人物页</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 155.0 81.0 L 155.0 102"/><g class="fnode" data-i="3"><rect x="191" y="104" width="124" height="54" rx="11"/><text class="ft" x="207" y="129.0">docs 文档</text><text class="fs" x="207" y="146.0">官方只读基准</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 253.0 81.0 L 253.0 102"/><g class="fnode" data-i="4"><rect x="289" y="104" width="124" height="54" rx="11"/><text class="ft" x="305" y="129.0">hooks 监听</text><text class="fs" x="305" y="146.0">定义脚本状态分开</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 351.0 81.0 L 351.0 102"/><g class="fnode" data-i="5"><rect x="534" y="104" width="124" height="54" rx="11"/><text class="ft" x="550" y="129.0">工作区</text><text class="fs" x="550" y="146.0">代码与交付都在这</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 596.0 81.0 L 596.0 102"/><g class="fnode" data-i="6"><rect x="387" y="204" width="124" height="54" rx="11"/><text class="ft" x="403" y="229.0">目标工作区</text><text class="fs" x="403" y="246.0">一目标一文件夹</text></g><path class="farr" d="M 596.0 158 L 596.0 181.0 L 449.0 181.0 L 449.0 202"/><g class="fnode" data-i="7"><rect x="485" y="204" width="124" height="54" rx="11"/><text class="ft" x="501" y="229.0">技能库</text><text class="fs" x="501" y="246.0">系统只读·自定义可写</text></g><path class="farr" d="M 596.0 158 L 596.0 181.0 L 547.0 181.0 L 547.0 202"/><g class="fnode" data-i="8"><rect x="583" y="204" width="124" height="54" rx="11"/><text class="ft" x="599" y="229.0">连接器</text><text class="fs" x="599" y="246.0">自建连接器落这</text></g><path class="farr" d="M 596.0 158 L 596.0 181.0 L 645.0 181.0 L 645.0 202"/><g class="fnode" data-i="9"><rect x="681" y="204" width="124" height="54" rx="11"/><text class="ft" x="697" y="229.0">交付与上传</text><text class="fs" x="697" y="246.0">成品上架 Library</text></g><path class="farr" d="M 596.0 158 L 596.0 181.0 L 743.0 181.0 L 743.0 202"/></svg></div><aside class="fig-side"><div class="fig-side-head"><span class="fig-prog fp">导览</span><span class="badge fig-ev" style="display:none"></span></div><h4 class="fig-t">家目录全景</h4><div class="fig-sec"><h5>背景</h5><p class="fig-bg">人格、记忆、技能、目标全是文件：一棵目录树，各管一摊，打开就能看、能改、能删。</p></div><div class="fig-sec"><h5>目标</h5><p class="fig-goal">点图中任意模块，这里会给出它要达成的目标。</p></div><div class="fig-sec"><h5>实现机制</h5><p class="fig-mech">以及它具体是怎么实现的——都提炼自本章正文，图下原文有完整展开。</p></div></aside><script type="application/json" class="fig-data">{"intro": "人格、记忆、技能、目标全是文件：一棵目录树，各管一摊，打开就能看、能改、能删。", "nodes": [{"bg": "个人 Agent 知道用户太多事，状态若藏进数据库就是黑箱，信任只能靠一句承诺，记错了也没处核对。", "ev": "verified", "goal": "把一切摊在明处：能打开、能看懂、能改、能删；导出就是打包目录，删除就是真删文件。", "id": "home", "mech": "人格、记忆、技能、目标全部落成文件躺在家目录里，核心文件几乎全是 Markdown：可 diff 比对、可拷走搬家、任何编辑器和搜索都能直接处理，跨对话持久保存。", "s": "一切都落成文件", "t": "家目录 ~"}, {"bg": "「它是谁、你是谁、规矩是什么」每轮对话都要在场，靠检索召回不稳妥，这类内容必须小而稳、常驻根目录。", "ev": "verified", "goal": "让身份、人格与规矩每轮全量注入，不依赖检索命中；谁能改哪份文件，分工固定不乱套。", "id": "core", "mech": "根目录躺着 IDENTITY.md（它是谁）、SOUL.md（性格）、USER.md（你是谁）、MEMORY.md（长期记忆精选）、AGENTS.md（干活规矩）等，每轮对话开头注入。权限分四档：用户能改、Agent 维护、运行时只读、官方发布。", "parent": "home", "s": "每轮全量注入", "t": "核心文件组"}, {"bg": "「具体记了什么事」大而杂，全量塞进上下文装不下；又不能只存精选，原始流水丢了就没法追溯演变。", "ev": "verified", "goal": "分层存放：原始流水只追加留痕，精选层供每轮使用，关于人的事单独成册，按需检索取片段。", "id": "memory", "mech": "加工链：新事实先落当天日记 memory/YYYY-MM-DD.md（只追加）→ 后台提炼进 MEMORY.md → 人的事转去 people/、groups/ 一人一页、各带 INDEX.md → 沉淀进 bank/ 四本账（运行时管理、Agent 只读）。用时按关键词检索取片段。", "parent": "home", "s": "日记·bank·人物页", "t": "记忆树"}, {"bg": "运行时需要一份官方口径作基准，这份东西若能被日常对话顺手改掉，基准就不存在了。", "ev": "verified", "goal": "官方说明只读、谁都不许动，随部署整体刷新，保证任何时候查到的都是官方版本。", "id": "docs", "mech": "docs/ 放官方说明文件，属于权限梯度的第四档（官方发、谁都不许动），部署时刷新替换，不随日常工作变更。", "parent": "home", "s": "官方只读基准", "t": "docs 文档"}, {"bg": "事件监听的定义、脚本、运行状态、日志若混在一个目录，改配置容易碰数据，查日志容易碰定义。", "ev": "verified", "goal": "四类东西物理分开：改配置不碰数据，查日志不碰定义，各查各的互不干扰。", "id": "hooks", "mech": "hooks/ 下四分：definitions（监听定义）、scripts（脚本）、state（运行状态）、logs（日志），是全站「状态与内容分开」约定的一个样本。", "parent": "home", "s": "定义脚本状态分开", "t": "hooks 监听"}, {"bg": "干活的草稿、中间产物和交给用户的成品混在一处，清理时容易误删交付物，交付时容易顺带露出内部草稿。", "ev": "verified", "goal": "工作区与交付区物理分家：权限边界就是目录边界，Library 只是对着文件的橱窗，数据只有一份。", "id": "workspace", "mech": "workspace/ 是真正干活的地方：项目仓库、目标工作区、技能与连接器都住在这里。文件住在文件系统里，上架与否由落点决定，不靠额外标记。", "parent": "home", "s": "代码与交付都在这", "t": "工作区"}, {"bg": "长期目标各自有文档、代码和内部账本，全堆在一起会互相污染，给用户看的成品还会混进内部状态。", "ev": "verified", "goal": "一个目标一个文件夹自成一套：成品区与内部账本一墙之隔，第一笔就写对位置，不搬家、不漂移。", "id": "goals", "mech": "goals/<slug>/ 下：GOAL.md 是目标自述（Agent 自留地）、files/ 是给用户看的文档区、hidden_files/ 关内部账本（检查日志、水位线、已见清单），另按需长 briefs/、crons/、agent_notes/。", "parent": "workspace", "s": "一目标一文件夹", "t": "目标工作区"}, {"bg": "技能是用户攒下的经验资产，若和产品文件放一起，版本更新一冲就没了；系统技能又不能让人随手改。", "ev": "verified", "goal": "系统技能只读、随部署替换；用户自己的技能落在自己工作区里，跨部署保留、产权归用户。", "id": "skills", "mech": "workspace 下有 skills/ 与 custom-skills/ 两处放技能手册（SKILL.md + skill.yaml，见第 08 章），系统技能另住在系统目录只读区。", "parent": "workspace", "s": "系统只读·自定义可写", "t": "技能库"}, {"bg": "用户自建的连接器是按需现搭的资产，和官方预置的混放，更新时分不清谁是谁的。", "ev": "verified", "goal": "自建连接器独立存放、跨部署保留，格式与系统连接器完全同一套，一视同仁。", "id": "connectors", "mech": "custom-connectors/ 放自定义连接器（CONNECTOR.md + connector.yaml + bin/，见第 09 章）；系统连接器住在系统目录，只读、部署时整体替换。", "parent": "workspace", "s": "自建连接器落这", "t": "连接器"}, {"bg": "上传是「给我看」不是「替我上架」；Agent 的草稿若自动冒充成品，用户看到的就不是交付时的样子。", "ev": "doc", "goal": "上架必须是一个明确动作：交付物落进交付区才出现，上传物只落盘保存，删不删、露不露分开决定。", "id": "delivery", "mech": "Agent 交付写进 workspace/your_files/（或目标的 files/）才在 Library 出现；用户上传落 workspace/user/（含 media_library/）持久保存、不自动进 Library。普通删除先进回收站约 30 天；产物删除永久撤销。", "parent": "workspace", "s": "成品上架 Library", "t": "交付与上传"}], "title": "家目录全景", "type": "tree"}</script></div></section>class="reveal in"><div class="part-head">PART 3 · 躯体</div><h2><span class="no">10</span>文件架构</h2><div class="one">一句话：Muse 的一切都<b>落成文件</b>——人格是文件、记忆是文件、技能是文件、目标是文件夹。文件就躺在它自己的电脑里，你能打开、能看懂、能改、能删。</div>
 <div class="chunk"><h3>底层设计原理：为什么不用数据库，非要用文件？</h3><p>把状态藏进数据库，工程上更「正规」。Muse 偏不用。它选文件，换的是三样东西。</p><div class="grid">
   <div class="card"><h4>🔍 可审计，换信任</h4><p>个人 Agent 知道你太多事：偏好、关系、目标、历史。用户凭什么放心？答案不是「请相信我们的加密」，而是「你自己打开看」。记忆是哪个文件、写了什么、哪天改的，全摊在明处。记错了，你能当场指出来，甚至自己动手改。信任不靠承诺，靠可核查。</p></div>
   <div class="card"><h4>🪟 存储与橱窗分离</h4><p>文件住在文件系统里，Library 只是对着它的一扇窗——一个浏览视图，不是另一份副本。文档明说：上传的东西落盘后<b>不自动</b>进 Library；只有放进交付区的文件才上架。所以「Library 里没有」不等于「文件丢了」，「删掉橱窗里的条目」和「删掉源文件」也是两回事。视图可以换，数据只有一份。</p></div>
@@ -317,6 +343,24 @@ body.chpage{
 </ul><div class="note">📌 证据分级小结：目录结构、核心文件分工、目标工作区、点目录约定，均为<b>本机实地普查</b>；上传落点、30 天回收站、System Files 说明头为<b>官方文档明文</b>；并发安全机制与底层存储实现<b>文档未写，属合理推断</b>。这一章的结论可以一句话收尾：Muse 把「可审计」放在了「正规」前面——宁可让你看见一地文件，也不让你面对一个黑箱。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch09.html">← 上一章：连接器生态</a></span><span><a href="ch11.html">下一章：定时与后台 →</a></span></div></section>
 </main>
 <script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
-
+<script>
+document.querySelectorAll('.figx').forEach(function(fx){
+  var data; try{ data = JSON.parse(fx.querySelector('.fig-data').textContent); }catch(e){ return; }
+  var T = fx.querySelector('.fig-t'), B = fx.querySelector('.fig-bg'), G = fx.querySelector('.fig-goal'),
+      M = fx.querySelector('.fig-mech'), P = fx.querySelector('.fig-prog'), E = fx.querySelector('.fig-ev');
+  var EVM = {verified:['实测','b-verified'], doc:['文档明文','b-doc'], infer:['合理推断','b-infer']};
+  fx.querySelectorAll('.fnode').forEach(function(g){
+    g.addEventListener('click', function(){
+      fx.querySelectorAll('.fnode').forEach(function(x){ x.classList.remove('on'); });
+      g.classList.add('on');
+      var nd = data.nodes[parseInt(g.getAttribute('data-i'), 10)];
+      T.textContent = nd.t; B.textContent = nd.bg; G.textContent = nd.goal; M.textContent = nd.mech;
+      P.textContent = '已选模块';
+      var ev = EVM[nd.ev] || EVM.infer;
+      E.textContent = ev[0]; E.className = 'badge fig-ev ' + ev[1]; E.style.display = '';
+    });
+  });
+});
+</script>
 </body>
 </html>

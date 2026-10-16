@@ -226,12 +226,38 @@ body.chpage{
 /* ===== v3.2 补漏：全局 b,strong 规则是近白色 #eef3ff，段落之外的粗体（表格首列、列表领起）全隐形 ===== */
 .chpage b,.chpage strong{color:#12151a}
 .chpage .one b{color:#0e7490}
+
+/* ===== 通用交互图（点节点 → 右侧面板：背景/目标/实现机制） ===== */
+.chpage .chunk:has(.figx){width:calc(100% + 460px);padding:20px 18px 14px}
+@media (max-width:1400px){.chpage .chunk:has(.figx){width:auto}}
+.figx{display:flex;gap:18px;align-items:flex-start}
+.fig-main{flex:1;min-width:0}
+.fig-cap{font-size:13px;color:var(--dim);margin:0 2px 8px;font-family:var(--mono)}
+.figx svg{width:100%;height:auto;display:block}
+.figx .fnode{cursor:pointer}
+.figx .fnode rect{fill:#ffffff;stroke:#d8d2bf;stroke-width:1.2}
+.figx .fnode:hover rect{stroke:#0e7490}
+.figx .fnode.on rect{stroke:#0e7490;stroke-width:2.6;fill:#eef5f4}
+.figx .ft{font-size:15px;font-weight:700;fill:#16191e}
+.figx .fs{font-size:10.5px;fill:#8b929c}
+.figx .farr{stroke:#a8b0bc;stroke-width:1.6;fill:none}
+.figx .floop{fill:none;stroke:#6d5fc0;stroke-width:1.6;stroke-dasharray:5 4}
+.figx .fl{font-family:var(--mono);font-size:11px;fill:#5b636e}
+.figx .fcol{font-size:14px;font-weight:700;fill:#0e7490}
+.fig-side{width:348px;flex:none;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;
+  background:#fbf9f4;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+@media (max-width:1400px){.figx{flex-direction:column}.fig-side{width:auto;position:static;max-height:none}}
+.fig-side-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.fig-side-head .fp{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+.fig-side h4{font-size:16.5px;color:#16191e;margin:2px 0 4px}
+.fig-sec h5{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:#8b929c;margin:12px 0 3px}
+.fig-sec p{font-size:14px;line-height:1.8;color:#3a4048;margin:0}
 </style>
 </head>
 <body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart closed"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html" class="on">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart closed"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a></div></div><div class="navpart closed"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
-<section class="reveal in"><div class="part-head">PART 3 · 躯体</div><h2><span class="no">09</span>连接器生态</h2><div class="one">一句话：连接器是 Muse 伸向外部服务的<b>插座加说明书</b>——插上哪个服务、能干哪些事，全凭一份文档说了算；文档没写的，就是不存在。</div>
+<section <section class="chunk"><div class="figx"><div class="fig-main"><div class="fig-cap">一次连接的一生 · 点任意模块，右侧看详细设计</div><svg viewBox="0 0 800 424" role="img"><defs><marker id="fm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a8b0bc"/></marker></defs><g class="fnode" data-i="0"><rect x="165" y="4" width="470" height="54" rx="11"/><text class="ft" x="181" y="29.0">文档即接口</text><text class="fs" x="181" y="46.0">说明书就是能力白名单</text></g><line class="farr" x1="400" y1="60" x2="400" y2="86" marker-end="url(#fm)"/><text class="fl" x="649" y="77">先读说明书再授权</text><g class="fnode" data-i="1"><rect x="165" y="88" width="470" height="54" rx="11"/><text class="ft" x="181" y="113.0">用户连接授权</text><text class="fs" x="181" y="130.0">正规授权，绝不托管密码</text></g><line class="farr" x1="400" y1="144" x2="400" y2="170" marker-end="url(#fm)"/><text class="fl" x="649" y="161">授权后发替身</text><g class="fnode" data-i="2"><rect x="165" y="172" width="470" height="54" rx="11"/><text class="ft" x="181" y="197.0">凭证替身保管</text><text class="fs" x="181" y="214.0">真钥匙不出门，只用替身</text></g><line class="farr" x1="400" y1="228" x2="400" y2="254" marker-end="url(#fm)"/><text class="fl" x="649" y="245">带替身调用</text><g class="fnode" data-i="3"><rect x="165" y="256" width="470" height="54" rx="11"/><text class="ft" x="181" y="281.0">工具调用</text><text class="fs" x="181" y="298.0">状态当场查，读写分流过闸</text></g><line class="farr" x1="400" y1="312" x2="400" y2="338" marker-end="url(#fm)"/><text class="fl" x="649" y="329">过守卫回注</text><g class="fnode" data-i="4"><rect x="165" y="340" width="470" height="54" rx="11"/><text class="ft" x="181" y="365.0">结果回注</text><text class="fs" x="181" y="382.0">取回的内容先过响应守卫</text></g></svg></div><aside class="fig-side"><div class="fig-side-head"><span class="fig-prog fp">导览</span><span class="badge fig-ev" style="display:none"></span></div><h4 class="fig-t">一次连接的一生</h4><div class="fig-sec"><h5>背景</h5><p class="fig-bg">从一份说明书开始，到授权、替身保管、调用、结果回注——文档没写的命令，就是不存在。</p></div><div class="fig-sec"><h5>目标</h5><p class="fig-goal">点图中任意模块，这里会给出它要达成的目标。</p></div><div class="fig-sec"><h5>实现机制</h5><p class="fig-mech">以及它具体是怎么实现的——都提炼自本章正文，图下原文有完整展开。</p></div></aside><script type="application/json" class="fig-data">{"edges": [{"from": "doc", "label": "先读说明书再授权", "to": "auth"}, {"from": "auth", "label": "授权后发替身", "to": "surrogate"}, {"from": "surrogate", "label": "带替身调用", "to": "call"}, {"from": "call", "label": "过守卫回注", "to": "result"}], "intro": "从一份说明书开始，到授权、替身保管、调用、结果回注——文档没写的命令，就是不存在。", "nodes": [{"bg": "外部服务有几百个、变得又快，能力写死在代码里，接一个改一个版本；而且代码里的能力是黑箱，用户无从审计。", "ev": "verified", "goal": "新增服务只是新增一个文件夹、主程序一行不动；能力白纸黑字可审计，没写进文档的命令一律视为不存在。", "id": "doc", "mech": "每个连接器一份 CONNECTOR.md（怎么连、能调什么、出错怎么办）加 connector.yaml 登记表（id、别名、鉴权方式）；系统连接器另有 manifest.yaml（权限默认值、请求上限、命令读写映射）。文档与连接解耦：没连上也能读，先看清再决定授权。", "s": "说明书就是能力白名单", "t": "文档即接口"}, {"bg": "密码一旦进了聊天、记忆或日志就再也收不回来；授权也不能是盲签，用户得先看清范围再点头。", "ev": "doc", "goal": "用户在服务商自己的页面上授权、选范围，Muse 只拿到可随时撤销的凭据，全程不碰密码明文。", "id": "auth", "mech": "走 OAuth 或托管连接页：用户在服务商页面同意授权范围（如选哪些仓库可访问），这构成第一层粗闸。密码登录、会话 Cookie 这类没法走正规授权的服务会被直接婉拒。授权被作废时服务商返回 reauthorization_required：不重试、不自动重放写操作，把重连链接原样给用户。", "s": "正规授权，绝不托管密码", "t": "用户连接授权"}, {"bg": "真正发请求的脚本要带着凭证干活，可凭证写进脚本源码、日志或聊天记录，任何一处泄露都是事故。", "ev": "verified", "goal": "让干活的脚本永远接触不到真钥匙；替身只对指定域名有效，出了那个域名一文不值。", "id": "surrogate", "mech": "脚本运行时向本机凭证服务申请一把「替身」——以 hsurr: 开头、只对指定域名有效的值；请求真正出门时，由安全层在网络出口把替身换成真钥匙。脚本源码、日志、聊天里永远只有替身。连接器文档只负责编排这一步，钥匙本身不落进任何文件。", "s": "真钥匙不出门，只用替身", "t": "凭证替身保管"}, {"bg": "连接状态是易变事实：授权会过期、会被吊销、会被改设置。靠「上次连着的」记忆调用，迟早撞墙；写错一次还可能重复提交。", "ev": "verified", "goal": "每次调用前确认连接真的可用，读和写走不同的闸，批量调用不把用户账号刷到被平台限流封禁。", "id": "call", "mech": "先 github status 当场查状态，报鉴权错误立刻复查。读写分流：call-read-tool 只收审定过的只读工具；写操作走 call-tool，每次要新鲜批准。两层闸（OAuth 范围 + manifest 的 Allow/Ask/Deny）都放行才执行，撞限流即停手。", "s": "状态当场查，读写分流过闸", "t": "工具调用"}, {"bg": "权限闸只能管「能不能取」，管不了「取回来的东西能不能原样露出来」——读回的内容可能混着验证码这类敏感串。", "ev": "verified", "goal": "让调用结果安全地回到对话里：敏感内容在进入对话之前就被挡下，而不是靠事后补救。", "id": "result", "mech": "manifest.yaml 里登记了响应守卫：读回来的内容如果混着验证码这类敏感串，会在进入对话之前被替换成受保护的引用。异常也在这一步收口：限流即停并报告做到哪了，授权作废不重试、写操作不自动重放，必须由用户重新开口。", "s": "取回的内容先过响应守卫", "t": "结果回注"}], "title": "一次连接的一生", "type": "flow"}</script></div></section>class="reveal in"><div class="part-head">PART 3 · 躯体</div><h2><span class="no">09</span>连接器生态</h2><div class="one">一句话：连接器是 Muse 伸向外部服务的<b>插座加说明书</b>——插上哪个服务、能干哪些事，全凭一份文档说了算；文档没写的，就是不存在。</div>
 <div class="chunk"><h3>一、底层设计原理：为什么是「文档即接口」</h3><p>最直白的问题：Gmail、GitHub、Spotify 有几百个服务，为什么不把每个服务的操作直接写死在 Muse 的代码里？三个原因。</p><ul>
 <li><b>服务太多、变得太快。</b>写死代码，等于每接一个新服务、每改一个接口，都要改主程序、发新版本。文档是数据，不是代码：新增一个服务，就是新增一个文件夹，主程序一行不动。</li>
 <li><b>能力必须可审计。</b>一份写明「能做什么、不能做什么」的文档，用户和系统都能照着查。代码里的能力是黑箱，文档里的能力是白纸黑字。</li>
@@ -282,6 +308,24 @@ github call-tool       --name push_files …         <span class="c"># 写：每
 </ul><div class="note">📌 <b>证据分级小结</b>：连接生命周期、两层权限、限流与 <code>reauthorization_required</code> 的处理规矩，来自官方文档明文<span class="badge b-doc">文档明文</span>；文件构成、GitHub 的读写分流与配额数值、替身机制、两个自定义连接器的落地形态，来自本机真实目录与文档的实地核对<span class="badge b-verified">实测</span>；连接器目录的上架审核流程、连接器服务端（MCP 服务器内部、托管连接页的实现）未公开，本章未展开，相关细节属<span class="badge b-infer">合理推断</span>范围之外，不作定论。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch08.html">← 上一章：Skills 技能系统</a></span><span><a href="ch10.html">下一章：文件架构 →</a></span></div></section>
 </main>
 <script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
-
+<script>
+document.querySelectorAll('.figx').forEach(function(fx){
+  var data; try{ data = JSON.parse(fx.querySelector('.fig-data').textContent); }catch(e){ return; }
+  var T = fx.querySelector('.fig-t'), B = fx.querySelector('.fig-bg'), G = fx.querySelector('.fig-goal'),
+      M = fx.querySelector('.fig-mech'), P = fx.querySelector('.fig-prog'), E = fx.querySelector('.fig-ev');
+  var EVM = {verified:['实测','b-verified'], doc:['文档明文','b-doc'], infer:['合理推断','b-infer']};
+  fx.querySelectorAll('.fnode').forEach(function(g){
+    g.addEventListener('click', function(){
+      fx.querySelectorAll('.fnode').forEach(function(x){ x.classList.remove('on'); });
+      g.classList.add('on');
+      var nd = data.nodes[parseInt(g.getAttribute('data-i'), 10)];
+      T.textContent = nd.t; B.textContent = nd.bg; G.textContent = nd.goal; M.textContent = nd.mech;
+      P.textContent = '已选模块';
+      var ev = EVM[nd.ev] || EVM.infer;
+      E.textContent = ev[0]; E.className = 'badge fig-ev ' + ev[1]; E.style.display = '';
+    });
+  });
+});
+</script>
 </body>
 </html>
