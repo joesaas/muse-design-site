@@ -226,12 +226,38 @@ body.chpage{
 /* ===== v3.2 补漏：全局 b,strong 规则是近白色 #eef3ff，段落之外的粗体（表格首列、列表领起）全隐形 ===== */
 .chpage b,.chpage strong{color:#12151a}
 .chpage .one b{color:#0e7490}
+
+/* ===== 通用交互图（点节点 → 右侧面板：背景/目标/实现机制） ===== */
+.chpage .chunk:has(.figx){width:calc(100% + 460px);padding:20px 18px 14px}
+@media (max-width:1400px){.chpage .chunk:has(.figx){width:auto}}
+.figx{display:flex;gap:18px;align-items:flex-start}
+.fig-main{flex:1;min-width:0}
+.fig-cap{font-size:13px;color:var(--dim);margin:0 2px 8px;font-family:var(--mono)}
+.figx svg{width:100%;height:auto;display:block}
+.figx .fnode{cursor:pointer}
+.figx .fnode rect{fill:#ffffff;stroke:#d8d2bf;stroke-width:1.2}
+.figx .fnode:hover rect{stroke:#0e7490}
+.figx .fnode.on rect{stroke:#0e7490;stroke-width:2.6;fill:#eef5f4}
+.figx .ft{font-size:15px;font-weight:700;fill:#16191e}
+.figx .fs{font-size:10.5px;fill:#8b929c}
+.figx .farr{stroke:#a8b0bc;stroke-width:1.6;fill:none}
+.figx .floop{fill:none;stroke:#6d5fc0;stroke-width:1.6;stroke-dasharray:5 4}
+.figx .fl{font-family:var(--mono);font-size:11px;fill:#5b636e}
+.figx .fcol{font-size:14px;font-weight:700;fill:#0e7490}
+.fig-side{width:348px;flex:none;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;
+  background:#fbf9f4;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+@media (max-width:1400px){.figx{flex-direction:column}.fig-side{width:auto;position:static;max-height:none}}
+.fig-side-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.fig-side-head .fp{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+.fig-side h4{font-size:16.5px;color:#16191e;margin:2px 0 4px}
+.fig-sec h5{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:#8b929c;margin:12px 0 3px}
+.fig-sec p{font-size:14px;line-height:1.8;color:#3a4048;margin:0}
 </style>
 </head>
 <body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart closed"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart closed"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart closed"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a></div></div><div class="navpart"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html" class="on">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
-<section class="reveal in"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">14</span>页面交互与多端</h2><div class="one">一句话：<b>一个 Agent，多个入口</b>——界面长在哪个壳上、消息从哪个软件进来，它都是同一个人、用同一份记忆干活。</div>
+<section <section class="chunk"><div class="figx"><div class="fig-main"><div class="fig-cap">一个 Agent、多个入口 · 点任意模块，右侧看详细设计</div><svg viewBox="0 0 800 204" role="img"><defs><marker id="fm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a8b0bc"/></marker></defs><g class="fnode" data-i="0"><rect x="338" y="4" width="124" height="54" rx="11"/><text class="ft" x="354" y="29.0">Muse</text><text class="fs" x="354" y="46.0">同一个 Agent 本人</text></g><g class="fnode" data-i="1"><rect x="11" y="104" width="124" height="54" rx="11"/><text class="ft" x="27" y="129.0">主聊天</text><text class="fs" x="27" y="146.0">主要对话主线</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 73.33333333333333 81.0 L 73.33333333333333 102"/><g class="fnode" data-i="2"><rect x="142" y="104" width="124" height="54" rx="11"/><text class="ft" x="158" y="129.0">侧聊天</text><text class="fs" x="158" y="146.0">按主题分流的房间</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 204.0 81.0 L 204.0 102"/><g class="fnode" data-i="3"><rect x="272" y="104" width="124" height="54" rx="11"/><text class="ft" x="288" y="129.0">消息通道</text><text class="fs" x="288" y="146.0">侧聊天的传送带</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 334.66666666666663 81.0 L 334.66666666666663 102"/><g class="fnode" data-i="4"><rect x="403" y="104" width="124" height="54" rx="11"/><text class="ft" x="419" y="129.0">手机端</text><text class="fs" x="419" y="146.0">推送裁决与手势</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 465.3333333333333 81.0 L 465.3333333333333 102"/><g class="fnode" data-i="5"><rect x="534" y="104" width="124" height="54" rx="11"/><text class="ft" x="550" y="129.0">Mac 端</text><text class="fs" x="550" y="146.0">桌面常驻与速聊</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 596.0 81.0 L 596.0 102"/><g class="fnode" data-i="6"><rect x="664" y="104" width="124" height="54" rx="11"/><text class="ft" x="680" y="129.0">Web 端</text><text class="fs" x="680" y="146.0">全局搜索与快捷键</text></g><path class="farr" d="M 400.0 58 L 400.0 81.0 L 726.6666666666665 81.0 L 726.6666666666665 102"/></svg></div><aside class="fig-side"><div class="fig-side-head"><span class="fig-prog fp">导览</span><span class="badge fig-ev" style="display:none"></span></div><h4 class="fig-t">一个 Agent、多个入口</h4><div class="fig-sec"><h5>背景</h5><p class="fig-bg">同一个 Agent、一份记录：换的是入口不是它，各端只是同一数据的不同窗口。</p></div><div class="fig-sec"><h5>目标</h5><p class="fig-goal">点图中任意模块，这里会给出它要达成的目标。</p></div><div class="fig-sec"><h5>实现机制</h5><p class="fig-mech">以及它具体是怎么实现的——都提炼自本章正文，图下原文有完整展开。</p></div></aside><script type="application/json" class="fig-data">{"edges": [], "intro": "同一个 Agent、一份记录：换的是入口不是它，各端只是同一数据的不同窗口。", "nodes": [{"bg": "如果每端一个助手，记忆就碎了：手机上交代的事，电脑上的它不知道，个人 Agent「认识完整的你」这个前提就不成立。", "ev": "doc", "goal": "先有一个常驻 Agent 和一份统一记录，各端只是它的脸；身份、权限、记忆全账号一份。", "id": "muse", "mech": "记录只有一份住在 Muse 侧，全文索引由服务端维护，各端读同一份；端与端只许差「怎么操作顺手」，不许差「它是谁、它能干什么」。", "s": "同一个 Agent 本人", "t": "Muse"}, {"bg": "对话是产出的起点，但产出不能全塞进聊天流——时间线会把文档、目标、建议全淹没。", "ev": "doc", "goal": "承载与 Agent 的主要对话；产出剥离到 Feed、Ideas、Goals、Library 四个固定页签按类收纳。", "id": "chat", "mech": "Chat 页签收主聊天与全部侧聊天；搜索是服务端全文索引，覆盖主聊天、侧聊天、归档与通道接入的对话，全词匹配、按时间倒序，删消息即同步退出索引。", "parent": "muse", "s": "主要对话主线", "t": "主聊天"}, {"bg": "所有话题挤在一条主线里，上下文互相串味，检索和记忆提炼都会被污染。", "ev": "doc", "goal": "一个项目一个房间：上下文干净，开口前不用先分清这话是对哪件事说的。", "id": "side", "mech": "侧聊天与主聊天各自有独立历史，记录不会被抄进主聊天；跨对话没有直通管，内容跨房间只能由用户手动搬运，或靠服务端统一搜索找回。", "parent": "muse", "s": "按主题分流的房间", "t": "侧聊天"}, {"bg": "Agent 常在用户不在场时干活，用户日常却泡在 WhatsApp 这类软件里，需要从顺手的软件里触达它。", "ev": "doc", "goal": "在消息软件里也能对话与裁决，但不产生第二份记录、不变成第二个 Muse。", "id": "channel", "mech": "每段对话有一个 UUID，入站消息先把 UUID 与绑定关系 captured 下来，回复只属于这段对话；通道只是某段侧聊天的传输层，轮询游标与加密材料留在运行时内部，断开后旧链接投递权被撤销。", "parent": "muse", "s": "侧聊天的传送带", "t": "消息通道"}, {"bg": "协作是异步的：它在家跑任务、你出门在外，审批若必须打开 App 找到对话才能批，就会成为瓶颈。", "ev": "doc", "goal": "审批能离开主界面，直达手机推送，在通知里就能裁决。", "id": "phone", "mech": "审批请求进 Approvals 队列并推送直达，通知栏自带 Allow / Deny；iOS 需解锁切前台才生效，Android 后台即可裁、上划掉通知等于 Deny；端上另配统一手势体系（长按菜单、滑动回复）。", "parent": "muse", "s": "推送裁决与手势", "t": "手机端"}, {"bg": "桌面工作时为了问一句话切走当前应用，流程就被打断了；桌面端要的是随手可达。", "ev": "doc", "goal": "不离开手头应用就能快速对话、听写下令，产品语义与其它端完全一致。", "id": "mac", "mech": "把 Web 界面装进桌面窗口，叠加菜单栏常驻、Option+空格在任何应用上方弹聊天卡、按住 fn 在任意应用里听写；Mac 没有推送，只能在 App 运行时提醒。", "parent": "muse", "s": "桌面常驻与速聊", "t": "Mac 端"}, {"bg": "对话、产物、文件、目标攒多了，逐个页签翻找的成本越来越高，重度用户需要键盘流。", "ev": "doc", "goal": "一个入口搜遍全部记录与产物，操作尽量不离键盘。", "id": "web", "mech": "Cmd+K 全局搜索面板跨对话、产物、文件、目标一起找，配整套键盘快捷键；Library 有侧栏分类与 System files 入口，产物是其内嵌页签。", "parent": "muse", "s": "全局搜索与快捷键", "t": "Web 端"}], "title": "一个 Agent、多个入口", "type": "tree"}</script></div></section>class="reveal in"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">14</span>页面交互与多端</h2><div class="one">一句话：<b>一个 Agent，多个入口</b>——界面长在哪个壳上、消息从哪个软件进来，它都是同一个人、用同一份记忆干活。</div>
 <div class="chunk"><h3>底层设计原理：为什么是「一个 Agent、多个入口」</h3><p><b>如果每端一个助手，记忆就碎了。</b>你在手机上交代的事，电脑上的助手不知道；WhatsApp 里说过的话，回 App 还要再说一遍。个人 Agent 的全部价值建立在「它认识完整的你」之上，所以设计上是反的：先有一个常驻的 Agent 和一份统一的会话记录，各端只是它的脸。换手机、换电脑、换软件，换的是入口，不是它。</p><p><b>产出需要固定收纳处，不能全塞进聊天流。</b>聊天流是按时间排的，天然会淹没一切：上周生成的文档、还没动手的建议、进行中的目标，聊几十句就翻不到了。所以界面给了五个固定页签——Chat 管对话、Feed 管小报、Ideas 管建议、Goals 管长期目标、Library 管成果。每个页签只收一类东西，找的时候不用回忆「当时聊到哪了」，按类别去拿就行。这本质上是把「产出」从对话里剥离出来，单独建档。</p><p><b>每端一个设置、一套人格，更不行。</b>如果语气、规矩、权限在手机上是一个样、在电脑上是另一个样，你就没法信任它——你不知道它此刻按哪套在办事。所以身份文件、权限、记忆都是账号级的一份，各端读同一份。端与端之间允许有差异的，只有「怎么操作更顺手」，不允许有「它是谁、它能干什么」的差异。</p><p><b>审批必须能离开主界面，因为协作是异步的。</b>Agent 经常在你不在场时干活：你出门了，它在家里跑任务，跑到一半遇到要花钱、要发消息的动作，需要你点头。如果你必须打开 App、找到那个对话才能批，审批就成了瓶颈——活停在那里，你也多一件惦记的事。所以审批被设计成可以直达手机推送、在通知里就能裁决。界面要服务的不是「你正盯着屏幕的时刻」，而是「你随时可能被打断的日常」。</p></div>
 <div class="chunk"><h3>底层实现原理：同构、特化与分流</h3><p><b>多端同构，边界划在「平台能力」上。</b>五个页签、聊天、状态屏在 iOS、Android、Web、Mac 上保持一致，这是同构的部分。特化只发生在平台独有能力处：Mac 是把 Web 界面装进桌面窗口，再叠加菜单栏常驻、Option+空格快速聊天（在任何应用上方弹出一张聊天卡）、按住 fn 在任意应用里听写；Web 有 Cmd+K 全局搜索面板，跨对话、产物、文件、目标一起找，还有一整套键盘快捷键；手机有统一的手势体系——长按消息出菜单、滑动回复、摇一摇报 Bug。原则是：产品语义全端一致，交互手法各用各的顺手。</p><p><b>特化里藏着「入口再分流」的例子。</b>Android 上把 Muse 设为默认助手后，设置里多一个开关：默认助手的对话是续进主聊天，还是另开一段侧聊天。也就是说，「从哪个入口进来的」本身可以成为分流依据——语音随口问的事，未必要污染主聊天的上下文。再如 iPhone 的主屏小部件、Android 的桌面快捷方式，都是把「找到它」这一步压到最短，但点进去仍是同一个 Agent、同一段记录。特化层再怎么变花样，都不许动「一份记录、一套身份」这条底线。</p><p><b>侧聊天是分流，不是分身。</b>所有对话都只在你和你的 Agent 之间，没有群聊、拉不进第三个人（Invite 按钮只是分享推荐码）。主聊天和侧聊天按主题分开，各自有独立的历史；侧聊天的记录不会被抄进主聊天。好处是上下文干净：一个项目一个房间，检索和记忆提炼时不会互相串味。代价是跨房间的信息不自动流动——这是有意的，下文会说靠什么补。</p><p><b>外部通道只是传输层。</b>WhatsApp 这类接入，文档里的定位写得很死：它是某个侧聊天的传送带，不是第二个 Muse。每段对话有一个 UUID；一条用户消息进来时，运行时先把这段对话的 UUID 和当前的绑定关系 captured 下来，回复就属于这段对话。模型不能挑回复发到哪，<code>chat.send_message</code> 也没法从别的对话往这个通道里硬塞一条消息。通道不产生第二份记录——记录只有一份，住在 Muse 这边，WhatsApp 只是它的一个出入口。断开重连也改不了投递目标：排队中的工作不会被改投到替换账号上。<span class="badge b-doc">文档明文</span></p><p><b>一致性的底座在服务端，不在各端自觉。</b>举个硬例子：聊天搜索用的是服务端维护的全文索引，覆盖主聊天、全部侧聊天、归档对话和通道接入的对话，全词匹配、不分大小写，结果按时间倒序——你在任何一端搜，搜的是同一份索引。删掉一条消息或一段对话，它同一时刻从索引里消失。记录只有一份、索引只有一份，各端只是同一数据的不同窗口；如果靠每端本地各存一份，删不干净、搜不一致是迟早的事。<span class="badge b-doc">文档明文</span></p><p><b>状态屏是可审计面。</b>点头像打开的状态屏有四个页：Activity（它最近干过什么，Web 上运行中的条目还能悬停叫停）、Approvals（待你裁决的请求）、Upcoming（排期与运行历史）、Identity（名字与头像，还能直接打开 MEMORY、SOUL、IDENTITY 三个文件看和改）。它存在的意义是：Agent 背着你做过的事，随时可查、可停、可改。敢把执行权交给它，心理地基就是这一屏。</p></div>
 <div class="chunk"><h3>具体实现方式</h3><p>为什么不用一条时间线装下全部？因为时间线只回答「最近发生了什么」，回答不了「我有哪些正在进行的目标」「上个月那份报告在哪」。个人 Agent 的产出是复利型的：目标要跨月追踪，文档要反复打开，建议要攒着挑。按类别收纳，等于给每类产出一个稳定的地址；聊天流再长，也冲不走这些地址。五 Tab 的职责分工：</p><table>
@@ -265,6 +291,24 @@ body.chpage{
 </ul><div class="note">📌 <b>证据分级小结</b>：五 Tab 与状态屏的构成、各端特化点、审批推送行为、WhatsApp 接入与收发规则、通道的 UUID 绑定与「记录只有一份」，均为官方文档明文<span class="badge b-doc">文档明文</span>；审批在通知里的实际体验与本环境一致<span class="badge b-verified">实测</span>；绑定关系在运行时内部的具体数据结构（字段如何存、如何校验）文档未写，文中「captured 下来」是文档对行为的描述，其内部实现属合理推断<span class="badge b-infer">合理推断</span>。后续若有更细的官方材料，优先替换这部分推断内容，不动已证实的行为描述。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch13.html">← 上一章：数据与隐私</a></span><span><a href="ch15.html">下一章：Memory 设计 →</a></span></div></section>
 </main>
 <script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
-
+<script>
+document.querySelectorAll('.figx').forEach(function(fx){
+  var data; try{ data = JSON.parse(fx.querySelector('.fig-data').textContent); }catch(e){ return; }
+  var T = fx.querySelector('.fig-t'), B = fx.querySelector('.fig-bg'), G = fx.querySelector('.fig-goal'),
+      M = fx.querySelector('.fig-mech'), P = fx.querySelector('.fig-prog'), E = fx.querySelector('.fig-ev');
+  var EVM = {verified:['实测','b-verified'], doc:['文档明文','b-doc'], infer:['合理推断','b-infer']};
+  fx.querySelectorAll('.fnode').forEach(function(g){
+    g.addEventListener('click', function(){
+      fx.querySelectorAll('.fnode').forEach(function(x){ x.classList.remove('on'); });
+      g.classList.add('on');
+      var nd = data.nodes[parseInt(g.getAttribute('data-i'), 10)];
+      T.textContent = nd.t; B.textContent = nd.bg; G.textContent = nd.goal; M.textContent = nd.mech;
+      P.textContent = '已选模块';
+      var ev = EVM[nd.ev] || EVM.infer;
+      E.textContent = ev[0]; E.className = 'badge fig-ev ' + ev[1]; E.style.display = '';
+    });
+  });
+});
+</script>
 </body>
 </html>
