@@ -145,6 +145,13 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
 
+/* ===== sidenav collapsible parts ===== */
+.navpart .part{display:flex;justify-content:space-between;align-items:center;width:100%;
+  background:none;border:none;cursor:pointer;text-align:left;padding-right:2px}
+.navpart .car{font-size:10px;transition:transform .2s}
+.navpart.closed .car{transform:rotate(-90deg)}
+.navpart.closed .navlinks{display:none}
+
 /* ===== chapter reading layout v2 ===== */
 .chpage main{max-width:920px}
 .chpage section{padding-top:42px;counter-reset:sec}
@@ -221,7 +228,7 @@ body.chpage{
 </style>
 </head>
 <body class="chpage">
-<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html" class="on">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html" class="on">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart closed"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart closed"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a></div></div><div class="navpart closed"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
 <section class="reveal in"><div class="part-head">PART 2 · 大脑</div><h2><span class="no">05</span>核心机制：Agent 循环</h2><div class="one">一句话：Muse 的一切行为，都是一个循环在转——<b>模型想一步，外部世界做一步，结果回到模型再想下一步</b>；而这个循环在物理上根本不存在某个一直跑着的进程，它是一台靠事件流驱动、随时可死、随时可复活的状态机。</div>
 <div class="chunk"><h3>底层设计原理：为什么必须是循环</h3><p>先把约束摆出来。设计不是从「想要什么功能」开始的，是从「模型只能做到什么」开始的。关于大模型，有三个绕不开的事实：</p><ul>
@@ -305,6 +312,7 @@ on tool_error(call, err):                 <span class="c"># 异常不吞，更�
   <tr><td><span class="badge b-infer">合理推断</span></td><td>broker 内部再分工的方式、唤醒方的扫描与调度实现、熔断的具体阈值——均未公开，正文已逐处标注，不作定论。</td></tr>
 </table></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch04.html">← 上一章：上下文工程</a></span><span><a href="ch06.html">下一章：审批与认证（HITL） →</a></span></div></section>
 </main>
+<script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
 
 </body>
 </html>

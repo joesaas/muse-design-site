@@ -145,6 +145,13 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
 
+/* ===== sidenav collapsible parts ===== */
+.navpart .part{display:flex;justify-content:space-between;align-items:center;width:100%;
+  background:none;border:none;cursor:pointer;text-align:left;padding-right:2px}
+.navpart .car{font-size:10px;transition:transform .2s}
+.navpart.closed .car{transform:rotate(-90deg)}
+.navpart.closed .navlinks{display:none}
+
 /* ===== chapter reading layout v2 ===== */
 .chpage main{max-width:920px}
 .chpage section{padding-top:42px;counter-reset:sec}
@@ -221,7 +228,7 @@ body.chpage{
 </style>
 </head>
 <body class="chpage">
-<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html" class="on">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html" class="on">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart closed"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart closed"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a></div></div><div class="navpart closed"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
 <section class="reveal in"><div class="part-head">PART 2 · 大脑</div><h2><span class="no">04</span>上下文工程</h2><div class="one">一句话：模型没有记忆，Muse 就把「记忆」做成了手艺活——事实存在文件和日志里，每一轮推理之前，运行时重新拼一份上下文递到模型面前。<b>上下文工程，就是这门「拼什么、拼多少、旧的怎么压」的学问。</b></div>
 <div class="chunk"><h3>底层设计原理：三条推导，逼出这套结构</h3><p><b>推导一：模型无状态，连续性只能外置。</b>大模型的一次推理就是一个纯函数：输入一段文本，输出一段文本，结束之后什么都不剩。所谓「它记得我们上次聊了什么」，只可能是因为有人在下一次调用之前，把该记的东西重新塞回了输入。于是连续性不再是模型的能力，而是运行时的工程：谁来存、存什么、每轮取哪些、按什么顺序排——这就是上下文工程存在的理由。</p><p><b>推导二：上下文是稀缺资源，必须分层。</b>稀缺体现在三处。窗口有硬上限，一次推理能读的 token 是有数的。注意力会被稀释：塞得越满，模型对关键信息的敏感度越低，长文本中段的内容最容易被忽略，这是 Transformer 的结构性现象。成本随长度线性涨：每一轮都要把整份上下文重新发一遍，越长越慢、越贵。三个约束叠加，结论只有一个——上下文不能「全都给」，只能分层：最要紧的常驻，其余按需取用。还有一层讲究是<b>排序</b>：同样一份材料，放在上下文的开头、结尾还是中段，被模型「看见」的程度并不一样。于是组装顺序本身就是设计——规矩和身份放最前定调，最新动态放最后压阵，会话记录夹在中间按时间排好。拼上下文拼的不只是内容，还有位置。</p><p><b>推导三：「忠实」和「新鲜」在打架。</b>对话核心要求忠实：说过的话、做过的决定、工具返回的真实结果，一个字都不能改，否则模型会在假事实之上继续推理。但外围信息要求新鲜：今天是几号、目标推进到哪一步、记忆文件昨晚被改了什么，必须取此刻的版本。一份静态上下文同时满足不了两者，结构因此被逼成两层：<b>一层管存，永远不改；一层管拼，每轮现做。</b></p></div>
@@ -259,6 +266,7 @@ return llm(ctx)                      <span class="c">// 模型只看得见这一
   <li><b>站立文件也会过期和打架。</b>外围每轮取最新版，好处是新鲜，坏处是文件之间若出现矛盾（旧偏好没删、新决定已记），模型会在同一份上下文里读到两套说法。上下文工程因此离不开后台的记忆维护：去重、和解、把过期结论降级——拼得再好，也怕原料互相矛盾。</li>
 </ul><div class="note">📌 <b>证据分级小结。</b>实测：站立文件的确切清单、deferred 加载与「压缩后 schema 失效」、子代理的切片式上下文、本构建会话的真实压缩实例、事件日志的信封字段（序号、出处、持久级别，见官方导出文件）。<span class="badge b-verified">实测</span> 文档明文：记忆可导入与遗忘、记忆搜索与聊天记录搜索相互独立。<span class="badge b-doc">文档明文</span> 合理推断：组装管线的确切代码顺序与压缩阈值、摘要算法的实现细节、注意力稀释在本模型上的具体程度——顺序是按注入呈现与可观察行为反推的，阈值与算法未公开，不作定论。<span class="badge b-infer">合理推断</span></div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch03.html">← 上一章：LLM 设计</a></span><span><a href="ch05.html">下一章：核心机制：Agent 循环 →</a></span></div></section>
 </main>
+<script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
 
 </body>
 </html>
