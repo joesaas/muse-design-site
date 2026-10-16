@@ -298,7 +298,7 @@ body.chpage{
   <li><b>分</b>：关于人的事不进 MEMORY 正文，转去 <code>people/</code> 单开一页；关于「世界与经验」的沉淀进 <code>bank/</code> 四本账。</li>
   <li><b>用</b>：每轮对话只全量注入精选层（MEMORY）；要细节时按关键词检索日记和人物页，取回片段再注入。分层不是为了好看，是为了让有限的上下文只装最值钱的部分。</li>
 </ul></div>
-<div class="chunk"><h3>点目录：每个应用一块自留地</h3><p>家目录下还有一排 <code>.应用名</code> 的隐藏目录（实测有 <code>.answer-me-with-html</code>、<code>.bankr</code>、<code>.snowagent</code> 等几十个）。约定很统一：<b>一个应用的数据只进自己的点目录</b>，里面放它自己的状态文件、生成物、适配器。比如 <code>.answer-me-with-html</code> 里就是 <code>state.json</code> + <code>pages/</code>（渲染出的页面）+ <code>adapters/</code>（凭证适配器）。应用之间不许串门——这和目标工作区是同一个思想：边界即目录。</p></div>
+<div class="chunk"><h3>点目录：每个应用一块自留地</h3><p>家目录下还有一排 <code>.应用名</code> 的隐藏目录（实测有 <code>.answer-me-with-html</code>、<code>.bankr</code>、<code>.snowagent</code> 等几十个）。约定很统一：<b>一个应用的数据只进自己的点目录</b>，里面放它自己的状态文件、生成物、适配器。比如 <code>.answer-me-with-html</code> 里就是 <code>state.json</code> + <code>pages/</code>（渲染出的页面）+ <code>adapters/</code>（凭证适配器）。应用之间不许串门——这和目标工作区是同一个思想：边界即目录。</p><div class="grid"><div class="card"><h4>🏠 一应用一目录</h4><p>家目录下每个应用一块 .应用名 的隐藏自留地，自己的数据只进自己的目录，实测有几十个，应用之间不许串门。</p></div><div class="card"><h4>🗂️ 目录即边界</h4><p>比如 .answer-me-with-html 里就是状态文件、渲染出的页面和凭证适配器——和目标工作区同一个思想：边界即目录。</p></div></div></div>
 <div class="chunk"><h3>具体实现方式：实地普查的完整目录树</h3><pre>~ 家目录（Agent 的电脑，跨对话持久）
 ├─ IDENTITY.md / SOUL.md        <span class="c">它是谁、什么性格</span>
 ├─ USER.md / MEMORY.md          <span class="c">你是谁、长期记忆精选</span>
