@@ -145,6 +145,13 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
 
+/* ===== sidenav collapsible parts ===== */
+.navpart .part{display:flex;justify-content:space-between;align-items:center;width:100%;
+  background:none;border:none;cursor:pointer;text-align:left;padding-right:2px}
+.navpart .car{font-size:10px;transition:transform .2s}
+.navpart.closed .car{transform:rotate(-90deg)}
+.navpart.closed .navlinks{display:none}
+
 /* ===== chapter reading layout v2 ===== */
 .chpage main{max-width:920px}
 .chpage section{padding-top:42px;counter-reset:sec}
@@ -221,7 +228,7 @@ body.chpage{
 </style>
 </head>
 <body class="chpage">
-<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html" class="on">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart closed"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart closed"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart closed"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a></div></div><div class="navpart"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html" class="on">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
 <section class="reveal in"><div class="part-head">PART 5 · 生活面</div><h2><span class="no">14</span>页面交互与多端</h2><div class="one">一句话：<b>一个 Agent，多个入口</b>——界面长在哪个壳上、消息从哪个软件进来，它都是同一个人、用同一份记忆干活。</div>
 <div class="chunk"><h3>底层设计原理：为什么是「一个 Agent、多个入口」</h3><p><b>如果每端一个助手，记忆就碎了。</b>你在手机上交代的事，电脑上的助手不知道；WhatsApp 里说过的话，回 App 还要再说一遍。个人 Agent 的全部价值建立在「它认识完整的你」之上，所以设计上是反的：先有一个常驻的 Agent 和一份统一的会话记录，各端只是它的脸。换手机、换电脑、换软件，换的是入口，不是它。</p><p><b>产出需要固定收纳处，不能全塞进聊天流。</b>聊天流是按时间排的，天然会淹没一切：上周生成的文档、还没动手的建议、进行中的目标，聊几十句就翻不到了。所以界面给了五个固定页签——Chat 管对话、Feed 管小报、Ideas 管建议、Goals 管长期目标、Library 管成果。每个页签只收一类东西，找的时候不用回忆「当时聊到哪了」，按类别去拿就行。这本质上是把「产出」从对话里剥离出来，单独建档。</p><p><b>每端一个设置、一套人格，更不行。</b>如果语气、规矩、权限在手机上是一个样、在电脑上是另一个样，你就没法信任它——你不知道它此刻按哪套在办事。所以身份文件、权限、记忆都是账号级的一份，各端读同一份。端与端之间允许有差异的，只有「怎么操作更顺手」，不允许有「它是谁、它能干什么」的差异。</p><p><b>审批必须能离开主界面，因为协作是异步的。</b>Agent 经常在你不在场时干活：你出门了，它在家里跑任务，跑到一半遇到要花钱、要发消息的动作，需要你点头。如果你必须打开 App、找到那个对话才能批，审批就成了瓶颈——活停在那里，你也多一件惦记的事。所以审批被设计成可以直达手机推送、在通知里就能裁决。界面要服务的不是「你正盯着屏幕的时刻」，而是「你随时可能被打断的日常」。</p></div>
@@ -256,6 +263,7 @@ body.chpage{
 <li><b>审批体验的平台债</b>：iOS 要解锁切前台、Android 划掉算拒绝、Mac 没推送——同一个裁决动作，三端三种脾气。系统能做的是把这些差异写明、把「拒绝可能只是误划」这类情况留出复核余地，而不是假装体验一致。</li>
 </ul><div class="note">📌 <b>证据分级小结</b>：五 Tab 与状态屏的构成、各端特化点、审批推送行为、WhatsApp 接入与收发规则、通道的 UUID 绑定与「记录只有一份」，均为官方文档明文<span class="badge b-doc">文档明文</span>；审批在通知里的实际体验与本环境一致<span class="badge b-verified">实测</span>；绑定关系在运行时内部的具体数据结构（字段如何存、如何校验）文档未写，文中「captured 下来」是文档对行为的描述，其内部实现属合理推断<span class="badge b-infer">合理推断</span>。后续若有更细的官方材料，优先替换这部分推断内容，不动已证实的行为描述。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch13.html">← 上一章：数据与隐私</a></span><span><a href="ch15.html">下一章：Memory 设计 →</a></span></div></section>
 </main>
+<script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
 
 </body>
 </html>

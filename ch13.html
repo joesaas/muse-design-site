@@ -145,6 +145,13 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
 
+/* ===== sidenav collapsible parts ===== */
+.navpart .part{display:flex;justify-content:space-between;align-items:center;width:100%;
+  background:none;border:none;cursor:pointer;text-align:left;padding-right:2px}
+.navpart .car{font-size:10px;transition:transform .2s}
+.navpart.closed .car{transform:rotate(-90deg)}
+.navpart.closed .navlinks{display:none}
+
 /* ===== chapter reading layout v2 ===== */
 .chpage main{max-width:920px}
 .chpage section{padding-top:42px;counter-reset:sec}
@@ -221,7 +228,7 @@ body.chpage{
 </style>
 </head>
 <body class="chpage">
-<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html">12 安全设计</a><a href="ch13.html" class="on">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart closed"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart closed"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html">12 安全设计</a><a href="ch13.html" class="on">13 数据与隐私</a></div></div><div class="navpart closed"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
 <section class="reveal in"><div class="part-head">PART 4 · 信任</div><h2><span class="no">13</span>数据与隐私</h2><div class="one">一句话：数据与隐私治理管的是三件事——<b>你的数据被谁看、拿去做什么、你能怎么收回</b>。Muse 的答案不是「全都锁死」，而是分成两条轨道，再把控制权连同它的边界一起交给你。</div>
 <div class="chunk"><h3>一、先讲困境：越懂你，越要碰你的数据</h3><p>个人 Agent 的价值来自「懂你」。要懂你，它就得读你的对话、文件、记忆，还要连上你的邮箱、日历、健康数据这些外部服务。读得越多越有用，出事时的伤害也越大。</p><p>它知道你的东西从哪来，文档列得很清楚：以前的对话、保存的记忆、工作区里的产物和文件、你连接的 Meta 账号和第三方服务、还有配对的设备（比如手机）。五路来源，每一路都是一个潜在的暴露面。</p><p>这是一个结构性矛盾，不是态度问题。不让它看，它退化成一个普通聊天机器人；放开让它看，就必须回答三个问题：谁能看、能看到哪一层、看完拿去干什么。</p><p>还有一条常被忽略的限定：它访问你的信息、把信息发给外部服务，只能是为了完成你交办的那件事。目的限定不是装饰——没有这条，「为了帮你」可以被无限放大成任何用途。</p><p>所以这套设计的出发点不是「零接触」，而是<b>接触有账、用途有界、收回有门</b>。后面的所有机制，都是在给这三句话兜底。</p></div>
@@ -281,6 +288,7 @@ body.chpage{
 <li><b>权威来源不在本章</b>：真正算数的是 Meta 隐私政策与 Muse 的服务条款、隐私政策。本章依据的官方说明文档自己也定位为通则，细节以那些政策原文为准。</li>
 </ul><div class="note">📌 本章主体事实均来自官方数据说明文档（data-handling），已随文标注「文档明文」；「双轨是让用户按风险定价」「开关缺席本身是声明」属于解读层面的合理推断；凡文档未给的期限、流程与实现细节，一律列为未知，不编造。</div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch12.html">← 上一章：安全设计</a></span><span><a href="ch14.html">下一章：页面交互与多端 →</a></span></div></section>
 </main>
+<script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
 
 </body>
 </html>

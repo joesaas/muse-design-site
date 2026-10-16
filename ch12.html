@@ -145,6 +145,13 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 .reveal{opacity:0;transform:translateY(16px);transition:.6s}
 .reveal.in{opacity:1;transform:none}
 
+/* ===== sidenav collapsible parts ===== */
+.navpart .part{display:flex;justify-content:space-between;align-items:center;width:100%;
+  background:none;border:none;cursor:pointer;text-align:left;padding-right:2px}
+.navpart .car{font-size:10px;transition:transform .2s}
+.navpart.closed .car{transform:rotate(-90deg)}
+.navpart.closed .navlinks{display:none}
+
 /* ===== chapter reading layout v2 ===== */
 .chpage main{max-width:920px}
 .chpage section{padding-top:42px;counter-reset:sec}
@@ -221,7 +228,7 @@ body.chpage{
 </style>
 </head>
 <body class="chpage">
-<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="part">PART 1 · 全景</div><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a><div class="part">PART 2 · 大脑</div><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a><div class="part">PART 3 · 躯体</div><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a><div class="part">PART 4 · 信任</div><a href="ch12.html" class="on">12 安全设计</a><a href="ch13.html">13 数据与隐私</a><div class="part">PART 5 · 生活面</div><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a><div class="part">PART 6 · 实证</div><a href="ch19.html">19 一次真实交互的全程解剖</a></nav>
+<nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart closed"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart closed"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html" class="on">12 安全设计</a><a href="ch13.html">13 数据与隐私</a></div></div><div class="navpart closed"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
 <section class="reveal in"><div class="part-head">PART 4 · 信任</div><h2><span class="no">12</span>安全设计</h2><div class="one">一句话：Muse 的安全不是一道墙，而是<b>五道彼此独立的防线</b>——任何一道被绕过，后面还有四道；而且它先假定「自己人也可能出事」，再谈防外人。</div>
 <div class="chunk"><h3>底层设计原理：为什么必须多道防线</h3><p>先看威胁模型。给 Agent 设计安全，要防的不是一种敌人，而是四种：</p><div class="grid">
@@ -253,6 +260,7 @@ Step 6  真 Key 只出现在出口之外的那一段路上，
 </table></div>
 <div class="chunk"><h3>边界与代价</h3><p>这套设计不是没有代价。防线多了，摩擦就多：审批会打断流程，长期放行的边界要用户自己想清楚；指令防火墙会让一些「资料里写了合理操作建议」的场景也变得保守，需要多问一句。还有明确的能力边界：无痕模式并不存在，清掉对话不等于清掉记忆，得另外删记忆；删记忆也不等于删尽所有系统记录，官方把丑话写在了明处。接受这些代价的理由很简单——失败的一个任务只损失一个下午，一次泄密损失的是整段信任关系。</p><div class="note">📌 <b>证据分级小结。</b>本章的凭证隔离、验证码引用、审批分档与长期放行规则、留痕不可抹除，均出自官方文档。<span class="badge b-doc">文档明文</span> 其中 Hatch、Sentinel、authd 这套安全架构的公开口径，与 Meta 官方安全博客的说法一致——这是可公开核对的部分。<span class="badge b-verified">实测</span> 但要分清：博客讲的是架构意图与组件分工，沙箱如何实现、进程如何隔离、出口检查的内部细节并未公开，本章凡涉及这类内部实现的表述均为与可观察行为一致的推断。<span class="badge b-infer">合理推断</span></div></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch11.html">← 上一章：定时与后台</a></span><span><a href="ch13.html">下一章：数据与隐私 →</a></span></div></section>
 </main>
+<script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
 
 </body>
 </html>
