@@ -154,7 +154,8 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding:26px 10px;color:
 nav > .part,.navpart .part{font-size:13.5px;font-weight:700;letter-spacing:1.5px}
 
 /* ===== chapter reading layout v2 ===== */
-.chpage main{max-width:920px}
+.chpage main{max-width:1200px}
+.chpage .chunk p,.chpage .chunk li{max-width:880px}
 .chpage section{padding-top:42px;counter-reset:sec}
 .chpage h2{font-size:clamp(28px,3.6vw,38px);margin:8px 0 6px}
 .chpage .one{font-size:18px;line-height:1.9;padding:18px 22px;margin:20px 0 4px}
@@ -228,8 +229,7 @@ body.chpage{
 .chpage .one b{color:#0e7490}
 
 /* ===== 通用交互图（点节点 → 右侧面板：背景/目标/实现机制） ===== */
-.chpage .chunk:has(.figx){width:calc(100% + 460px);padding:16px 16px 10px}
-@media (max-width:1400px){.chpage .chunk:has(.figx){width:auto}}
+.chpage .chunk:has(.figx){padding:16px 16px 10px}
 .figx{display:flex;gap:18px;align-items:flex-start}
 .fig-main{flex:1;min-width:0}
 .fig-cap{font-size:13px;color:var(--dim);margin:0 2px 8px;font-family:var(--mono)}
@@ -246,7 +246,7 @@ body.chpage{
 .figx .fcol{font-size:14px;font-weight:700;fill:#0e7490}
 .fig-side{width:348px;flex:none;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;
   background:#fbf9f4;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-@media (max-width:1400px){.figx{flex-direction:column}.fig-side{width:auto;position:static;max-height:none}}
+@media (max-width:1240px){.figx{flex-direction:column}.fig-side{width:auto;position:static;max-height:none}}
 .fig-side-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .fig-side-head .fp{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
 .fig-side h4{font-size:18px;color:#12151a;margin:2px 0 4px}
