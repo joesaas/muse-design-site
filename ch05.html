@@ -226,12 +226,38 @@ body.chpage{
 /* ===== v3.2 补漏：全局 b,strong 规则是近白色 #eef3ff，段落之外的粗体（表格首列、列表领起）全隐形 ===== */
 .chpage b,.chpage strong{color:#12151a}
 .chpage .one b{color:#0e7490}
+
+/* ===== 通用交互图（点节点 → 右侧面板：背景/目标/实现机制） ===== */
+.chpage .chunk:has(.figx){width:calc(100% + 460px);padding:20px 18px 14px}
+@media (max-width:1400px){.chpage .chunk:has(.figx){width:auto}}
+.figx{display:flex;gap:18px;align-items:flex-start}
+.fig-main{flex:1;min-width:0}
+.fig-cap{font-size:13px;color:var(--dim);margin:0 2px 8px;font-family:var(--mono)}
+.figx svg{width:100%;height:auto;display:block}
+.figx .fnode{cursor:pointer}
+.figx .fnode rect{fill:#ffffff;stroke:#d8d2bf;stroke-width:1.2}
+.figx .fnode:hover rect{stroke:#0e7490}
+.figx .fnode.on rect{stroke:#0e7490;stroke-width:2.6;fill:#eef5f4}
+.figx .ft{font-size:15px;font-weight:700;fill:#16191e}
+.figx .fs{font-size:10.5px;fill:#8b929c}
+.figx .farr{stroke:#a8b0bc;stroke-width:1.6;fill:none}
+.figx .floop{fill:none;stroke:#6d5fc0;stroke-width:1.6;stroke-dasharray:5 4}
+.figx .fl{font-family:var(--mono);font-size:11px;fill:#5b636e}
+.figx .fcol{font-size:14px;font-weight:700;fill:#0e7490}
+.fig-side{width:348px;flex:none;position:sticky;top:14px;max-height:calc(100vh - 28px);overflow:auto;
+  background:#fbf9f4;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+@media (max-width:1400px){.figx{flex-direction:column}.fig-side{width:auto;position:static;max-height:none}}
+.fig-side-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.fig-side-head .fp{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+.fig-side h4{font-size:16.5px;color:#16191e;margin:2px 0 4px}
+.fig-sec h5{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:#8b929c;margin:12px 0 3px}
+.fig-sec p{font-size:14px;line-height:1.8;color:#3a4048;margin:0}
 </style>
 </head>
 <body class="chpage">
 <nav id="sidenav"><div class="logo">MUSE<b>_</b>DESIGN</div><div class="sub">核心设计全解 · 底层原理</div><div class="part">总览</div><a href="index.html">⌂ 首页 · 目录与演示</a><div class="navpart closed"><button type="button" class="part">PART 1 · 全景<span class="car">▾</span></button><div class="navlinks"><a href="ch01.html">01 整体架构</a><a href="ch02.html">02 运维设计</a></div></div><div class="navpart"><button type="button" class="part">PART 2 · 大脑<span class="car">▾</span></button><div class="navlinks"><a href="ch03.html">03 LLM 设计</a><a href="ch04.html">04 上下文工程</a><a href="ch05.html" class="on">05 核心机制：Agent 循环</a><a href="ch06.html">06 审批与认证（HITL）</a><a href="ch07.html">07 子代理编排</a></div></div><div class="navpart closed"><button type="button" class="part">PART 3 · 躯体<span class="car">▾</span></button><div class="navlinks"><a href="ch08.html">08 Skills 技能系统</a><a href="ch09.html">09 连接器生态</a><a href="ch10.html">10 文件架构</a><a href="ch11.html">11 定时与后台</a></div></div><div class="navpart closed"><button type="button" class="part">PART 4 · 信任<span class="car">▾</span></button><div class="navlinks"><a href="ch12.html">12 安全设计</a><a href="ch13.html">13 数据与隐私</a></div></div><div class="navpart closed"><button type="button" class="part">PART 5 · 生活面<span class="car">▾</span></button><div class="navlinks"><a href="ch14.html">14 页面交互与多端</a><a href="ch15.html">15 Memory 设计</a><a href="ch16.html">16 身份与对齐</a><a href="ch17.html">17 Feed 设计</a><a href="ch18.html">18 Goals 与 Ideas</a></div></div><div class="navpart closed"><button type="button" class="part">PART 6 · 实证<span class="car">▾</span></button><div class="navlinks"><a href="ch19.html">19 一次真实交互的全程解剖</a></div></div></nav>
 <main>
-<section class="reveal in"><div class="part-head">PART 2 · 大脑</div><h2><span class="no">05</span>核心机制：Agent 循环</h2><div class="one">一句话：Muse 的一切行为，都是一个循环在转——<b>模型想一步，外部世界做一步，结果回到模型再想下一步</b>；而这个循环在物理上根本不存在某个一直跑着的进程，它是一台靠事件流驱动、随时可死、随时可复活的状态机。</div>
+<section <section class="chunk"><div class="figx"><div class="fig-main"><div class="fig-cap">Agent 循环 · 点任意模块，右侧看详细设计</div><svg viewBox="0 0 800 508" role="img"><defs><marker id="fm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#a8b0bc"/></marker></defs><g class="fnode" data-i="0"><rect x="165" y="4" width="470" height="54" rx="11"/><text class="ft" x="181" y="29.0">组装上下文</text><text class="fs" x="181" y="46.0">每圈从事件流重拼上下文</text></g><line class="farr" x1="400" y1="60" x2="400" y2="86" marker-end="url(#fm)"/><g class="fnode" data-i="1"><rect x="165" y="88" width="470" height="54" rx="11"/><text class="ft" x="181" y="113.0">发起推理</text><text class="fs" x="181" y="130.0">把上下文整份交给模型</text></g><line class="farr" x1="400" y1="144" x2="400" y2="170" marker-end="url(#fm)"/><g class="fnode" data-i="2"><rect x="165" y="172" width="470" height="54" rx="11"/><text class="ft" x="181" y="197.0">产出 tool_call</text><text class="fs" x="181" y="214.0">模型交卷，只产出意图</text></g><line class="farr" x1="400" y1="228" x2="400" y2="254" marker-end="url(#fm)"/><g class="fnode" data-i="3"><rect x="165" y="256" width="470" height="54" rx="11"/><text class="ft" x="181" y="281.0">策略预判</text><text class="fs" x="181" y="298.0">派发前先过网关三分</text></g><line class="farr" x1="400" y1="312" x2="400" y2="338" marker-end="url(#fm)"/><g class="fnode" data-i="4"><rect x="165" y="340" width="470" height="54" rx="11"/><text class="ft" x="181" y="365.0">执行</text><text class="fs" x="181" y="382.0">broker 把意图变真实动作</text></g><line class="farr" x1="400" y1="396" x2="400" y2="422" marker-end="url(#fm)"/><g class="fnode" data-i="5"><rect x="165" y="424" width="470" height="54" rx="11"/><text class="ft" x="181" y="449.0">结果回注</text><text class="fs" x="181" y="466.0">tool_result 落流闭合</text></g><path class="floop" d="M 157 451 L 64 451 L 64 31 L 157 31" marker-end="url(#fm)"/><text class="fl" x="54" y="241" text-anchor="middle" transform="rotate(-90 54 241)">循环：新一轮迭代，不是唤醒旧线程</text></svg></div><aside class="fig-side"><div class="fig-side-head"><span class="fig-prog fp">导览</span><span class="badge fig-ev" style="display:none"></span></div><h4 class="fig-t">Agent 循环</h4><div class="fig-sec"><h5>背景</h5><p class="fig-bg">模型想一步、外部世界做一步、结果回注再想下一步；循环不在任何进程里，在事件流里。</p></div><div class="fig-sec"><h5>目标</h5><p class="fig-goal">点图中任意模块，这里会给出它要达成的目标。</p></div><div class="fig-sec"><h5>实现机制</h5><p class="fig-mech">以及它具体是怎么实现的——都提炼自本章正文，图下原文有完整展开。</p></div></aside><script type="application/json" class="fig-data">{"edges": [{"from": "assemble", "to": "infer"}, {"from": "infer", "to": "toolcall"}, {"from": "toolcall", "to": "precheck"}, {"from": "precheck", "to": "execute"}, {"from": "execute", "to": "feedback"}, {"from": "feedback", "label": "循环：新一轮迭代，不是唤醒旧线程", "loop": true, "to": "assemble"}], "intro": "模型想一步、外部世界做一步、结果回注再想下一步；循环不在任何进程里，在事件流里。", "nodes": [{"bg": "模型是无状态函数，又只能在推理开始前接收信息——上一圈发生了什么，必须先拼进这一圈的输入里。", "ev": "verified", "goal": "让模型每圈都拿到截至此刻的全部事实：站立信息新鲜、历史完整、结果真实。", "id": "assemble", "mech": "assemble() 从事件流重放投影：系统提示是固定层；记忆文件、目标状态、当前时间是站立层，现取现拼；对话记录是投影层，太长先压缩成摘要。压缩只动投影、不动流本身，事实不丢。", "s": "每圈从事件流重拼上下文", "t": "组装上下文"}, {"bg": "模型没有手也没有记忆，能做的只有一件事：读一份上下文，吐一段 token。", "ev": "verified", "goal": "让模型基于最新事实决定下一步：直接答复，还是产出工具调用意图。", "id": "infer", "mech": "llm(context) 一次调用就是一圈的推理粒度。产出纯文本即最终答复，落流后循环结束；产出 tool_calls 则交卷离场、进入派发。检查点定在推理粒度，断电最多损失一圈。", "s": "把上下文整份交给模型", "t": "发起推理"}, {"bg": "工具的真身在模型之外，模型若不停笔等结果，就只能编造结果、在幻觉上叠推理。", "ev": "verified", "goal": "把「想做什么」变成一张结构化工单，交给循环之外的执行层去兑现。", "id": "toolcall", "mech": "一次推理可产出多个 tool_call，每个带唯一 call id。产出即 yield：本轮推理结束，模型不等待、不阻塞——这是交卷语义。并行有边界：高危命令被标 parallel_profile: ineligible，不可并行。", "s": "模型交卷，只产出意图", "t": "产出 tool_call"}, {"bg": "危险动作不能直接执行，也不能全靠模型自律——派发前必须有一道与模型分离的预判。", "ev": "verified", "goal": "放行低风险、拒绝越界、冻结高风险发问，让循环在安全边界内继续转。", "id": "precheck", "mech": "broker.precheck：ALLOW 同步执行；DENY 以 error_result 回注；NEED_APPROVAL 落 approval_wait.started 并 suspend()，进程退出。裁决到后读流重入——await_event 不是真挂起，等待是 pending 记录。", "s": "派发前先过网关三分", "t": "策略预判"}, {"bg": "模型从没见过工具的真身，意图和真实世界之间需要一个中介层来翻译和兜底。", "ev": "infer", "goal": "在同步段内一口气执行完，结果必真——成功、失败都照实，不许想象填充。", "id": "execute", "mech": "broker.execute(call) 路由到对应工具或连接器，需要凭证时向凭证服务申请替身。组装、推理、预判、执行、落流是秒级同步段；等审批、等子代理这类异步段只占 pending 记录，不占线程。", "s": "broker 把意图变真实动作", "t": "执行"}, {"bg": "每个 tool_call 若没有配对的结果，模型永远不知道那一步发生了什么——那是循环的死点。", "ev": "verified", "goal": "让每个调用有且仅有一个真实结果对号入座，成为下一圈推理的输入。", "id": "feedback", "mech": "append(session, tool_result(call.id, result))：信封含 tool_call_id、status、output、error；经审批的调用带 userConfirmationRequired / Status（实测字段）。拒绝也是结果，照样回注。", "s": "tool_result 落流闭合", "t": "结果回注"}], "title": "Agent 循环", "type": "flow"}</script></div></section>class="reveal in"><div class="part-head">PART 2 · 大脑</div><h2><span class="no">05</span>核心机制：Agent 循环</h2><div class="one">一句话：Muse 的一切行为，都是一个循环在转——<b>模型想一步，外部世界做一步，结果回到模型再想下一步</b>；而这个循环在物理上根本不存在某个一直跑着的进程，它是一台靠事件流驱动、随时可死、随时可复活的状态机。</div>
 <div class="chunk"><h3>底层设计原理：为什么必须是循环</h3><p>先把约束摆出来。设计不是从「想要什么功能」开始的，是从「模型只能做到什么」开始的。关于大模型，有三个绕不开的事实：</p><ul>
   <li><b>模型是无状态函数。</b>给它一份上下文，它吐出一段 token，仅此而已。它没有内存，没有手，没有时钟，上一次推理在它身上不留任何痕迹。</li>
   <li><b>任务发生在真实世界里。</b>查数据库、改文件、发消息、等一个人点头——效果都在模型之外，而且结果不可预知：接口会超时，命令会报错，审批可能等一天。</li>
@@ -314,6 +340,24 @@ on tool_error(call, err):                 <span class="c"># 异常不吞，更�
 </table></div><div style="display:flex;justify-content:space-between;gap:12px;margin-top:40px;border-top:1px solid var(--line);padding-top:20px;font-size:14.5px"><span><a href="ch04.html">← 上一章：上下文工程</a></span><span><a href="ch06.html">下一章：审批与认证（HITL） →</a></span></div></section>
 </main>
 <script>document.querySelectorAll('.navpart > .part').forEach(function(b){b.addEventListener('click',function(){b.parentElement.classList.toggle('closed')})});</script>
-
+<script>
+document.querySelectorAll('.figx').forEach(function(fx){
+  var data; try{ data = JSON.parse(fx.querySelector('.fig-data').textContent); }catch(e){ return; }
+  var T = fx.querySelector('.fig-t'), B = fx.querySelector('.fig-bg'), G = fx.querySelector('.fig-goal'),
+      M = fx.querySelector('.fig-mech'), P = fx.querySelector('.fig-prog'), E = fx.querySelector('.fig-ev');
+  var EVM = {verified:['实测','b-verified'], doc:['文档明文','b-doc'], infer:['合理推断','b-infer']};
+  fx.querySelectorAll('.fnode').forEach(function(g){
+    g.addEventListener('click', function(){
+      fx.querySelectorAll('.fnode').forEach(function(x){ x.classList.remove('on'); });
+      g.classList.add('on');
+      var nd = data.nodes[parseInt(g.getAttribute('data-i'), 10)];
+      T.textContent = nd.t; B.textContent = nd.bg; G.textContent = nd.goal; M.textContent = nd.mech;
+      P.textContent = '已选模块';
+      var ev = EVM[nd.ev] || EVM.infer;
+      E.textContent = ev[0]; E.className = 'badge fig-ev ' + ev[1]; E.style.display = '';
+    });
+  });
+});
+</script>
 </body>
 </html>
